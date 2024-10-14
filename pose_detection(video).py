@@ -20,7 +20,7 @@ def resize_frame(frame, width=None, height=None, inter=cv2.INTER_AREA):
     return resized
 
 # 初始化 YOLOv8 模型
-racket_model = YOLO("tennis_racket.pt")  # 網球拍子節點
+racket_model = YOLO("best.pt")  # 網球拍子節點
 pose_model = YOLO("yolov8n-pose.pt")  # 身體節點
 
 # 讀取影片

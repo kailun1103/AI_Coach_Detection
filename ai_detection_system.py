@@ -48,53 +48,69 @@ def smooth_point(last, current, factor): # 用於平滑軌跡點，減少抖動�
 
 
 def determine_swing_trajectory(data):
-    min_x = float('inf')
-    min_y = float('inf')
-    min_x_frames = []
-    min_y_frames = []
+    min_wrist_x = float('inf')
+    min_wrist_y = float('inf')
+    min_ball_x = float('inf')  # Changed from ball_x to min_ball_x
+    min_wrist_x_frames = []
+    min_wrist_y_frames = []
+    ball_return = None
+
     for item in data:
+        # Handle wrist position
         if item["right_wrist"]['x'] is not None and item["right_wrist"]['y'] is not None:
-            # Handle x
-            if item["right_wrist"]['x'] < min_x:
-                min_x = item["right_wrist"]['x']
-                min_x_frames = [item['frame']]
-            elif item["right_wrist"]['x'] == min_x:
-                min_x_frames.append(item['frame'])
-            # Handle y
-            if item["right_wrist"]['y'] < min_y:
-                min_y = item["right_wrist"]['y']
-                min_y_frames = [item['frame']]
-            elif item["right_wrist"]['y'] == min_y:
-                min_y_frames.append(item['frame'])
-    return min(min_x_frames), max(min_y_frames) # 輸出開始揮拍偵數以及結束揮拍偵數
+            # Handle wrist x
+            if item["right_wrist"]['x'] < min_wrist_x:
+                min_wrist_x = item["right_wrist"]['x']
+                min_wrist_x_frames = [item['frame']]
+            elif item["right_wrist"]['x'] == min_wrist_x:
+                min_wrist_x_frames.append(item['frame'])
+            # Handle wrist y
+            if item["right_wrist"]['y'] < min_wrist_y:
+                min_wrist_y = item["right_wrist"]['y']
+                min_wrist_y_frames = [item['frame']]
+            elif item["right_wrist"]['y'] == min_wrist_y:
+                min_wrist_y_frames.append(item['frame'])
+        
+        # Handle tennis ball position
+        if item["tennis_ball"]['x'] is not None:
+            if item["tennis_ball"]['x'] < min_ball_x:  # Changed from ball_x to min_ball_x
+                min_ball_x = item["tennis_ball"]['x']
+                ball_return = item['frame']
+
+    swing_start = min(min_wrist_x_frames)
+    swing_end = max(min_wrist_y_frames)
+    
+    return swing_start, swing_end, ball_return
 
 
-def process_video(yolo_pose_model, input_video_path, output_video_path, output_json_path):
+def process_video(yolo_pose_model, tennis_ball_model, input_video_path, output_video_path, output_json_path):
     
     # -------------step1: 處理影片的每一偵資訊-------------
 
-    cap = cv2.VideoCapture(input_video_path) # cv2.VideoCapture()可以捕捉影片詳細資訊
+    cap = cv2.VideoCapture(input_video_path)
 
     # 獲取影片資訊
-    fps = int(cap.get(cv2.CAP_PROP_FPS)) # 幀率（Frames Per Second，FPS）
-    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) # 幀寬度
-    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) #　幀高度
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v') # cv2.VideoWriter_fourcc用於指定影片編碼器，'mp4v' 是 MPEG-4 編碼的四字符代碼/*'mp4v' 將字符串 'mp4v' 拆分為單個字符。
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     
     # 開始處理影片
     body_frame_json = []
     frame_number = 0
-    last_point = None
-    smoothing_factor = 0.3  # 平滑因子
+    last_wrist_point = None
+    last_ear_point = None  # 新增：保存上一幀的耳朵位置
+    smoothing_factor = 0.3
 
     # 開始主循環處理影片
     while cap.isOpened():
         ret, frame = cap.read()
-        if not ret: # 結束處理影片會break
+        if not ret:
             break 
 
         # 對每一幀執行姿態檢測
-        video_results = yolo_pose_model(frame)
+        body_frame_results = yolo_pose_model(frame)
+        tennis_ball_results  = tennis_ball_model(frame)
 
         # 初始化幀身體數據
         body_frame_data = {
@@ -102,31 +118,59 @@ def process_video(yolo_pose_model, input_video_path, output_video_path, output_j
             "right_wrist": {"x": None, "y": None},
             "right_wrist_vector": {"x": None, "y": None},
             "right_shoulder": {"x": None, "y": None},
-            "right_hip": {"x": None, "y": None}
+            "right_hip": {"x": None, "y": None},
+            "right_ear": {"x": None, "y": None},
+            "right_ear_vector": {"x": None, "y": None},  # 新增：right_ear_vector
+            "tennis_ball": {"x": None, "y": None},
+            "tennis_ball_hit": False
         }
 
         # 處理影片檢測結果
-        for result in video_results:
+        for result in body_frame_results:
             if result.keypoints is not None:
                 keypoints = result.keypoints.xy[0].cpu().numpy()
-                if keypoints.shape[0] > 10: # 確保身體每一個Keypoint都會在
-                    right_wrist = tuple(map(int, keypoints[10][:2]))  # 右手腕 (關鍵點 10)
-                    right_shoulder = tuple(map(int, keypoints[6][:2]))  # 右肩 (關鍵點 6)
-                    right_hip = tuple(map(int, keypoints[12][:2]))  # 右髖 (關鍵點 12)
+                if keypoints.shape[0] > 10:
+                    right_wrist = tuple(map(int, keypoints[10][:2]))
+                    right_shoulder = tuple(map(int, keypoints[6][:2]))
+                    right_hip = tuple(map(int, keypoints[12][:2]))
+                    right_ear = tuple(map(int, keypoints[4][:2]))
 
                     # 平滑和記錄軌跡點
-                    smoothed_point = smooth_point(last_point, right_wrist, smoothing_factor)
-                    body_frame_data["right_wrist"]["x"] = int(smoothed_point[0])
-                    body_frame_data["right_wrist"]["y"] = int(smoothed_point[1])
+                    smoothed_wrist = smooth_point(last_wrist_point, right_wrist, smoothing_factor)
+                    smoothed_ear = smooth_point(last_ear_point, right_ear, smoothing_factor)  # 新增：平滑耳朵位置
+                    
+                    body_frame_data["right_wrist"]["x"] = int(smoothed_wrist[0])
+                    body_frame_data["right_wrist"]["y"] = int(smoothed_wrist[1])
                     body_frame_data["right_shoulder"]["x"], body_frame_data["right_shoulder"]["y"] = right_shoulder
                     body_frame_data["right_hip"]["x"], body_frame_data["right_hip"]["y"] = right_hip
+                    body_frame_data["right_ear"]["x"], body_frame_data["right_ear"]["y"] = int(smoothed_ear[0]), int(smoothed_ear[1])
 
                     # 計算運動向量
-                    if last_point:
-                        vector = (smoothed_point[0] - last_point[0], smoothed_point[1] - last_point[1])
-                        body_frame_data["right_wrist_vector"]["x"], body_frame_data["right_wrist_vector"]["y"] = vector
+                    if last_wrist_point:
+                        wrist_vector = (smoothed_wrist[0] - last_wrist_point[0], smoothed_wrist[1] - last_wrist_point[1])
+                        body_frame_data["right_wrist_vector"]["x"], body_frame_data["right_wrist_vector"]["y"] = wrist_vector
 
-                    last_point = smoothed_point
+                    if last_ear_point:  # 新增：計算耳朵的運動向量
+                        ear_vector = (smoothed_ear[0] - last_ear_point[0], smoothed_ear[1] - last_ear_point[1])
+                        body_frame_data["right_ear_vector"]["x"], body_frame_data["right_ear_vector"]["y"] = ear_vector
+
+                    last_wrist_point = smoothed_wrist
+                    last_ear_point = smoothed_ear  # 新增：更新上一幀的耳朵位置
+
+        # 處理網球檢測結果（保持不變）
+        for result in tennis_ball_results:
+            for det in result.boxes.xyxy:
+                x1, y1, x2, y2 = map(int, det[:4])
+                cls = int(result.boxes.cls[0])
+                conf = float(result.boxes.conf[0])
+                label = result.names[cls]
+                
+                if label in ["ball", "sports ball"] and conf > 0.5:
+                    center_x = (x1 + x2) // 2
+                    center_y = (y1 + y2) // 2
+                    body_frame_data["tennis_ball"]["x"] = center_x
+                    body_frame_data["tennis_ball"]["y"] = center_y
+                    break
 
         body_frame_json.append(body_frame_data)
         frame_number += 1
@@ -139,10 +183,14 @@ def process_video(yolo_pose_model, input_video_path, output_video_path, output_j
 
     # -------------step2: 判斷開始揮拍和節數揮拍的偵數-------------
 
-    start_frame, end_frame = determine_swing_trajectory(body_frame_json)
+    swing_start, swing_end, ball_return = determine_swing_trajectory(body_frame_json)
 
     # 把開始揮拍到節數揮拍的向量數據寫進json裡面
-    filtered_body_frame_json = [body_frame_data for body_frame_data in body_frame_json if start_frame <= body_frame_data['frame'] <= end_frame]
+    filtered_body_frame_json = [body_frame_data for body_frame_data in body_frame_json if swing_start <= body_frame_data['frame'] <= swing_end]
+    for frame_data in filtered_body_frame_json:
+        if frame_data['frame'] == ball_return:
+            frame_data['tennis_ball_hit'] = True
+            break
     save_json_to_jsonfile(filtered_body_frame_json, output_json_path)
     
     # -------------step3: 把判斷的軌跡畫上去影片，並輸出-------------
@@ -152,8 +200,10 @@ def process_video(yolo_pose_model, input_video_path, output_video_path, output_j
     out = cv2.VideoWriter(output_video_path, fourcc, fps, (frame_width, frame_height))
 
     # 初始化幀計數器和軌跡點列表
-    trajectory_points = []
-    trail_thickness = 5  # 軌跡厚度
+    wrist_trajectory_points = []
+    ball_trajectory_points = []
+    wrist_trail_thickness = 5  # 手腕軌跡厚度
+    ball_trail_thickness = 3   # 網球軌跡厚度
     frame_number = 0
 
     while cap.isOpened():
@@ -162,22 +212,38 @@ def process_video(yolo_pose_model, input_video_path, output_video_path, output_j
             break
 
         # 檢查當前幀是否在我們感興趣的範圍內
-        if start_frame <= frame_number <= end_frame:
+        if swing_start <= frame_number <= swing_end:
             # 從過濾後的 JSON 數據中獲取當前幀的點坐標
             current_frame_data = next((item for item in filtered_body_frame_json if item["frame"] == frame_number), None)
             if current_frame_data:
-                point = (current_frame_data['right_wrist']['x'], current_frame_data['right_wrist']['y'])
-                # 如果坐標有效，將其添加到軌跡點列表中
-                if point[0] is not None and point[1] is not None:
-                    trajectory_points.append(point)
+                wrist_point = (current_frame_data['right_wrist']['x'], current_frame_data['right_wrist']['y'])
+                ball_point = (current_frame_data['tennis_ball']['x'], current_frame_data['tennis_ball']['y'])
+                
+                # 如果坐標有效，將其添加到相應的軌跡點列表中
+                if wrist_point[0] is not None and wrist_point[1] is not None:
+                    wrist_trajectory_points.append(wrist_point)
+                if ball_point[0] is not None and ball_point[1] is not None:
+                    ball_trajectory_points.append(ball_point)
 
-        # 如果有多於一個點，在幀上繪製軌跡線
-        if len(trajectory_points) > 1:
-            cv2.polylines(frame, [np.array(trajectory_points)], False, (0, 255, 255), trail_thickness)
+        # 如果有多於一個點，在幀上繪製手腕軌跡線
+        if len(wrist_trajectory_points) > 1:
+            cv2.polylines(frame, [np.array(wrist_trajectory_points)], False, (0, 255, 255), wrist_trail_thickness)
 
-        # 在當前點上繪製一個圓圈，標記最新的位置
-        if frame_number <= end_frame and trajectory_points:
-            cv2.circle(frame, trajectory_points[-1], trail_thickness + 2, (0, 0, 255), -1)
+        # 如果有多於一個點，在幀上繪製網球軌跡線
+        if len(ball_trajectory_points) > 1:
+            cv2.polylines(frame, [np.array(ball_trajectory_points)], False, (255, 0, 0), ball_trail_thickness)
+
+        # 在當前點上繪製圓圈，標記最新的位置
+        if frame_number <= swing_end:
+            if wrist_trajectory_points:
+                cv2.circle(frame, wrist_trajectory_points[-1], wrist_trail_thickness + 2, (0, 0, 255), -1)
+            if ball_trajectory_points:
+                cv2.circle(frame, ball_trajectory_points[-1], ball_trail_thickness + 2, (255, 0, 0), -1)
+
+        # 添加秒數和幀數信息到影片左上角
+        seconds = frame_number / fps
+        cv2.putText(frame, f"Time: {seconds:.2f}s Frame: {frame_number}", 
+                    (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
         # 將處理後的幀寫入輸出影片
         out.write(frame)
@@ -302,16 +368,17 @@ def compare_trajectories(input_video_path, output_video_path, output_video_path2
 
 
 def main():
-    yolo_pose_model = YOLO('yolov8n-pose.pt')
-    input_video_path = 'test/chu.mp4'
+    yolo_pose_model = YOLO('yolov8n-pose.pt') # keypoint
+    tennis_ball_model = YOLO('tennis_ball.pt') # objections
+    input_video_path = 'test2/Produce_2.mp4'
     # input_video_path = 'answer.mp4'
     output_video_path = f'{input_video_path.replace(".mp4", "")}_trajectory.mp4'
     output_video_path2 = f'{input_video_path.replace(".mp4", "")}_trajectory_comparison.mp4'
     output_json_path = f'{input_video_path.replace(".mp4", "")}_trajectory.json'
     answer_file = 'test/answer.json'
     output_json_path2 = f'{answer_file.replace(".json", "")}_trajectory.json'
-    process_video(yolo_pose_model, input_video_path, output_video_path, output_json_path)
-    compare_trajectories(input_video_path, output_video_path, output_video_path2, output_json_path, output_json_path2, answer_file)
+    process_video(yolo_pose_model, tennis_ball_model, input_video_path, output_video_path, output_json_path)
+    # compare_trajectories(input_video_path, output_video_path, output_video_path2, output_json_path, output_json_path2, answer_file)
 
 if __name__ == "__main__":
     main()
