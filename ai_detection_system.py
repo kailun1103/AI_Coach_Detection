@@ -145,12 +145,13 @@ def process_video(yolo_pose_model, tennis_ball_model, input_video_path, output_v
                     body_frame_data["right_hip"]["x"], body_frame_data["right_hip"]["y"] = right_hip
                     body_frame_data["right_ear"]["x"], body_frame_data["right_ear"]["y"] = int(smoothed_ear[0]), int(smoothed_ear[1])
 
-                    # 計算運動向量
+                    # 計算揮拍軌跡運動向量差，以及平滑揮拍軌跡
                     if last_wrist_point:
                         wrist_vector = (smoothed_wrist[0] - last_wrist_point[0], smoothed_wrist[1] - last_wrist_point[1])
                         body_frame_data["right_wrist_vector"]["x"], body_frame_data["right_wrist_vector"]["y"] = wrist_vector
 
-                    if last_ear_point:  # 新增：計算耳朵的運動向量
+                    # 計算揮拍軌跡運動向量差
+                    if last_ear_point:
                         ear_vector = (smoothed_ear[0] - last_ear_point[0], smoothed_ear[1] - last_ear_point[1])
                         body_frame_data["right_ear_vector"]["x"], body_frame_data["right_ear_vector"]["y"] = ear_vector
 
