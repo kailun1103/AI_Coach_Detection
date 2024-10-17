@@ -70,15 +70,18 @@ def determine_swing_trajectory(data):
                 min_wrist_y_frames = [item['frame']]
             elif item["right_wrist"]['y'] == min_wrist_y:
                 min_wrist_y_frames.append(item['frame'])
-        
-        # Handle tennis ball position
-        if item["tennis_ball"]['x'] is not None:
-            if item["tennis_ball"]['x'] < min_ball_x:  # Changed from ball_x to min_ball_x
-                min_ball_x = item["tennis_ball"]['x']
-                ball_return = item['frame']
+
 
     swing_start = min(min_wrist_x_frames)
     swing_end = max(min_wrist_y_frames)
+
+    for item in data:
+        # Handle tennis ball position
+        if swing_start <= item['frame'] <= swing_end:
+            if item["tennis_ball"]['x'] is not None:
+                if item["tennis_ball"]['x'] < min_ball_x:  # Changed from ball_x to min_ball_x
+                    min_ball_x = item["tennis_ball"]['x']
+                    ball_return = item['frame']
     
     return swing_start, swing_end, ball_return
 
@@ -185,7 +188,6 @@ def process_video(yolo_pose_model, tennis_ball_model, input_video_path, output_v
     # -------------step2: 判斷開始揮拍和節數揮拍的偵數-------------
 
     swing_start, swing_end, ball_return = determine_swing_trajectory(body_frame_json)
-
     # 把開始揮拍到節數揮拍的向量數據寫進json裡面
     filtered_body_frame_json = [body_frame_data for body_frame_data in body_frame_json if swing_start <= body_frame_data['frame'] <= swing_end]
     for frame_data in filtered_body_frame_json:
@@ -371,7 +373,7 @@ def compare_trajectories(input_video_path, output_video_path, output_video_path2
 def main():
     yolo_pose_model = YOLO('yolov8n-pose.pt') # keypoint
     tennis_ball_model = YOLO('tennis_ball.pt') # objections
-    input_video_path = 'test2/Produce_2.mp4'
+    input_video_path = 'test2/answer.mp4'
     # input_video_path = 'answer.mp4'
     output_video_path = f'{input_video_path.replace(".mp4", "")}_trajectory.mp4'
     output_video_path2 = f'{input_video_path.replace(".mp4", "")}_trajectory_comparison.mp4'
