@@ -48,6 +48,7 @@ def smooth_point(last, current, factor): # 用於平滑軌跡點，減少抖動�
 
 
 def determine_swing_trajectory(data):
+    
     min_wrist_x = float('inf')
     min_wrist_y = float('inf')
     min_ball_x = float('inf')  # Changed from ball_x to min_ball_x
@@ -70,20 +71,25 @@ def determine_swing_trajectory(data):
                 min_wrist_y_frames = [item['frame']]
             elif item["right_wrist"]['y'] == min_wrist_y:
                 min_wrist_y_frames.append(item['frame'])
-        
-        # Handle tennis ball position
-        if item["tennis_ball"]['x'] is not None:
-            if item["tennis_ball"]['x'] < min_ball_x:  # Changed from ball_x to min_ball_x
-                min_ball_x = item["tennis_ball"]['x']
-                ball_return = item['frame']
+
 
     swing_start = min(min_wrist_x_frames)
     swing_end = max(min_wrist_y_frames)
+
+    for item in data:
+        # Handle tennis ball position
+        if swing_start <= item['frame'] <= swing_end:
+            if item["tennis_ball"]['x'] is not None:
+                if item["tennis_ball"]['x'] < min_ball_x:  # Changed from ball_x to min_ball_x
+                    min_ball_x = item["tennis_ball"]['x']
+                    ball_return = item['frame']
     
     return swing_start, swing_end, ball_return
 
 
-def process_video(yolo_pose_model, tennis_ball_model, input_video_path, output_video_path, output_json_path):
+def process_video(yolo_pose_model, tennis_ball_model, input_video_path, output_video_path, output_json_path): #處理影片json與畫上軌跡
+        
+    #處理影片json與畫上軌跡
     
     # -------------step1: 處理影片的每一偵資訊-------------
 
@@ -260,11 +266,10 @@ def process_video(yolo_pose_model, tennis_ball_model, input_video_path, output_v
     out.release()
 
 
-
-
-
-def compare_trajectories(input_video_path, output_video_path, output_video_path2, output_json_path, output_json_path2, answer_file):
+def compare_trajectories(input_video_path, output_video_path, output_video_path2, output_json_path, answer_json_path, answer_file):
     
+    #修改做到比對軌跡合與擊球角度
+    # 1.
     # -------------step1: 將對比的軌跡座標等比縮放-------------
 
     answer_json_data = get_json_from_jsonfile(answer_file)
@@ -288,7 +293,7 @@ def compare_trajectories(input_video_path, output_video_path, output_video_path2
     answer_distance = calculate_distance(answer_shoulder, answer_hip)
     scale_ratio = tester_distance / answer_distance
     answer_scaled_json = scale_coordinates(answer_json_data, scale_ratio) # 將對比的json等比縮放
-       
+    
     # -------------step2: 將對比的軌跡座標整體移動到影片正確位置-------------
 
     for json_data in output_json_data:
@@ -311,10 +316,7 @@ def compare_trajectories(input_video_path, output_video_path, output_video_path2
         json_data["right_wrist"]['x'] = int(json_data["right_wrist"]['x'])-distance_x
         json_data["right_wrist"]['y'] = int(json_data["right_wrist"]['y'])-distance_y
 
-    
-       
     # -------------step3: 將對比的軌跡畫上去影片-------------
-
     cap = cv2.VideoCapture(output_video_path)
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -323,36 +325,69 @@ def compare_trajectories(input_video_path, output_video_path, output_video_path2
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_video_path2, fourcc, fps, (frame_width, frame_height))
 
-    trail_color = (0, 0, 255)  # 黃色
+    # 設定顏色和大小
+    input_trail_color = (255, 255, 0)  # 輸入軌跡用黃色
+    answer_trail_color = (0, 0, 255)    # answer軌跡用紅色
     trail_thickness = 5
-    point_color = (0, 0, 255)    # 紅色
     point_radius = 7
 
-    trajectory_points = []
-    frame_number = 0
-
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
+    # 獲取輸入檔案的軌跡數據
+    input_json_data = get_json_from_jsonfile(output_json_path)
+    
+    # 找到輸入檔案開始揮拍的幀
+    first_valid_frame = 0
+    initial_x = input_json_data[0]["right_wrist"]['x']
+    for i, data in enumerate(input_json_data[1:], 1):
+        current_x = data["right_wrist"]['x']
+        if abs(current_x - initial_x) > 2:  # 可以調整這個閾值
+            first_valid_frame = i
             break
 
-        # 安全地獲取當前幀的點
-        if frame_number < len(answer_scaled_json):
-            current_data = answer_scaled_json[frame_number]
-            current_x = current_data["right_wrist"]['x']
-            current_y = current_data["right_wrist"]['y']
-            
-            if current_x is not None and current_y is not None:
-                current_point = (int(current_x), int(current_y))
-                trajectory_points.append(current_point)
+    # 初始化軌跡點列表
+    input_trajectory_points = []
+    answer_trajectory_points = []
+    frame_number = 0
+    last_frame = None
 
-        # 繪製軌跡
-        if len(trajectory_points) > 1:
-            cv2.polylines(frame, [np.array(trajectory_points)], False, trail_color, trail_thickness)
+    # 繼續處理直到answer軌跡完成
+    while True:
+        ret, frame = cap.read()
+        
+        # 如果原始影片結束，使用最後一幀
+        if not ret:
+            if last_frame is None:
+                break
+            frame = last_frame.copy()
+        else:
+            last_frame = frame.copy()
 
-        # 在當前點繪製圓圈
-        if trajectory_points:
-            cv2.circle(frame, trajectory_points[-1], point_radius, point_color, -1)
+        # 獲取並繪製當前幀的輸入點
+        if frame_number < len(input_json_data):
+            current_input = input_json_data[frame_number]
+            input_x = int(current_input["right_wrist"]['x'])
+            input_y = int(current_input["right_wrist"]['y'])
+            current_input_point = (input_x, input_y)
+            input_trajectory_points.append(current_input_point)
+
+
+        # 只有在達到開始揮拍的幀之後才繪製answer軌跡
+        if frame_number >= first_valid_frame:
+            answer_frame_index = frame_number - first_valid_frame
+            if answer_frame_index < len(answer_scaled_json):
+                current_answer = answer_scaled_json[answer_frame_index]
+                answer_x = int(current_answer["right_wrist"]['x'])
+                answer_y = int(current_answer["right_wrist"]['y'])
+                current_answer_point = (answer_x, answer_y)
+                answer_trajectory_points.append(current_answer_point)
+
+                # 繪製answer軌跡
+                if len(answer_trajectory_points) > 1:
+                    cv2.polylines(frame, [np.array(answer_trajectory_points)], False, answer_trail_color, trail_thickness)
+                if current_answer_point:
+                    cv2.circle(frame, current_answer_point, point_radius, answer_trail_color, -1)
+            else:
+                # answer軌跡已經完成，結束處理
+                break
 
         # 寫入幀
         out.write(frame)
@@ -365,21 +400,23 @@ def compare_trajectories(input_video_path, output_video_path, output_video_path2
     cap.release()
     out.release()
     print(f"總處理幀數：{frame_number}")
-    save_json_to_jsonfile(answer_scaled_json, output_json_path2)
+    save_json_to_jsonfile(answer_scaled_json, answer_json_path)
 
 
 def main():
     yolo_pose_model = YOLO('yolov8n-pose.pt') # keypoint
-    tennis_ball_model = YOLO('tennis_ball.pt') # objections
-    input_video_path = 'test2/Produce_2.mp4'
+    tennis_ball_model = YOLO('tennis_ball_v2.pt') # objections
+    input_video_path = 'test3/kao.mp4' #測試影片
     # input_video_path = 'answer.mp4'
-    output_video_path = f'{input_video_path.replace(".mp4", "")}_trajectory.mp4'
-    output_video_path2 = f'{input_video_path.replace(".mp4", "")}_trajectory_comparison.mp4'
-    output_json_path = f'{input_video_path.replace(".mp4", "")}_trajectory.json'
-    answer_file = 'test/answer.json'
-    output_json_path2 = f'{answer_file.replace(".json", "")}_trajectory.json'
+    output_video_path = f'{input_video_path.replace(".mp4", "")}_trajectory.mp4' #測試影片軌跡
+    output_json_path = f'{input_video_path.replace(".mp4", "")}_trajectory.json'  #測試影片json
+    output_video_path2 = f'{input_video_path.replace(".mp4", "")}_trajectory_comparison.mp4' #測試影片與pro軌跡
+
+    answer_file = 'test1/answer.json'
+    answer_json_path = f'{answer_file.replace(".json", "")}_trajectory.json'
+
     process_video(yolo_pose_model, tennis_ball_model, input_video_path, output_video_path, output_json_path)
-    # compare_trajectories(input_video_path, output_video_path, output_video_path2, output_json_path, output_json_path2, answer_file)
+    compare_trajectories(input_video_path, output_video_path, output_video_path2, output_json_path, answer_json_path, answer_file)
 
 if __name__ == "__main__":
     main()
