@@ -1,5 +1,5 @@
 # ---Buiid Env
-python -m venv .venv 
+python -m venv venv 
 
 .venv\Scripts\activate # (PS) activate env
 deactivate #exit Env.
