@@ -4,9 +4,11 @@ python -m venv venv
 venv\Scripts\activate # (PS) activate env
 deactivate #exit Env.
 
-clear ; git add . ; git commit -m "20241213" ; git push -u origin max-qat
+clear ; git add . ; git commit -m "20241214 refer git hub project" ; git push -u origin max-qat
 
 clear ; git checkout max-prod ; git merge max-qat ; git add . ; git commit -m "20241213" ; git push -u origin max-prod
+
+clear ; git checkout max-qat
 
 
 

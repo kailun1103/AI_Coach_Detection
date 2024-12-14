@@ -1,41 +1,121 @@
+import os
 from openai import OpenAI
+from dotenv import load_dotenv
+from colorama import Fore, Back, Style
 
-client = OpenAI(
-    api_key= "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"
+# load values from the .env file if it exists
+load_dotenv()
 
-)
+# configure OpenAI
+client = OpenAI(api_key= os.environ.get("OPENAI_API_KEY"))
+
+INSTRUCTIONS = """
+                act as a tennis coach named Frank, who always give feedback and answer tennis question in Traditional Chinese
+               if you don't understand what the question is , please remind me to ask more specificly
+               if encounter things you don't know or beyond tennis questions , tell me you don't know
+              """
+
+TEMPERATURE = 0.5
+MAX_TOKENS = 500
+FREQUENCY_PENALTY = 0
+PRESENCE_PENALTY = 0.6
+MAX_CONTEXT_QUESTIONS = 10
 
 
-# 初始化對話歷史
-conversation_history = [
-    {"role": "system", "content": "你是一個有記憶的聊天機器人，可以幫助解答用戶問題。且永遠會用繁體中文回答我"}
-]
+def get_response(instructions, previous_questions_and_answers, new_question):
+    """Get a response from ChatCompletion
 
-def chatbot_with_memory(user_input):
-    global conversation_history
+    Args:
+        instructions: The instructions for the chat bot - this determines how it will behave
+        previous_questions_and_answers: Chat history
+        new_question: The new question to ask the bot
 
-    # 將用戶輸入加入對話歷史
-    conversation_history.append({"role": "user", "content": user_input})
-    
-    # 呼叫 OpenAI API
-    response = client.chat.completions.create(
-        model="gpt-4",  # 修正為正確的模型名稱
-        messages=conversation_history,
-        temperature=0.7
+    Returns:
+        The response text
+    """
+    # build the messages
+    messages = [
+        { "role": "system", "content": instructions },
+    ]
+    # add the previous questions and answers
+    for question, answer in previous_questions_and_answers[-MAX_CONTEXT_QUESTIONS:]:
+        messages.append({ "role": "user", "content": question })
+        messages.append({ "role": "assistant", "content": answer })
+    # add the new question
+    messages.append({ "role": "user", "content": new_question })
+
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        temperature=TEMPERATURE,
+        max_tokens=MAX_TOKENS,
+        top_p=1,
+        frequency_penalty=FREQUENCY_PENALTY,
+        presence_penalty=PRESENCE_PENALTY,
     )
-    
-    # 提取回應內容
-    assistant_reply = response.choices[0].message.content  # 使用正確的屬性訪問方式
-    
-    # 將機器人回應加入對話歷史
-    conversation_history.append({"role": "assistant", "content": assistant_reply})
-    
-    return assistant_reply
+    return completion.choices[0].message.content
 
-# 測試對話
-if __name__ == "__main__":
+
+def get_moderation(question):
+    """
+    Check the question is safe to ask the model
+
+    Parameters:
+        question (str): The question to check
+
+    Returns a list of errors if the question is not safe, otherwise returns None
+    """
+
+    errors = {
+        "hate": "Content that expresses, incites, or promotes hate based on race, gender, ethnicity, religion, nationality, sexual orientation, disability status, or caste.",
+        "hate/threatening": "Hateful content that also includes violence or serious harm towards the targeted group.",
+        "self-harm": "Content that promotes, encourages, or depicts acts of self-harm, such as suicide, cutting, and eating disorders.",
+        "sexual": "Content meant to arouse sexual excitement, such as the description of sexual activity, or that promotes sexual services (excluding sex education and wellness).",
+        "sexual/minors": "Sexual content that includes an individual who is under 18 years old.",
+        "violence": "Content that promotes or glorifies violence or celebrates the suffering or humiliation of others.",
+        "violence/graphic": "Violent content that depicts death, violence, or serious physical injury in extreme graphic detail.",
+    }
+    response = client.moderations.create(input=question)
+    if response.results[0].flagged:
+        # get the categories that are flagged and generate a message
+        result = [
+            error
+            for category, error in errors.items()
+            if response.results[0].categories[category]
+        ]
+        return result
+    return None
+
+
+def main():
+    os.system("cls" if os.name == "nt" else "clear")
+    # keep track of previous questions and answers
+    previous_questions_and_answers = []
     while True:
-        user_input = input("你：")
-        if user_input.lower() in ["exit", "quit"]:
-            break
-        print("機器人：" + chatbot_with_memory(user_input))
+        # ask the user for their question
+        new_question = input(
+            Fore.GREEN + Style.BRIGHT + "What can I get you?: " + Style.RESET_ALL
+        )
+        # check the question is safe
+        errors = get_moderation(new_question)
+        if errors:
+            print(
+                Fore.RED
+                + Style.BRIGHT
+                + "Sorry, you're question didn't pass the moderation check:"
+            )
+            for error in errors:
+                print(error)
+            print(Style.RESET_ALL)
+            continue
+        response = get_response(INSTRUCTIONS, previous_questions_and_answers, new_question)
+
+        # add the new question and answer to the list of previous questions and answers
+        previous_questions_and_answers.append((new_question, response))
+
+        # print the response
+        print(Fore.CYAN + Style.BRIGHT + "Here you go: " + Style.NORMAL + response)
+
+
+if __name__ == "__main__":
+    main()
