@@ -7,7 +7,7 @@ import pandas as pd
 load_dotenv()
 
 # ------------------- KEY VARIABLE -------------------
-client = OpenAI(api_key= os.environ.get("OPENAI_API_KEY"))
+client = OpenAI(api_key= os.environ.get("OPENAI_API_KE"))
 
 INSTRUCTIONS = """
 Act as a tennis coach named Frank, providing guidance and answering questions specifically for tennis beginners.  
