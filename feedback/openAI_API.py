@@ -2,46 +2,47 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 from colorama import Fore, Back, Style
+import pandas as pd 
 
-# load values from the .env file if it exists
 load_dotenv()
 
-# configure OpenAI
+# ------------------- KEY VARIABLE -------------------
 client = OpenAI(api_key= os.environ.get("OPENAI_API_KEY"))
 
 INSTRUCTIONS = """
-                act as a tennis coach named Frank, who always give feedback and answer tennis question in Traditional Chinese
-               if you don't understand what the question is , please remind me to ask more specificly
-               if encounter things you don't know or beyond tennis questions , tell me you don't know
+Act as a tennis coach named Frank, providing guidance and answering questions specifically for tennis beginners.  
+Use a friendly and patient tone, similar to that of a caring and attentive coach, and respond in paragraph format.  
+Always answer in Traditional Chinese.  
+If a question is unclear, kindly remind the user to provide more details.  
+If you encounter a topic you don’t know or a question unrelated to tennis, honestly say you don’t know.  
               """
-
+              
 TEMPERATURE = 0.5
 MAX_TOKENS = 500
 FREQUENCY_PENALTY = 0
 PRESENCE_PENALTY = 0.6
 MAX_CONTEXT_QUESTIONS = 10
 
+standard_file = "sim_1"
+standard_filepath = f"./feedback/data/standard_player/{standard_file}.json"
 
-def get_response(instructions, previous_questions_and_answers, new_question):
-    """Get a response from ChatCompletion
 
-    Args:
-        instructions: The instructions for the chat bot - this determines how it will behave
-        previous_questions_and_answers: Chat history
-        new_question: The new question to ask the bot
-
-    Returns:
-        The response text
-    """
-    # build the messages
+def get_response(INSTRUCTIONS, previous_questions_and_answers, new_question, standard_df):
     messages = [
-        { "role": "system", "content": instructions },
+        { "role": "system", 
+          "content": INSTRUCTIONS },
+        {"role":"system",
+         "content": f"Here is body vector data for a standard tennis player's swing motion. Please remember this data. standard tennis player's swing motion:{standard_df}"}
+        
+        
+        
     ]
     # add the previous questions and answers
     for question, answer in previous_questions_and_answers[-MAX_CONTEXT_QUESTIONS:]:
         messages.append({ "role": "user", "content": question })
-        messages.append({ "role": "assistant", "content": answer })
-    # add the new question
+        messages.append({ "role": "assistant", "content": answer })    
+        
+    # Enternew Question
     messages.append({ "role": "user", "content": new_question })
 
     completion = client.chat.completions.create(
@@ -57,15 +58,6 @@ def get_response(instructions, previous_questions_and_answers, new_question):
 
 
 def get_moderation(question):
-    """
-    Check the question is safe to ask the model
-
-    Parameters:
-        question (str): The question to check
-
-    Returns a list of errors if the question is not safe, otherwise returns None
-    """
-
     errors = {
         "hate": "Content that expresses, incites, or promotes hate based on race, gender, ethnicity, religion, nationality, sexual orientation, disability status, or caste.",
         "hate/threatening": "Hateful content that also includes violence or serious harm towards the targeted group.",
@@ -77,7 +69,6 @@ def get_moderation(question):
     }
     response = client.moderations.create(input=question)
     if response.results[0].flagged:
-        # get the categories that are flagged and generate a message
         result = [
             error
             for category, error in errors.items()
@@ -88,14 +79,17 @@ def get_moderation(question):
 
 
 def main():
-    os.system("cls" if os.name == "nt" else "clear")
-    # keep track of previous questions and answers
+    standard_df = pd.read_json(standard_filepath)          
+
     previous_questions_and_answers = []
     while True:
         # ask the user for their question
-        new_question = input(
-            Fore.GREEN + Style.BRIGHT + "What can I get you?: " + Style.RESET_ALL
-        )
+        new_question = input(Fore.GREEN + Style.BRIGHT + "想問些什麼？: " + Style.RESET_ALL)
+        
+        if new_question.lower() == "exit":
+            print("\n對話已結束。\n")
+            break
+        
         # check the question is safe
         errors = get_moderation(new_question)
         if errors:
@@ -108,13 +102,16 @@ def main():
                 print(error)
             print(Style.RESET_ALL)
             continue
-        response = get_response(INSTRUCTIONS, previous_questions_and_answers, new_question)
+        
+        print ("\n(Thinking.........)\n")
+       
+        response = get_response(INSTRUCTIONS, previous_questions_and_answers, new_question, standard_df)
 
         # add the new question and answer to the list of previous questions and answers
         previous_questions_and_answers.append((new_question, response))
 
         # print the response
-        print(Fore.CYAN + Style.BRIGHT + "Here you go: " + Style.NORMAL + response)
+        print("\n",Fore.CYAN + Style.BRIGHT + "網球教練Frank: " + Style.NORMAL + response,"\n")
 
 
 if __name__ == "__main__":
