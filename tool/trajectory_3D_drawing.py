@@ -68,33 +68,41 @@ def create_3d_plots(data_file):
     # Combined plot with modified dimensions
     fig_combined = go.Figure()
     
-    # Add wrist trajectory
+    # Add wrist trajectory with frame labels
+    frame_numbers = list(range(len(X)))
     fig_combined.add_trace(go.Scatter3d(
         x=X, y=Y, z=Z,
-        mode='lines+markers',
+        mode='lines+markers+text',  # Add text mode
         marker=dict(
             size=5,
-            color=list(range(len(X))),
+            color=frame_numbers,
             colorscale='Viridis',
             opacity=0.8,
             colorbar=dict(title='Frame')
         ),
+        text=frame_numbers,  # Add frame numbers as text
+        textposition='top center',  # Position the text above the points
+        textfont=dict(size=10),
         line=dict(color='darkblue', width=2),
         name='Wrist'
     ))
     
-    # Add ball trajectory
+    # Add ball trajectory with frame labels
     if ball_data:
+        ball_frame_numbers = list(range(len(X_ball)))
         fig_combined.add_trace(go.Scatter3d(
             x=X_ball, y=Y_ball, z=Z_ball,
-            mode='lines+markers',
+            mode='lines+markers+text',  # Add text mode
             marker=dict(
                 size=5,
-                color=list(range(len(X_ball))),
+                color=ball_frame_numbers,
                 colorscale='Plasma',
                 opacity=0.8,
                 colorbar=dict(title='Frame')
             ),
+            text=ball_frame_numbers,  # Add frame numbers as text
+            textposition='top center',  # Position the text above the points
+            textfont=dict(size=10),
             line=dict(color='red', width=2),
             name='Tennis Ball'
         ))
@@ -105,4 +113,4 @@ def create_3d_plots(data_file):
     fig_combined.write_html("combined_trajectories_3d_wide.html")
     fig_combined.show()
 
-create_3d_plots('leftBackhand_3D_trajectory_smoothed.json')
+create_3d_plots('leftBackhand_3D_trajectory_adaptive_smoothed.json')

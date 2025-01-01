@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import json
 
 # Read data
-with open('leftBackhand_side_trajectory_smoothed.json', 'r') as f:
+with open('leftBackhand_45_trajectory.json', 'r') as f:
     trajectory_data = json.load(f)
 
 # Extract coordinates
