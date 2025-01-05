@@ -3,28 +3,20 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from colorama import Fore, Back, Style
 import pandas as pd 
+import single_feedback.config as config
 
 load_dotenv()
 
-# ------------------- KEY VARIABLE -------------------
-client = OpenAI(api_key= os.environ.get("OPENAI_API_KEY"))
+client = config.client
+INSTRUCTIONS = config.INSTRUCTIONS 
+TEMPERATURE = config.TEMPERATURE
+MAX_TOKENS = config.MAX_TOKENS
+FREQUENCY_PENALTY = config.FREQUENCY_PENALTY
+PRESENCE_PENALTY = config.PRESENCE_PENALTY
+MAX_CONTEXT_QUESTIONS = config.MAX_CONTEXT_QUESTIONS
 
-INSTRUCTIONS = """
-Act as a tennis coach named Frank, providing guidance and answering questions specifically for tennis beginners.  
-Use a friendly and patient tone, similar to that of a caring and attentive coach, and respond in paragraph format.  
-Always answer in Traditional Chinese.  
-If a question is unclear, kindly remind the user to provide more details.  
-If you encounter a topic you don’t know or a question unrelated to tennis, honestly say you don’t know.  
-              """
-              
-TEMPERATURE = 0.5
-MAX_TOKENS = 500
-FREQUENCY_PENALTY = 0
-PRESENCE_PENALTY = 0.6
-MAX_CONTEXT_QUESTIONS = 10
-
-standard_file = "sim_1"
-standard_filepath = f"./feedback/data/standard_player/{standard_file}.json"
+target = config.target
+target_filepath = config.target_filepath
 
 
 def get_response(INSTRUCTIONS, previous_questions_and_answers, new_question, standard_df):
@@ -33,16 +25,13 @@ def get_response(INSTRUCTIONS, previous_questions_and_answers, new_question, sta
           "content": INSTRUCTIONS },
         {"role":"system",
          "content": f"Here is body vector data for a standard tennis player's swing motion. Please remember this data. standard tennis player's swing motion:{standard_df}"}
-        
-        
-        
     ]
     # add the previous questions and answers
     for question, answer in previous_questions_and_answers[-MAX_CONTEXT_QUESTIONS:]:
         messages.append({ "role": "user", "content": question })
         messages.append({ "role": "assistant", "content": answer })    
         
-    # Enternew Question
+    # Enter new Question
     messages.append({ "role": "user", "content": new_question })
 
     completion = client.chat.completions.create(
@@ -77,19 +66,18 @@ def get_moderation(question):
         return result
     return None
 
-
 def main():
-    standard_df = pd.read_json(standard_filepath)          
+    standard_df = pd.read_json(target_filepath)          
 
     previous_questions_and_answers = []
     while True:
+        
+        
         # ask the user for their question
         new_question = input(Fore.GREEN + Style.BRIGHT + "想問些什麼？: " + Style.RESET_ALL)
-        
         if new_question.lower() == "exit":
             print("\n對話已結束。\n")
             break
-        
         # check the question is safe
         errors = get_moderation(new_question)
         if errors:
@@ -106,7 +94,6 @@ def main():
         print ("\n(Thinking.........)\n")
        
         response = get_response(INSTRUCTIONS, previous_questions_and_answers, new_question, standard_df)
-
         # add the new question and answer to the list of previous questions and answers
         previous_questions_and_answers.append((new_question, response))
 

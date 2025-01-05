@@ -1,0 +1,814 @@
+[
+    {
+        "frame": 0,
+        "left_wrist": {
+            "x": 776.55,
+            "y": 2437.58,
+            "z": -8503.97
+        },
+        "tennis_ball": {
+            "x": -2618.43,
+            "y": 1840.41,
+            "z": -6142.79
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 1,
+        "left_wrist": {
+            "x": 781.95,
+            "y": 2424.56,
+            "z": -8490.27
+        },
+        "tennis_ball": {
+            "x": -2629.01,
+            "y": 1968.67,
+            "z": -6381.07
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 2,
+        "left_wrist": {
+            "x": 785.0,
+            "y": 2412.71,
+            "z": -8478.93
+        },
+        "tennis_ball": {
+            "x": -2629.87,
+            "y": 2090.6,
+            "z": -6607.53
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 3,
+        "left_wrist": {
+            "x": 786.02,
+            "y": 2401.94,
+            "z": -8469.76
+        },
+        "tennis_ball": {
+            "x": -2621.45,
+            "y": 2205.96,
+            "z": -6822.26
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 4,
+        "left_wrist": {
+            "x": 785.32,
+            "y": 2392.14,
+            "z": -8462.61
+        },
+        "tennis_ball": {
+            "x": -2604.18,
+            "y": 2314.52,
+            "z": -7025.37
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 5,
+        "left_wrist": {
+            "x": 783.24,
+            "y": 2383.23,
+            "z": -8457.3
+        },
+        "tennis_ball": {
+            "x": -2578.49,
+            "y": 2416.02,
+            "z": -7216.97
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 6,
+        "left_wrist": {
+            "x": 780.08,
+            "y": 2375.1,
+            "z": -8453.65
+        },
+        "tennis_ball": {
+            "x": -2544.82,
+            "y": 2510.23,
+            "z": -7397.16
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 7,
+        "left_wrist": {
+            "x": 776.17,
+            "y": 2367.65,
+            "z": -8451.51
+        },
+        "tennis_ball": {
+            "x": -2503.6,
+            "y": 2596.92,
+            "z": -7566.04
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 8,
+        "left_wrist": {
+            "x": 771.79,
+            "y": 2360.88,
+            "z": -8449.98
+        },
+        "tennis_ball": {
+            "x": -2454.12,
+            "y": 2675.27,
+            "z": -7722.33
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 9,
+        "left_wrist": {
+            "x": 768.11,
+            "y": 2354.91,
+            "z": -8451.76
+        },
+        "tennis_ball": {
+            "x": -2398.33,
+            "y": 2745.45,
+            "z": -7868.32
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 10,
+        "left_wrist": {
+            "x": 767.42,
+            "y": 2347.53,
+            "z": -8452.1
+        },
+        "tennis_ball": {
+            "x": -2337.91,
+            "y": 2807.51,
+            "z": -8004.15
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 11,
+        "left_wrist": {
+            "x": 765.36,
+            "y": 2341.44,
+            "z": -8452.79
+        },
+        "tennis_ball": {
+            "x": -2271.57,
+            "y": 2861.66,
+            "z": -8129.51
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 12,
+        "left_wrist": {
+            "x": 761.62,
+            "y": 2336.32,
+            "z": -8454.22
+        },
+        "tennis_ball": {
+            "x": -2200.8,
+            "y": 2907.15,
+            "z": -8244.06
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 13,
+        "left_wrist": {
+            "x": 754.43,
+            "y": 2330.91,
+            "z": -8457.62
+        },
+        "tennis_ball": {
+            "x": -2125.87,
+            "y": 2945.34,
+            "z": -8350.33
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 14,
+        "left_wrist": {
+            "x": 745.21,
+            "y": 2325.21,
+            "z": -8463.42
+        },
+        "tennis_ball": {
+            "x": -2047.33,
+            "y": 2975.91,
+            "z": -8447.45
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 15,
+        "left_wrist": {
+            "x": 733.39,
+            "y": 2320.55,
+            "z": -8470.18
+        },
+        "tennis_ball": {
+            "x": -1965.32,
+            "y": 2999.03,
+            "z": -8535.9
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 16,
+        "left_wrist": {
+            "x": 719.21,
+            "y": 2317.17,
+            "z": -8477.38
+        },
+        "tennis_ball": {
+            "x": -1880.7,
+            "y": 3015.44,
+            "z": -8616.82
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 17,
+        "left_wrist": {
+            "x": 702.67,
+            "y": 2315.11,
+            "z": -8485.44
+        },
+        "tennis_ball": {
+            "x": -1793.45,
+            "y": 3025.43,
+            "z": -8689.94
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 18,
+        "left_wrist": {
+            "x": 686.36,
+            "y": 2313.75,
+            "z": -8492.6
+        },
+        "tennis_ball": {
+            "x": -1704.59,
+            "y": 3028.98,
+            "z": -8757.1
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 19,
+        "left_wrist": {
+            "x": 669.33,
+            "y": 2311.65,
+            "z": -8501.15
+        },
+        "tennis_ball": {
+            "x": -1614.4,
+            "y": 3026.71,
+            "z": -8817.29
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 20,
+        "left_wrist": {
+            "x": 656.55,
+            "y": 2308.53,
+            "z": -8508.48
+        },
+        "tennis_ball": {
+            "x": -1522.07,
+            "y": 3018.64,
+            "z": -8870.05
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 21,
+        "left_wrist": {
+            "x": 643.27,
+            "y": 2305.93,
+            "z": -8515.44
+        },
+        "tennis_ball": {
+            "x": -1427.29,
+            "y": 3004.85,
+            "z": -8914.79
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 22,
+        "left_wrist": {
+            "x": 629.04,
+            "y": 2304.06,
+            "z": -8523.09
+        },
+        "tennis_ball": {
+            "x": -1331.43,
+            "y": 2984.5,
+            "z": -8952.84
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 23,
+        "left_wrist": {
+            "x": 614.63,
+            "y": 2301.62,
+            "z": -8532.73
+        },
+        "tennis_ball": {
+            "x": -1236.14,
+            "y": 2959.54,
+            "z": -8987.73
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 24,
+        "left_wrist": {
+            "x": 601.48,
+            "y": 2297.88,
+            "z": -8542.7
+        },
+        "tennis_ball": {
+            "x": -1139.78,
+            "y": 2929.35,
+            "z": -9016.55
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 25,
+        "left_wrist": {
+            "x": 584.16,
+            "y": 2294.74,
+            "z": -8554.61
+        },
+        "tennis_ball": {
+            "x": -1041.61,
+            "y": 2894.28,
+            "z": -9039.25
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 26,
+        "left_wrist": {
+            "x": 562.3,
+            "y": 2294.34,
+            "z": -8568.92
+        },
+        "tennis_ball": {
+            "x": -942.96,
+            "y": 2854.3,
+            "z": -9057.16
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 27,
+        "left_wrist": {
+            "x": 538.66,
+            "y": 2293.22,
+            "z": -8584.31
+        },
+        "tennis_ball": {
+            "x": -844.06,
+            "y": 2810.16,
+            "z": -9071.78
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 28,
+        "left_wrist": {
+            "x": 508.15,
+            "y": 2295.86,
+            "z": -8601.93
+        },
+        "tennis_ball": {
+            "x": -744.6,
+            "y": 2761.71,
+            "z": -9082.5
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 29,
+        "left_wrist": {
+            "x": 469.05,
+            "y": 2299.2,
+            "z": -8626.01
+        },
+        "tennis_ball": {
+            "x": -645.16,
+            "y": 2709.55,
+            "z": -9090.01
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 30,
+        "left_wrist": {
+            "x": 424.32,
+            "y": 2307.88,
+            "z": -8647.92
+        },
+        "tennis_ball": {
+            "x": -546.01,
+            "y": 2654.0,
+            "z": -9094.74
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 31,
+        "left_wrist": {
+            "x": 368.92,
+            "y": 2321.01,
+            "z": -8672.47
+        },
+        "tennis_ball": {
+            "x": -447.41,
+            "y": 2595.39,
+            "z": -9097.15
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 32,
+        "left_wrist": {
+            "x": 310.21,
+            "y": 2337.24,
+            "z": -8688.98
+        },
+        "tennis_ball": {
+            "x": -349.63,
+            "y": 2534.06,
+            "z": -9097.67
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 33,
+        "left_wrist": {
+            "x": 251.63,
+            "y": 2354.92,
+            "z": -8700.46
+        },
+        "tennis_ball": {
+            "x": -252.92,
+            "y": 2470.33,
+            "z": -9096.74
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 34,
+        "left_wrist": {
+            "x": 191.75,
+            "y": 2374.09,
+            "z": -8702.64
+        },
+        "tennis_ball": {
+            "x": -157.54,
+            "y": 2404.52,
+            "z": -9094.8
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 35,
+        "left_wrist": {
+            "x": 135.31,
+            "y": 2403.37,
+            "z": -8707.86
+        },
+        "tennis_ball": {
+            "x": -56.24,
+            "y": 2335.62,
+            "z": -9083.4
+        },
+        "tennis_hit": true
+    },
+    {
+        "frame": 36,
+        "left_wrist": {
+            "x": 77.76,
+            "y": 2439.58,
+            "z": -8707.8
+        },
+        "tennis_ball": {
+            "x": -404.13,
+            "y": 2423.78,
+            "z": -9343.91
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 37,
+        "left_wrist": {
+            "x": 23.72,
+            "y": 2479.72,
+            "z": -8696.45
+        },
+        "tennis_ball": {
+            "x": -762.12,
+            "y": 2501.73,
+            "z": -9529.42
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 38,
+        "left_wrist": {
+            "x": -23.47,
+            "y": 2521.16,
+            "z": -8672.15
+        },
+        "tennis_ball": {
+            "x": -1074.57,
+            "y": 2503.81,
+            "z": -9296.62
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 39,
+        "left_wrist": {
+            "x": -59.71,
+            "y": 2560.36,
+            "z": -8638.47
+        },
+        "tennis_ball": {
+            "x": -1366.84,
+            "y": 2498.36,
+            "z": -9040.08
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 40,
+        "left_wrist": {
+            "x": -82.56,
+            "y": 2596.83,
+            "z": -8597.35
+        },
+        "tennis_ball": {
+            "x": -1624.33,
+            "y": 2462.69,
+            "z": -8690.94
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 41,
+        "left_wrist": {
+            "x": -95.46,
+            "y": 2627.75,
+            "z": -8551.63
+        },
+        "tennis_ball": {
+            "x": -1843.14,
+            "y": 2409.79,
+            "z": -8289.06
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 42,
+        "left_wrist": {
+            "x": -101.94,
+            "y": 2657.27,
+            "z": -8504.17
+        },
+        "tennis_ball": {
+            "x": -2034.79,
+            "y": 2333.17,
+            "z": -7813.99
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 43,
+        "left_wrist": {
+            "x": -99.69,
+            "y": 2679.59,
+            "z": -8460.72
+        },
+        "tennis_ball": {
+            "x": -2159.73,
+            "y": 2226.65,
+            "z": -7240.8
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 44,
+        "left_wrist": {
+            "x": -90.09,
+            "y": 2698.59,
+            "z": -8417.63
+        },
+        "tennis_ball": {
+            "x": -2235.09,
+            "y": 2113.37,
+            "z": -6687.59
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 45,
+        "left_wrist": {
+            "x": -79.96,
+            "y": 2711.88,
+            "z": -8381.96
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 46,
+        "left_wrist": {
+            "x": -63.92,
+            "y": 2719.75,
+            "z": -8347.39
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 47,
+        "left_wrist": {
+            "x": -44.17,
+            "y": 2724.46,
+            "z": -8320.19
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 48,
+        "left_wrist": {
+            "x": -24.8,
+            "y": 2726.67,
+            "z": -8300.37
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 49,
+        "left_wrist": {
+            "x": -2.52,
+            "y": 2733.17,
+            "z": -8294.68
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 50,
+        "left_wrist": {
+            "x": 12.31,
+            "y": 2738.76,
+            "z": -8287.94
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 51,
+        "left_wrist": {
+            "x": 25.3,
+            "y": 2742.22,
+            "z": -8279.5
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 52,
+        "left_wrist": {
+            "x": 37.36,
+            "y": 2743.21,
+            "z": -8272.38
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 53,
+        "left_wrist": {
+            "x": 48.64,
+            "y": 2741.29,
+            "z": -8266.18
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 54,
+        "left_wrist": {
+            "x": 59.33,
+            "y": 2736.02,
+            "z": -8260.49
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 55,
+        "left_wrist": {
+            "x": 69.57,
+            "y": 2726.95,
+            "z": -8254.91
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 56,
+        "left_wrist": {
+            "x": 79.54,
+            "y": 2713.63,
+            "z": -8249.05
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    },
+    {
+        "frame": 57,
+        "left_wrist": {
+            "x": 89.41,
+            "y": 2695.6,
+            "z": -8242.52
+        },
+        "tennis_ball": {
+            "x": null,
+            "y": null,
+            "z": null
+        },
+        "tennis_hit": false
+    }
+]
