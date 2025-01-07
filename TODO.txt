@@ -1,2 +1,3 @@
 -網球夾角判斷打擊的Frame
--GoPro控制(控制錄影check，others no)
+-影片同步後處理
+-gpt api串接

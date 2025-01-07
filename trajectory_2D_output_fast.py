@@ -124,7 +124,8 @@ if __name__ == "__main__":
     tennis_ball_model = YOLO('model/yolov8_side_backhand_v1.pt')
 
     # 設定影片路徑
-    video_path = 'leftBackhand_side.mp4'
+    video_path = 'leftBackhand_45.mp4'
+    # video_path = 'leftBackhand_side.mp4'
     start_time = time.time()  # 開始計時
 
     # 使用 asyncio 執行異步軌跡計算

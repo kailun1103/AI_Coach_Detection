@@ -40,6 +40,6 @@ def process_video(input_path, output_path):
     print("完成!")
 
 # 使用範例
-input_video = "leftFront_temp.mp4"  # 輸入影片路徑
-output_video = "leftFront_temp_t.mp4"  # 輸出影片路徑
+input_video = "test1_correct.mp4"  # 輸入影片路徑
+output_video = "test1_correct.mp4"  # 輸出影片路徑
 process_video(input_video, output_video)

@@ -59,6 +59,7 @@ def smooth_2D_trajectory(input_file, window_length=15, polyorder=3, angle_thresh
 
 if __name__ == "__main__":
    start_time = time.time()
-   input_path = "leftBackhand_side_trajectory.json"
+#    input_path = "leftBackhand_side_trajectory.json"
+   input_path = "leftBackhand_45_trajectory.json"
    smoothed_data = smooth_2D_trajectory(input_path)
    print(f"Execution time: {time.time() - start_time:.4f}s")

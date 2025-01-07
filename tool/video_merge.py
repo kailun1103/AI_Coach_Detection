@@ -32,7 +32,7 @@ def combine_videos(top_video_path, bottom_video_path, output_path):
    out.release()
 
 # 使用範例
-top_video = "left_ball_trail_slow.mp4"
-bottom_video = "leftFront_ball_trail_slow.mp4" 
-output_video = "leftBackhand_combined.mp4"
+top_video = "test1_synced.mp4"
+bottom_video = "test2_synced.mp4" 
+output_video = "test3.mp4"
 combine_videos(top_video, bottom_video, output_video)

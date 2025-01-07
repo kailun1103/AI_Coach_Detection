@@ -72,6 +72,7 @@ if __name__ == "__main__":
     print(f"Model loading time: {model_load_time:.8f}s")
 
     video_path = 'leftBackhand_45.mp4'
+    # video_path = 'leftBackhand_side.mp4'
 
     # Time trajectory analysis
     analysis_start = time.time()
