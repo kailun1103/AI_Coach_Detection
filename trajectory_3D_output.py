@@ -64,8 +64,8 @@ if __name__ == "__main__":
         [-0.860417, -0.091385, 0.501330, 2218.320368]
     ])
 
-    input_path_1 = 'leftBackhand_side_trajectory.json'
-    input_path_2 = 'leftBackhand_45_trajectory.json'
+    input_path_1 = 'leftBackhand_side_trajectory_smoothed.json'
+    input_path_2 = 'leftBackhand_45_trajectory_smoothed.json'
     output_path = process_trajectories(input_path_1, input_path_2, P1, P2)
     
     print(f"Execution time: {time.perf_counter() - start:.4f}s")

@@ -38,7 +38,11 @@ def find_most_likely_hit_frame(data):
     
     return hit_frame
 
-def add_tennis_hit_flag(data):
+def add_tennis_hit_flag(input_file):
+    # 讀取原始 JSON 檔案
+    with open(input_file, 'r') as file:
+        data = json.load(file)
+    
     # 找到最可能的擊球幀
     hit_frame = find_most_likely_hit_frame(data)
     
@@ -46,21 +50,12 @@ def add_tennis_hit_flag(data):
     for frame in data:
         frame["tennis_hit"] = (frame["frame"] == hit_frame)
     
-    return data
+    # 直接寫回原始檔案
+    with open(input_file, 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+        
 
-def main():
-    # 讀取原始 JSON 檔案
-    with open('leftBackhand_3D_trajectory.json', 'r') as file:
-        data = json.load(file)
-    
-    # 添加 tennis_hit 標記
-    processed_data = add_tennis_hit_flag(data)
-    
-    # 將處理後的資料寫入新的 JSON 檔案
-    with open('leftBackhand_3D_trajectory_with_hits.json', 'w', encoding='utf-8') as file:
-        json.dump(processed_data, file, ensure_ascii=False, indent=2)
-    
-    print(f"處理完成，擊球幀為: {find_most_likely_hit_frame(data)}")
 
 if __name__ == "__main__":
-    main()
+    input_file = 'leftBackhand_3D_trajectory.json'
+    add_tennis_hit_flag(input_file)

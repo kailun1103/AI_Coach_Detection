@@ -20,7 +20,7 @@ imgpointsL = []     # 存儲左相機拍攝圖片中檢測到的角點二維座�
 
 
 # 讀取並處理每一張標定圖片
-for i in range(9):
+for i in range(18):
     t = str(i)
 
     ChessImaLF = cv2.imread(f'leftFront_correction/leftFront_{t}.JPG', 0)
