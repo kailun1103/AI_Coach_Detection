@@ -10,6 +10,8 @@ clear ; git checkout max-prod ; git merge max-qat ; git add . ; git commit -m "2
 
 clear ; git checkout max-qat
 
+clear ; git checkout max-api-test  ; git add . ; git commit -m "first commit" ; git push -u origin max-api-test
+
 
 
 
