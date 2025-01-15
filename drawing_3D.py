@@ -88,7 +88,7 @@ def create_3d_plots(data_file):
     ))
     fig_wrist.update_layout(**get_layout('Wrist Trajectory'))
     fig_wrist.write_html("wrist_trajectory_3d.html")
-    fig_wrist.show()
+    # fig_wrist.show()
 
     # Create ball trajectory plot
     if ball_data:
@@ -159,4 +159,4 @@ def create_3d_plots(data_file):
     fig_combined.show()
 
 if __name__ == "__main__":
-    create_3d_plots('leftBackhand_3D_trajectory_smoothed_preserved.json')
+    create_3d_plots('leftBackhand_3D_trajectory_corrected.json')

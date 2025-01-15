@@ -9,6 +9,7 @@ from video_sync import analyze_timecode
 from trajectory_correction import process_frames
 from trajectory_hitting_detection import add_tennis_hit_flag
 from trajector_interpolate import interpolate_trajectory
+from drawing_3D import create_3d_plots
 
 # Start calculating total execution time
 start_total = time.perf_counter()
@@ -97,6 +98,8 @@ start_smooth_3d = time.perf_counter()
 trajectory_3d_smoothing = smooth_3D_trajectory(trajectory_3d)
 smooth_3d_time = time.perf_counter() - start_smooth_3d
 print(f"-- 3D smoothing completed, time taken: {smooth_3d_time:.4f} seconds")
+
+create_3d_plots(trajectory_3d_smoothing)
 
 # Execution time summary
 total_time = time.perf_counter() - start_total

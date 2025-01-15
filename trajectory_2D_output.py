@@ -8,6 +8,14 @@ def process_video(pose_model, ball_model, video_path):
     cap = cv2.VideoCapture(video_path)
     frame_json = []
     frame_number = 0
+    
+    # Define keypoint names according to YOLOv8-pose output
+    keypoint_names = [
+        "nose", "left_eye", "right_eye", "left_ear", "right_ear",
+        "left_shoulder", "right_shoulder", "left_elbow", "right_elbow",
+        "left_wrist", "right_wrist", "left_hip", "right_hip",
+        "left_knee", "right_knee", "left_ankle", "right_ankle"
+    ]
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -19,17 +27,24 @@ def process_video(pose_model, ball_model, video_path):
 
         frame_data = {
             "frame": frame_number,
-            "left_wrist": {"x": None, "y": None},
             "tennis_ball": {"x": None, "y": None}
         }
+        
+        # Initialize all keypoints as None
+        for keypoint in keypoint_names:
+            frame_data[keypoint] = {"x": None, "y": None}
 
-        # Get left wrist coordinates
+        # Get all body keypoints
         for result in body_results:
             if result.keypoints is not None:
                 keypoints = result.keypoints.xy[0].cpu().numpy()
-                if keypoints.shape[0] > 10:
-                    left_wrist = tuple(map(int, keypoints[10][:2]))
-                    frame_data["left_wrist"].update({"x": left_wrist[0], "y": left_wrist[1]})
+                if len(keypoints) == len(keypoint_names):  # Ensure we have all keypoints
+                    for idx, keypoint in enumerate(keypoint_names):
+                        coords = tuple(map(int, keypoints[idx][:2]))
+                        frame_data[keypoint].update({
+                            "x": coords[0],
+                            "y": coords[1]
+                        })
 
         # Get tennis ball coordinates
         for result in ball_results:
@@ -47,9 +62,13 @@ def process_video(pose_model, ball_model, video_path):
 
     cap.release()
 
-    # Handle last frame
-    if frame_json and frame_json[-1]["left_wrist"]["x"] is None and len(frame_json) > 1:
-        frame_json[-1]["left_wrist"] = frame_json[-2]["left_wrist"]
+    # Handle last frame - copy previous frame's keypoints if missing
+    if frame_json and len(frame_json) > 1:
+        last_frame = frame_json[-1]
+        prev_frame = frame_json[-2]
+        for keypoint in keypoint_names:
+            if last_frame[keypoint]["x"] is None:
+                last_frame[keypoint] = prev_frame[keypoint]
 
     return frame_json
 
