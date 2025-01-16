@@ -1,17 +1,24 @@
-import openai
 import os
+from dotenv import load_dotenv
+
+import openai as OpenAI
 import pandas as pd
+
+import json
+
 
 class ServiceFeedback:
     def __init__(self):
-        self.client = openai.chat.completions()
-        self.api_key = os.environ.get("OPENAI_API_KEY")
-        self.instructions = "Act as a tennis coach"
+        load_dotenv()
+        self.api_key = os.getenv("OPENAI_API_KEY")
+        self.model = os.getenv("GPT_MODEL")
+        self.instructions = os.getenv("SYSTEM_PROMPT")
+        self.client = OpenAI.Client(api_key= os.getenv("OPENAI_API_KEY"))
+        
         self.temperature = 0.5
         self.max_tokens = 500
         self.frequency_penalty = 0
         self.presence_penalty = 0.6
-        self.model = "gpt-4o"
 
     def system_prompt(self, standard_vector):
         return [
@@ -19,33 +26,20 @@ class ServiceFeedback:
             {"role": "system", "content": f"Here is my tennis swing motion that compared with standard coach: {standard_vector}. Please give me advice on how to improve my swing motion."}
         ]
 
-    def read_standard_df(self):
-        standard_file = "./__data__/standard/standard_df.json"
-        return pd.read_json(standard_file)
+    def compare_vectors(self, rookie_file_path, standard_file_path, save_path):
+        pass
 
-    def read_rookie_df(self):
-        rookie_file = "./__data__/rookie/rookie_df.json"
-        return pd.read_json(rookie_file)
+    def generate_feedback(self):
+        standard_df = pd.read_json("./__data__/standard/standard.json")
+        rookie_df = pd.read_json("./__data__/rookie/rookie.json")
+        compared_df = self.compare_vectors(rookie_df, standard_df)
 
-    def compare_vectors(self):
-        standard_df = self.read_standard_df()
-        rookie_df = self.read_rookie_df()
-        difference_df = rookie_df - standard_df
-        difference_file = "./__data__/compared/compared_df.json"
-        difference_df.to_json(difference_file)
-        return difference_file
-
-    def generate_feedback(self, user_input):
-        standard_df = self.read_standard_df()
-        compared_file = self.compare_vectors()
-
-        with open(compared_file, "r") as file:
+        with open(compared_df, "r") as file:
             compared_data = file.read()
 
         messages = self.system_prompt(compared_data)
-        messages.append({"role": "user", "content": user_input})
 
-        response = openai.ChatCompletion.create(
+        response = self.client.chat.completions.create(
             api_key=self.api_key,
             model=self.model,
             messages=messages,
@@ -56,4 +50,13 @@ class ServiceFeedback:
         )
 
         return response["choices"][0]["message"]["content"]
+
+    def main(self):
+        feedback = self.generate_feedback()
+        print(feedback)
+        
+        
+if __name__ == "__main__":
+    main = ServiceFeedback()
+    main.main()
 

@@ -4,13 +4,13 @@ python -m venv venv
 venv\Scripts\activate # (PS) activate env
 deactivate #exit Env.
 
-clear ; git add . ; git commit -m "20241217 Feedback function DONE" ; git push -u origin max-qat
+clear ; git add . ; git commit -m "" ; git push -u origin max-qat
 
-clear ; git checkout max-prod ; git merge max-qat ; git add . ; git commit -m "20241213" ; git push -u origin max-prod
+clear ; git checkout max-prod ; git merge max-qat ; git add . ; git commit -m "" ; git push -u origin max-prod
 
 clear ; git checkout max-qat
 
-clear ; git checkout max-api-test  ; git add . ; git commit -m "first commit" ; git push -u origin max-api-test
+clear ; git checkout max-api-test  ; git add . ; git commit -m "20250116 on def-compare" ; git push -u origin max-api-test
 
 
 

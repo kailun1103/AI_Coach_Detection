@@ -4,3 +4,5 @@ data/
 RemindMe.md
 .ignorefile.md
 _command.sh
+_remindme.md
+.env

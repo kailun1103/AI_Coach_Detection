@@ -19,7 +19,6 @@ MAX_CONTEXT_QUESTIONS = config.MAX_CONTEXT_QUESTIONS
 target = config.target
 target_filepath = config.target_filepath
 
-
 def system_message(INSTRUCTIONS, previous, standard_df):
     messages = [
         { "role": "system", 
@@ -44,7 +43,6 @@ def system_message(INSTRUCTIONS, previous, standard_df):
     print ("\n", Fore.CYAN + Style.BRIGHT + "網球教練Frank: " + Style.NORMAL + response ,"\n")
     previous.append(messages)
 
-
 def get_response(INSTRUCTIONS, previous_questions_and_answers, new_question, standard_df):
     messages = [ ]
     
@@ -66,8 +64,6 @@ def get_response(INSTRUCTIONS, previous_questions_and_answers, new_question, sta
         presence_penalty=PRESENCE_PENALTY,
     )
     return completion.choices[0].message.content
-
-
 
 def get_moderation(question):
     errors = {
