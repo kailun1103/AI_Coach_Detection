@@ -129,7 +129,7 @@ def smooth_3D_trajectory(input_file, window_length=15, polyorder=3, tennis_windo
         data[i]['tennis_ball_angle'] = angle
     
     # Save smoothed data
-    output_file = input_file.replace('.json', '_smoothed.json')
+    output_file = input_file.replace(').json', '_smoothed).json')
     with open(output_file, 'w') as f:
         json.dump(data, f, indent=2)
     

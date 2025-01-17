@@ -151,7 +151,7 @@ def smooth_2D_trajectory(input_file, window_length=15, polyorder=3, tennis_windo
                     })
     
     # 儲存結果
-    output_file = input_file.replace('.json', '_smoothed.json')
+    output_file = input_file.replace(').json', '_smoothed).json')
     with open(output_file, 'w') as f:
         json.dump(data, f, indent=2)
     

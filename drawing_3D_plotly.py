@@ -209,7 +209,7 @@ def create_3d_plots(data_file):
         max(all_z) - min(all_z)
     )
 
-    # 更新布局
+    # 更新布局設置
     fig.update_layout(
         scene=dict(
             xaxis=dict(
@@ -241,55 +241,58 @@ def create_3d_plots(data_file):
             aspectmode='cube'
         ),
         updatemenus=[{
-            'type': 'buttons',
-            'showactive': False,
-            'y': 0,
-            'x': 0.1,
-            'xanchor': 'right',
-            'yanchor': 'top',
             'buttons': [
                 {
-                    'label': 'Play',
-                    'method': 'animate',
                     'args': [None, {
                         'frame': {'duration': 50, 'redraw': True},
                         'fromcurrent': True,
                         'transition': {'duration': 0},
                         'mode': 'immediate',
-                        'easing': 'linear'
-                    }]
+                    }],
+                    'label': 'Play',
+                    'method': 'animate'
                 },
                 {
-                    'label': 'Pause',
-                    'method': 'animate',
                     'args': [[None], {
                         'frame': {'duration': 0, 'redraw': False},
                         'mode': 'immediate',
                         'transition': {'duration': 0}
-                    }]
+                    }],
+                    'label': 'Pause',
+                    'method': 'animate'
                 }
             ],
+            'direction': 'left',
+            'pad': {'r': 10, 't': 10},
+            'showactive': True,
+            'type': 'buttons',
+            'x': 0.1,
+            'xanchor': 'right',
+            'y': 0,
+            'yanchor': 'top'
         }],
         sliders=[{
+            'active': 0,
+            'yanchor': 'top',
+            'xanchor': 'left',
             'currentvalue': {
+                'font': {'size': 20},
                 'prefix': 'Frame: ',
                 'visible': True,
                 'xanchor': 'right'
             },
-            'pad': {'t': 50},
+            'transition': {'duration': 300, 'easing': 'cubic-in-out'},
+            'pad': {'b': 10, 't': 50},
             'len': 0.9,
             'x': 0.1,
             'y': 0,
-            'xanchor': 'left',
-            'yanchor': 'top',
             'steps': [{
                 'args': [[f'frame_{k}'], {
                     'frame': {'duration': 0, 'redraw': True},
                     'mode': 'immediate',
-                    'transition': {'duration': 0},
-                    'easing': 'linear'
+                    'transition': {'duration': 0}
                 }],
-                'label': f'{k}',
+                'label': str(k),
                 'method': 'animate'
             } for k in range(len(frames))]
         }],
@@ -300,17 +303,28 @@ def create_3d_plots(data_file):
 
     fig.frames = frames
 
-    output_path = data_file.replace('.json','.html')
+    output_path = data_file.replace('.json', '.html')
+
+    # 配置顯示設置
+    config = {
+        'displayModeBar': True,
+        'displaylogo': False,
+        'modeBarButtonsToAdd': ['orbitRotation'],
+        'scrollZoom': True,
+    }
 
     # 保存和顯示
     fig.write_html(
         output_path,
         include_plotlyjs=True,
         full_html=True,
-        include_mathjax=False
+        include_mathjax='cdn',
+        config=config,
+        auto_play=False
     )
     
-    fig.show()
+    # 顯示圖形
+    fig.show(config=config)
 
 if __name__ == "__main__":
     create_3d_plots('temp/junior_3D_trajectory.json')

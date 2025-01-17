@@ -76,7 +76,7 @@ def process_video(pose_model, ball_model, video_path):
 
 def analyze_trajectory(pose_model, ball_model, video_path):
     trajectory = process_video(pose_model, ball_model, video_path)
-    output_path = video_path.replace('.mp4', '_trajectory.json')
+    output_path = video_path.replace('.mp4', '(2D_trajectory).json')
     
     with open(output_path, 'w') as f:
         json.dump(trajectory, f, indent=2)

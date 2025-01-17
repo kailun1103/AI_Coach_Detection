@@ -6,13 +6,13 @@ from trajector_2D_smoothing import smooth_2D_trajectory
 from trajectory_3D_output import process_trajectories
 from trajector_3D_smoothing import smooth_3D_trajectory
 from trajector_2D_sync import sync_trajectories
-from drawing_3D import create_3d_plots
+from drawing_3D_plotly import create_3d_plots
 
 # Start calculating total execution time
 start_total = time.perf_counter()
 
 # Input videos
-video_side = 'temp/junior_side.mp4'
+video_side = 'junior_9/forehand/9/1'
 video_45 = 'temp/junior_45.mp4'
 
 # junior backhand
