@@ -5,31 +5,54 @@ from trajectory_2D_output import analyze_trajectory
 from trajector_2D_smoothing import smooth_2D_trajectory
 from trajectory_3D_output import process_trajectories
 from trajector_3D_smoothing import smooth_3D_trajectory
-from video_sync import analyze_timecode
-from trajectory_correction import process_frames
-from trajectory_hitting_detection import add_tennis_hit_flag
-from trajector_interpolate import interpolate_trajectory
+from trajector_2D_sync import sync_trajectories
 from drawing_3D import create_3d_plots
 
 # Start calculating total execution time
 start_total = time.perf_counter()
 
 # Input videos
-video_left = 'leftBackhand_side.mp4'
-video_45 = 'leftBackhand_45.mp4'
+video_side = 'temp/junior_side.mp4'
+video_45 = 'temp/junior_45.mp4'
 
-# Input projection matrices
+# junior backhand
+# P1 = np.array([ # Left camera (main)
+#     [5830.127771, 0, 2707.891358, 0],
+#     [0, 5660.852212, 2650.794043, 0],
+#     [0, 0, 1, 0] 
+# ])
+
+# P2 = np.array([ # 45-degree camera
+#     [-127.726676, -549.005678, 4533.763086, -23449322.445458],
+#     [-1883.494533, 3034.703903, 1416.289936, 6432610.718249],
+#     [-0.860417, -0.091385, 0.501330, 2218.320368]
+# ])
+
+# junior forehand
 P1 = np.array([ # Left camera (main)
-    [5830.127771, 0, 2707.891358, 0],
-    [0, 5660.852212, 2650.794043, 0],
-    [0, 0, 1, 0] 
+    [4868.506691,    0.000000, 2819.088860,    0.000000],
+    [   0.000000, 3887.239287, 2362.952860,    0.000000],
+    [   0.000000,    0.000000,    1.000000,    0.000000]
 ])
 
 P2 = np.array([ # 45-degree camera
-    [-127.726676, -549.005678, 4533.763086, -23449322.445458],
-    [-1883.494533, 3034.703903, 1416.289936, 6432610.718249],
-    [-0.860417, -0.091385, 0.501330, 2218.320368]
+    [    -1532.746717,       704.787489,      4054.256764, -19560781.953567],
+    [    -2370.947477,      3331.290729,       326.229463,   9897228.332878],
+    [       -0.944408,         0.080699,         0.318719,      3568.669508]
 ])
+
+# pro forehand
+# P1 = np.array([ # Left camera (main)
+#     [2259.233089,    0.000000, 2765.855088,    0.000000],
+#     [   0.000000, 2262.229625, 2527.097657,    0.000000],
+#     [   0.000000,    0.000000,    1.000000,    0.000000]
+# ])
+
+# P2 = np.array([ # 45-degree camera
+#     [     133.791680,     -550.740908,     3565.586369, -2967047.706145],
+#     [   -1544.950048,     1821.751422,     2014.789599,  3406954.592979],
+#     [      -0.593895,       -0.198783,        0.779598,     1344.472848]
+# ])
 
 # Load models
 print("Step 1: Loading models...")
@@ -39,86 +62,50 @@ yolo_tennis_ball_model = YOLO('model/yolov8_side_backhand_v1.pt')
 model_time = time.perf_counter() - start_model
 print(f"-- Model loading completed, time taken: {model_time:.4f} seconds")
 
-# Video synchronization
-# print("\nStep 2: Synchronizing videos...")
-# start_sync = time.perf_counter()
-# start_frame1, end_frame1, start_frame2, end_frame2 = analyze_timecode(video_left, video_45)
-# sync_time = time.perf_counter() - start_sync
-# print(f"-- Video synchronization completed, time taken: {sync_time:.4f} seconds")
-
 # 2D trajectory analysis
-print("\nStep 3: Analyzing 2D trajectories...")
+print("\nStep 2: Analyzing 2D trajectories...")
 start_2d = time.perf_counter()
-trajectory_side = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_left)
+trajectory_side = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_side)
 trajectory_45 = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_45)
 trajectory_2d_time = time.perf_counter() - start_2d
 print(f"-- 2D trajectory analysis completed, time taken: {trajectory_2d_time:.4f} seconds")
 
-# Frame synchronization
-# print("\nStep 4: Synchronizing frames...")
-# start_frame_sync = time.perf_counter()
-# process_frames(video_left, start_frame1, end_frame1)
-# process_frames(video_45, start_frame2, end_frame2)
-# frame_sync_time = time.perf_counter() - start_frame_sync
-# print(f"-- Frame synchronization completed, time taken: {frame_sync_time:.4f} seconds")
-
-# Trajectory interpolation
-print("\nStep 5: Performing trajectory interpolation...")
-start_interpolate = time.perf_counter()
-interpolate_trajectory(trajectory_side)
-interpolate_trajectory(trajectory_45)
-interpolate_time = time.perf_counter() - start_interpolate
-print(f"-- Trajectory interpolation completed, time taken: {interpolate_time:.4f} seconds")
-
-# 2D trajectory smoothing
-print("\nStep 6: Smoothing 2D trajectories...")
+# 2D trajectory smoothing/interpolation/hitting angle
+print("\nStep 3: Smoothing/interpolation/hitting_angle 2D trajectories...")
 start_smooth_2d = time.perf_counter()
 trajectory_side_smoothing = smooth_2D_trajectory(trajectory_side)
 trajectory_45_smoothing = smooth_2D_trajectory(trajectory_45)
 smooth_2d_time = time.perf_counter() - start_smooth_2d
 print(f"-- 2D smoothing completed, time taken: {smooth_2d_time:.4f} seconds")
 
-# 3D trajectory calculation
-print("\nStep 7: Calculating 3D trajectories...")
+
+# 2D trajectory synchronous
+print("\nStep 4: trajectory synchronous...")
+start_sync = time.perf_counter()
+sync_trajectories(trajectory_side_smoothing, trajectory_45_smoothing)
+trajectory_sync_time = time.perf_counter() - start_sync
+print(f"-- 2D trajectory synchronous completed, time taken: {trajectory_sync_time:.4f} seconds")
+
+
+# 3D trajectory analysis
+print("\nStep 5: Calculating 3D trajectories...")
 start_3d = time.perf_counter()
 trajectory_3d = process_trajectories(trajectory_side_smoothing, trajectory_45_smoothing, P1, P2)
 trajectory_3d_time = time.perf_counter() - start_3d
 print(f"-- 3D trajectory calculation completed, time taken: {trajectory_3d_time:.4f} seconds")
 
-# Hit point detection
-print("\nStep 8: Detecting hit points...")
-start_hit = time.perf_counter()
-add_tennis_hit_flag(trajectory_3d)
-hit_detection_time = time.perf_counter() - start_hit
-print(f"-- Hit point detection completed, time taken: {hit_detection_time:.4f} seconds")
 
 # 3D trajectory smoothing
-print("\nStep 9: Smoothing 3D trajectories...")
+print("\nStep 6: Smoothing 3D trajectories...")
 start_smooth_3d = time.perf_counter()
 trajectory_3d_smoothing = smooth_3D_trajectory(trajectory_3d)
 smooth_3d_time = time.perf_counter() - start_smooth_3d
 print(f"-- 3D smoothing completed, time taken: {smooth_3d_time:.4f} seconds")
 
-create_3d_plots(trajectory_3d_smoothing)
 
 # Execution time summary
 total_time = time.perf_counter() - start_total
-# total_sync_time = sync_time + frame_sync_time  # Calculate total sync time
-total_sync_time = 0.0705
-gpt_result = 2.5801
 
-print('\n' + '='*50)
-print("Execution Time Summary")
-print('='*50)
-print(f"step1: YOLO model loading   {model_time:>10.4f} sec")
-print(f"step2: Frame sync           {total_sync_time:>10.4f} sec")
-print(f"step3: 2D trajectory        {trajectory_2d_time:>10.4f} sec")
-print(f"step4: 2D interpolation     {interpolate_time:>10.4f} sec")
-print(f"step5: 2D smoothing         {smooth_2d_time:>10.4f} sec")
-print(f"step6: 3D trajectory        {trajectory_3d_time:>10.4f} sec")
-print(f"step7: 3D hit detection     {hit_detection_time:>10.4f} sec")
-print(f"step8: 3D smoothing         {smooth_3d_time:>10.4f} sec")
-print(f"step9: GPT api              {gpt_result:>10.4f} sec")
 print('-'*50)
 print(f"Total execution time:       {total_time:>10.4f} sec")
 print('='*50)

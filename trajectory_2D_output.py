@@ -40,11 +40,13 @@ def process_video(pose_model, ball_model, video_path):
                 keypoints = result.keypoints.xy[0].cpu().numpy()
                 if len(keypoints) == len(keypoint_names):  # Ensure we have all keypoints
                     for idx, keypoint in enumerate(keypoint_names):
-                        coords = tuple(map(int, keypoints[idx][:2]))
-                        frame_data[keypoint].update({
-                            "x": coords[0],
-                            "y": coords[1]
-                        })
+                        # Check if the keypoint coordinates are 0.0 (undetected)
+                        x, y = keypoints[idx][:2]
+                        coords = {
+                            "x": int(x) if x != 0.0 else None,
+                            "y": int(y) if y != 0.0 else None
+                        }
+                        frame_data[keypoint].update(coords)
 
         # Get tennis ball coordinates
         for result in ball_results:
@@ -91,7 +93,6 @@ if __name__ == "__main__":
     print(f"Model loading time: {model_load_time:.8f}s")
 
     video_path = 'leftBackhand_45.mp4'
-    # video_path = 'leftBackhand_side.mp4'
 
     # Time trajectory analysis
     analysis_start = time.time()

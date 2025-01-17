@@ -79,10 +79,10 @@ def create_2d_plot(data, key, color_scale, line_color, title, output_file, name_
 # 主程式
 if __name__ == "__main__":
     # 載入資料
-    trajectory_data = load_data('leftBackhand_45_trajectory.json')
+    trajectory_data = load_data('temp/junior_45_trajectory_smoothed.json')
     
     # 提取手腕和網球座標
-    wrist_data = extract_coordinates(trajectory_data, 'left_wrist')
+    wrist_data = extract_coordinates(trajectory_data, 'right_wrist')
     ball_data = extract_coordinates(trajectory_data, 'tennis_ball')
 
     # 1. 網球軌跡
@@ -156,4 +156,4 @@ if __name__ == "__main__":
 
     fig_combined.update_layout(get_common_layout('Combined Wrist and Tennis Ball Trajectory'))
     fig_combined.write_html('2d_combined_trajectory.html')
-    fig_combined.show()
+    # fig_combined.show()

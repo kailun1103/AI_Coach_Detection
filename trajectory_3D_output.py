@@ -1,57 +1,87 @@
-import numpy as np 
+import numpy as np
 import json
 import time
 
 def triangulate_point(P1, P2, point1, point2):
-   A = np.zeros((4, 4))
-   A[0] = point1[1] * P1[2] - P1[1]
-   A[1] = P1[0] - point1[0] * P1[2]
-   A[2] = point2[1] * P2[2] - P2[1]
-   A[3] = P2[0] - point2[0] * P2[2]
-   
-   _, _, Vt = np.linalg.svd(A)
-   X = Vt[-1]
-   return X[:3] / X[3]
+    """
+    Triangulate a 3D point from two 2D points and projection matrices
+    """
+    A = np.zeros((4, 4))
+    A[0] = point1[1] * P1[2] - P1[1]
+    A[1] = P1[0] - point1[0] * P1[2]
+    A[2] = point2[1] * P2[2] - P2[1]
+    A[3] = P2[0] - point2[0] * P2[2]
+    
+    _, _, Vt = np.linalg.svd(A)
+    X = Vt[-1]
+    return X[:3] / X[3]
 
 def process_trajectories(left_path, leftfront_path, P1, P2):
-   # Load trajectory data
-   with open(left_path) as f1, open(leftfront_path) as f2:
-       left_data = json.load(f1)
-       leftfront_data = json.load(f2)
+    # List of all keypoints to process
+    keypoints = [
+        'nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear',
+        'left_shoulder', 'right_shoulder', 'left_elbow', 'right_elbow',
+        'left_wrist', 'right_wrist', 'left_hip', 'right_hip', 'left_knee',
+        'right_knee', 'left_ankle', 'right_ankle', 'tennis_ball'
+    ]
 
-   points_3d = []
-  
-   for frame_idx, (left_point, leftfront_point) in enumerate(zip(left_data, leftfront_data)):
-       # Calculate wrist 3D coordinates
-       wrist1 = np.array([left_point['left_wrist']['x'], left_point['left_wrist']['y']])
-       wrist2 = np.array([leftfront_point['left_wrist']['x'], leftfront_point['left_wrist']['y']])
-       wrist_3d = triangulate_point(P1, P2, wrist1, wrist2)
-       
-       # Calculate ball 3D coordinates if valid
-       ball_3d = None
-       if all(p['tennis_ball']['x'] is not None for p in (left_point, leftfront_point)):
-           ball1 = np.array([left_point['tennis_ball']['x'], left_point['tennis_ball']['y']])
-           ball2 = np.array([leftfront_point['tennis_ball']['x'], leftfront_point['tennis_ball']['y']])
-           ball_3d = triangulate_point(P1, P2, ball1, ball2)
-       
-       # Format frame data
-       points_3d.append({
-           'frame': frame_idx,
-           'left_wrist': dict(zip(['x','y','z'], map(float, [wrist_3d[0], -wrist_3d[1], -wrist_3d[2]]))),
-           'tennis_ball': dict(zip(['x','y','z'], map(float, [ball_3d[0], -ball_3d[1], -ball_3d[2]]))) if ball_3d is not None 
-           else {'x': None, 'y': None, 'z': None}
-       })
-  
-   output_path = 'leftBackhand_3D_trajectory.json'
-   with open(output_path, 'w') as f:
-       json.dump(points_3d, f, indent=2)
-   
-   return output_path
+    # Load trajectory data
+    with open(left_path) as f1, open(leftfront_path) as f2:
+        left_data = json.load(f1)
+        leftfront_data = json.load(f2)
+
+    points_3d = []
+    
+    for frame_idx, (left_point, leftfront_point) in enumerate(zip(left_data, leftfront_data)):
+        frame_data = {'frame': frame_idx}
+        
+        # Process each keypoint
+        for keypoint in keypoints:
+            point_3d = None
+            
+            # Check if both views have valid coordinates for this keypoint
+            if (left_point[keypoint]['x'] is not None and 
+                left_point[keypoint]['y'] is not None and
+                leftfront_point[keypoint]['x'] is not None and 
+                leftfront_point[keypoint]['y'] is not None):
+                
+                point1 = np.array([left_point[keypoint]['x'], left_point[keypoint]['y']])
+                point2 = np.array([leftfront_point[keypoint]['x'], leftfront_point[keypoint]['y']])
+                
+                try:
+                    point_3d = triangulate_point(P1, P2, point1, point2)
+                    # Convert to float and flip y and z coordinates as in original code
+                    point_3d = {
+                        'x': float(point_3d[0]),
+                        'y': float(-point_3d[1]),
+                        'z': float(point_3d[2])
+                    }
+                except:
+                    point_3d = {'x': None, 'y': None, 'z': None}
+            else:
+                point_3d = {'x': None, 'y': None, 'z': None}
+            
+            frame_data[keypoint] = point_3d
+        
+        # Copy tennis_ball_hit and tennis_ball_angle from left_data
+        frame_data['tennis_ball_hit'] = left_point['tennis_ball_hit']
+        frame_data['tennis_ball_angle'] = left_point['tennis_ball_angle']
+        
+        points_3d.append(frame_data)
+
+    # Create output path by modifying input path
+    output_path = leftfront_path.replace('_45_trajectory_smoothed.json', '_3D_trajectory.json')
+    
+    # Save results
+    with open(output_path, 'w') as f:
+        json.dump(points_3d, f, indent=2)
+    
+    return output_path
 
 if __name__ == "__main__":
     start = time.perf_counter()
     
-    # Define projection matrices in main
+    # Define projection matrices
     P1 = np.array([
         [5830.127771, 0, 2707.891358, 0],
         [0, 5660.852212, 2650.794043, 0],
@@ -64,8 +94,11 @@ if __name__ == "__main__":
         [-0.860417, -0.091385, 0.501330, 2218.320368]
     ])
 
-    input_path_1 = 'leftBackhand_side_trajectory_smoothed.json'
-    input_path_2 = 'leftBackhand_45_trajectory_smoothed.json'
+    # File paths
+    input_path_1 = 'temp/junior_side_trajectory_smoothed.json'
+    input_path_2 = 'temp/junior_45_trajectory_smoothed.json'
+    
+    # Process the trajectories
     output_path = process_trajectories(input_path_1, input_path_2, P1, P2)
     
     print(f"Execution time: {time.perf_counter() - start:.4f}s")
