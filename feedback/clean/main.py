@@ -1,60 +1,91 @@
 import os
+import pandas as pd
 import json
 
-def round_coordinates(data):
-    if isinstance(data, dict):
-        for key, value in data.items():
-            if isinstance(value, (dict, list)):
-                data[key] = round_coordinates(value)
-            elif isinstance(value, float):
-                data[key] = round(value, 2)
-    elif isinstance(data, list):
-        data = [round_coordinates(item) if isinstance(item, (dict, list, float)) else item for item in data]
-    return data
-def main():
-    # 定義資料夾路徑
-    raw_data_folder = "./__data__/raw_data"
-    standard_folder = "./__data__/standard_player"
-    rookie_folder = "./__data__/rookie_player"
-    # 確認資料夾是否存在，若無則建立
-    os.makedirs(standard_folder, exist_ok=True)
-    os.makedirs(rookie_folder, exist_ok=True)
+class JsonClean:
+    def __init__(self, b):
+        self.b = b  
+        
+        self.junior_file_name = f"junior_9_{self.b}(3D_trajectory_smoothed)"
+        self.junior_file_path = f"./__data__/raw/{self.junior_file_name}.json"
+        
+        self.pro_file_name = f"pro_test"
+        self.pro_file_path = f"./__data__/pro/{self.pro_file_name}.json"
+        
+        self.save_path = f"./__data__/junior/junior_9_{self.b}_cleaned.json"
 
-    # 遍歷 raw_data 資料夾的所有檔案
-    for file_name in os.listdir(raw_data_folder):
-        # 確保只處理 .json 檔案
-        if file_name.endswith(".json"):
-            try:
-                # 驗證檔案命名邏輯
-                if "standard_raw" in file_name:
-                    number = file_name.split("_")[-1].split(".")[0]  # 提取檔案編號
-                    new_file_name = f"standard_{number}.json"
-                    save_path = os.path.join(standard_folder, new_file_name)
-                elif "rookie_raw" in file_name:
-                    number = file_name.split("_")[-1].split(".")[0]  # 提取檔案編號
-                    new_file_name = f"rookie_{number}.json"
-                    save_path = os.path.join(rookie_folder, new_file_name)
-                else:
-                    # 不符合命名邏輯的檔案略過
-                    continue
+    def frame_extract(self, file):
+        with open(file, 'r') as f:
+            data = json.load(f)
+        
+        # Extract specific fields
+        frames = []
+        for frame in data:
+            extracted = {
+                "frame": frame.get("frame"),
+                "right_wrist": frame.get("right_wrist"),
+                "right_elbow": frame.get("right_elbow"),
+                "right_shoulder": frame.get("right_shoulder"),
+                "tennis_ball_hit": frame.get("tennis_ball_hit")
+            }
+            frames.append(extracted)
+        
+        return frames
 
-                file_path = os.path.join(raw_data_folder, file_name)
-                
-                # 讀取檔案
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    data = json.load(file)
+    def frame_clean(self, frames):
+        # Round coordinates to 2 decimal places
+        cleaned_frames = []
+        for frame in frames:
+            cleaned_frame = {
+                key: {
+                    k: round(v, 2) if isinstance(v, (int, float)) else v
+                    for k, v in value.items()
+                } if isinstance(value, dict) else value
+                for key, value in frame.items()
+            }
+            cleaned_frames.append(cleaned_frame)
+        
+        return cleaned_frames
 
-                # 處理資料 (四捨五入座標到小數第二位)
-                cleaned_data = round_coordinates(data)
+    def save(self, frames):
+        # Save the cleaned frames to a JSON file
+        with open(self.save_path, 'w') as f:
+            json.dump(frames, f, indent=4)
 
-                # 寫入新檔案
-                with open(save_path, 'w', encoding='utf-8') as file:
-                    json.dump(cleaned_data, file, ensure_ascii=False, indent=4)
+    def process_file(self, file):
+        extracted_frames = self.frame_extract(file)
+        cleaned_frames = self.frame_clean(extracted_frames)
+        self.save(cleaned_frames)
+      
+    def self_compare(self, frames):
+        diff_frames = []
+        for i in range(1, len(frames) - 1):
+            current_frame = frames[i]
+            previous_frame = frames[i - 1]
+            
+            diff_frame = {
+                key: {
+                    k: round(current_frame[key][k] - previous_frame[key][k], 2) if key in current_frame and key in previous_frame and isinstance(current_frame[key], dict) else current_frame[key]
+                    for k in current_frame[key]
+                } if isinstance(current_frame[key], dict) else current_frame[key]
+                for key in current_frame
+            }
+            diff_frames.append(diff_frame)
+        
+        return diff_frames
 
-                print(f"Processed and saved: {save_path}")
-
-            except Exception as e:
-                print(f"Error processing file {file_name}: {e}")
+    def main(self):
+        if os.path.exists(self.junior_file_path):
+            print(f"Processing file: {self.junior_file_path}")
+            frames = self.frame_extract(self.junior_file_path)
+            frames = self.frame_clean(frames)
+            frames = self.self_compare(frames)
+            self.save(frames)
+        else:
+            print(f"File not found: {self.junior_file_path}")
+          
 
 if __name__ == "__main__":
-    main()
+    for i in range(10):
+        instance = JsonClean(i)
+        instance.main()

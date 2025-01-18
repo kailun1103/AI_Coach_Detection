@@ -1,0 +1,667 @@
+[
+    {
+        "frame": 1,
+        "right_wrist": {
+            "x": 6.3,
+            "y": -10.01,
+            "z": -15.62
+        },
+        "right_elbow": {
+            "x": 16.7,
+            "y": -12.39,
+            "z": -15.06
+        },
+        "right_shoulder": {
+            "x": 15.01,
+            "y": -16.55,
+            "z": -15.25
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 2,
+        "right_wrist": {
+            "x": 9.36,
+            "y": -9.88,
+            "z": -18.23
+        },
+        "right_elbow": {
+            "x": 16.1,
+            "y": -11.38,
+            "z": -13.95
+        },
+        "right_shoulder": {
+            "x": 14.67,
+            "y": -14.01,
+            "z": -10.8
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 3,
+        "right_wrist": {
+            "x": 12.74,
+            "y": -8.97,
+            "z": -19.49
+        },
+        "right_elbow": {
+            "x": 15.92,
+            "y": -10.09,
+            "z": -12.46
+        },
+        "right_shoulder": {
+            "x": 14.33,
+            "y": -11.44,
+            "z": -6.75
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 4,
+        "right_wrist": {
+            "x": 16.44,
+            "y": -7.29,
+            "z": -19.38
+        },
+        "right_elbow": {
+            "x": 16.16,
+            "y": -8.55,
+            "z": -10.62
+        },
+        "right_shoulder": {
+            "x": 14.05,
+            "y": -8.87,
+            "z": -3.07
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 5,
+        "right_wrist": {
+            "x": 20.46,
+            "y": -4.84,
+            "z": -17.91
+        },
+        "right_elbow": {
+            "x": 16.85,
+            "y": -6.76,
+            "z": -8.41
+        },
+        "right_shoulder": {
+            "x": 13.78,
+            "y": -6.3,
+            "z": 0.21
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 6,
+        "right_wrist": {
+            "x": 24.8,
+            "y": -1.64,
+            "z": -15.09
+        },
+        "right_elbow": {
+            "x": 17.96,
+            "y": -4.69,
+            "z": -5.86
+        },
+        "right_shoulder": {
+            "x": 13.54,
+            "y": -3.73,
+            "z": 3.11
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 7,
+        "right_wrist": {
+            "x": 29.46,
+            "y": 2.35,
+            "z": -10.91
+        },
+        "right_elbow": {
+            "x": 19.5,
+            "y": -2.37,
+            "z": -2.93
+        },
+        "right_shoulder": {
+            "x": 13.34,
+            "y": -1.13,
+            "z": 5.63
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 8,
+        "right_wrist": {
+            "x": 34.6,
+            "y": 8.05,
+            "z": -4.62
+        },
+        "right_elbow": {
+            "x": 21.53,
+            "y": 0.57,
+            "z": 0.82
+        },
+        "right_shoulder": {
+            "x": 13.17,
+            "y": 1.89,
+            "z": 7.95
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 9,
+        "right_wrist": {
+            "x": 40.3,
+            "y": 14.23,
+            "z": 2.61
+        },
+        "right_elbow": {
+            "x": 23.81,
+            "y": 3.99,
+            "z": 4.86
+        },
+        "right_shoulder": {
+            "x": 12.91,
+            "y": 4.93,
+            "z": 9.87
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 10,
+        "right_wrist": {
+            "x": 46.54,
+            "y": 21.06,
+            "z": 12.05
+        },
+        "right_elbow": {
+            "x": 27.07,
+            "y": 7.42,
+            "z": 9.46
+        },
+        "right_shoulder": {
+            "x": 12.81,
+            "y": 7.76,
+            "z": 11.27
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 11,
+        "right_wrist": {
+            "x": 53.26,
+            "y": 27.58,
+            "z": 21.72
+        },
+        "right_elbow": {
+            "x": 31.23,
+            "y": 10.22,
+            "z": 13.27
+        },
+        "right_shoulder": {
+            "x": 12.87,
+            "y": 9.89,
+            "z": 11.81
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 12,
+        "right_wrist": {
+            "x": 59.69,
+            "y": 33.82,
+            "z": 32.56
+        },
+        "right_elbow": {
+            "x": 35.67,
+            "y": 12.79,
+            "z": 17.45
+        },
+        "right_shoulder": {
+            "x": 12.88,
+            "y": 11.5,
+            "z": 11.91
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 13,
+        "right_wrist": {
+            "x": 65.63,
+            "y": 39.59,
+            "z": 42.99
+        },
+        "right_elbow": {
+            "x": 40.26,
+            "y": 14.84,
+            "z": 20.01
+        },
+        "right_shoulder": {
+            "x": 13.02,
+            "y": 12.17,
+            "z": 10.65
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 14,
+        "right_wrist": {
+            "x": 70.49,
+            "y": 45.16,
+            "z": 53.63
+        },
+        "right_elbow": {
+            "x": 44.75,
+            "y": 16.7,
+            "z": 22.14
+        },
+        "right_shoulder": {
+            "x": 13.31,
+            "y": 12.2,
+            "z": 8.8
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 15,
+        "right_wrist": {
+            "x": 73.29,
+            "y": 49.13,
+            "z": 63.34
+        },
+        "right_elbow": {
+            "x": 48.46,
+            "y": 18.85,
+            "z": 23.75
+        },
+        "right_shoulder": {
+            "x": 14.05,
+            "y": 11.69,
+            "z": 6.36
+        },
+        "tennis_ball_hit": true
+    },
+    {
+        "frame": 16,
+        "right_wrist": {
+            "x": 73.72,
+            "y": 52.04,
+            "z": 72.77
+        },
+        "right_elbow": {
+            "x": 50.73,
+            "y": 19.89,
+            "z": 25.82
+        },
+        "right_shoulder": {
+            "x": 14.54,
+            "y": 10.51,
+            "z": 4.1
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 17,
+        "right_wrist": {
+            "x": 71.49,
+            "y": 52.24,
+            "z": 77.23
+        },
+        "right_elbow": {
+            "x": 50.57,
+            "y": 20.71,
+            "z": 28.05
+        },
+        "right_shoulder": {
+            "x": 14.47,
+            "y": 9.34,
+            "z": 2.66
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 18,
+        "right_wrist": {
+            "x": 66.76,
+            "y": 51.63,
+            "z": 80.66
+        },
+        "right_elbow": {
+            "x": 48.87,
+            "y": 21.49,
+            "z": 30.94
+        },
+        "right_shoulder": {
+            "x": 14.05,
+            "y": 8.13,
+            "z": 1.81
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 19,
+        "right_wrist": {
+            "x": 59.23,
+            "y": 48.42,
+            "z": 79.36
+        },
+        "right_elbow": {
+            "x": 44.68,
+            "y": 21.43,
+            "z": 32.18
+        },
+        "right_shoulder": {
+            "x": 13.49,
+            "y": 6.62,
+            "z": 1.2
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 20,
+        "right_wrist": {
+            "x": 49.9,
+            "y": 44.47,
+            "z": 77.34
+        },
+        "right_elbow": {
+            "x": 40.42,
+            "y": 20.54,
+            "z": 33.66
+        },
+        "right_shoulder": {
+            "x": 13.25,
+            "y": 5.17,
+            "z": 1.1
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 21,
+        "right_wrist": {
+            "x": 38.91,
+            "y": 38.84,
+            "z": 73.78
+        },
+        "right_elbow": {
+            "x": 35.29,
+            "y": 19.57,
+            "z": 35.47
+        },
+        "right_shoulder": {
+            "x": 13.3,
+            "y": 4.19,
+            "z": 1.53
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 22,
+        "right_wrist": {
+            "x": 27.24,
+            "y": 32.41,
+            "z": 70.09
+        },
+        "right_elbow": {
+            "x": 29.23,
+            "y": 18.35,
+            "z": 37.36
+        },
+        "right_shoulder": {
+            "x": 13.24,
+            "y": 3.65,
+            "z": 2.29
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 23,
+        "right_wrist": {
+            "x": 16.72,
+            "y": 24.47,
+            "z": 63.7
+        },
+        "right_elbow": {
+            "x": 23.78,
+            "y": 15.81,
+            "z": 37.6
+        },
+        "right_shoulder": {
+            "x": 12.99,
+            "y": 3.1,
+            "z": 3.13
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 24,
+        "right_wrist": {
+            "x": 7.39,
+            "y": 16.24,
+            "z": 57.49
+        },
+        "right_elbow": {
+            "x": 18.81,
+            "y": 12.58,
+            "z": 37.25
+        },
+        "right_shoulder": {
+            "x": 12.68,
+            "y": 2.67,
+            "z": 4.03
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 25,
+        "right_wrist": {
+            "x": -0.1,
+            "y": 7.22,
+            "z": 48.74
+        },
+        "right_elbow": {
+            "x": 14.35,
+            "y": 8.32,
+            "z": 34.76
+        },
+        "right_shoulder": {
+            "x": 12.12,
+            "y": 2.13,
+            "z": 4.79
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 26,
+        "right_wrist": {
+            "x": -6.01,
+            "y": -1.49,
+            "z": 40.41
+        },
+        "right_elbow": {
+            "x": 10.12,
+            "y": 3.78,
+            "z": 31.6
+        },
+        "right_shoulder": {
+            "x": 11.22,
+            "y": 1.7,
+            "z": 5.34
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 27,
+        "right_wrist": {
+            "x": -9.7,
+            "y": -9.05,
+            "z": 31.02
+        },
+        "right_elbow": {
+            "x": 6.77,
+            "y": -1.43,
+            "z": 25.08
+        },
+        "right_shoulder": {
+            "x": 10.33,
+            "y": 0.89,
+            "z": 4.6
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 28,
+        "right_wrist": {
+            "x": -11.85,
+            "y": -15.25,
+            "z": 22.68
+        },
+        "right_elbow": {
+            "x": 3.82,
+            "y": -5.98,
+            "z": 18.73
+        },
+        "right_shoulder": {
+            "x": 9.16,
+            "y": 0.36,
+            "z": 3.95
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 29,
+        "right_wrist": {
+            "x": -12.78,
+            "y": -20.73,
+            "z": 14.64
+        },
+        "right_elbow": {
+            "x": 1.0,
+            "y": -9.89,
+            "z": 12.37
+        },
+        "right_shoulder": {
+            "x": 7.78,
+            "y": -0.12,
+            "z": 3.13
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 30,
+        "right_wrist": {
+            "x": -12.71,
+            "y": -25.52,
+            "z": 6.83
+        },
+        "right_elbow": {
+            "x": -2.21,
+            "y": -13.5,
+            "z": 6.55
+        },
+        "right_shoulder": {
+            "x": 5.5,
+            "y": -0.38,
+            "z": 2.5
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 31,
+        "right_wrist": {
+            "x": -12.8,
+            "y": -28.39,
+            "z": -0.01
+        },
+        "right_elbow": {
+            "x": -5.66,
+            "y": -15.26,
+            "z": 1.61
+        },
+        "right_shoulder": {
+            "x": 3.09,
+            "y": -0.43,
+            "z": 1.82
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 32,
+        "right_wrist": {
+            "x": -12.21,
+            "y": -30.08,
+            "z": -6.37
+        },
+        "right_elbow": {
+            "x": -9.18,
+            "y": -16.18,
+            "z": -3.07
+        },
+        "right_shoulder": {
+            "x": 0.34,
+            "y": -0.35,
+            "z": 1.06
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 33,
+        "right_wrist": {
+            "x": -10.92,
+            "y": -30.62,
+            "z": -12.26
+        },
+        "right_elbow": {
+            "x": -12.75,
+            "y": -16.22,
+            "z": -7.5
+        },
+        "right_shoulder": {
+            "x": -2.72,
+            "y": -0.1,
+            "z": 0.26
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 34,
+        "right_wrist": {
+            "x": -8.94,
+            "y": -29.98,
+            "z": -17.68
+        },
+        "right_elbow": {
+            "x": -16.38,
+            "y": -15.42,
+            "z": -11.69
+        },
+        "right_shoulder": {
+            "x": -6.13,
+            "y": 0.29,
+            "z": -0.63
+        },
+        "tennis_ball_hit": false
+    },
+    {
+        "frame": 35,
+        "right_wrist": {
+            "x": -6.27,
+            "y": -28.2,
+            "z": -22.63
+        },
+        "right_elbow": {
+            "x": -20.09,
+            "y": -13.75,
+            "z": -15.63
+        },
+        "right_shoulder": {
+            "x": -9.85,
+            "y": 0.83,
+            "z": -1.57
+        },
+        "tennis_ball_hit": false
+    }
+]
