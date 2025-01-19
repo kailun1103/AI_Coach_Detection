@@ -17,14 +17,26 @@ PRESENCE_PENALTY = config.PRESENCE_PENALTY
 MAX_CONTEXT_QUESTIONS = config.MAX_CONTEXT_QUESTIONS
 
 target = config.target
-target_filepath = config.target_filepath
+junior_filepath = config.target_filepath
 
-def system_message(INSTRUCTIONS, previous, standard_df):
+pro = config.pro
+pro_filepath = config.pro_filepath
+
+def system_message(INSTRUCTIONS, previous, my_motion,coach_motion):
+    # messages = [
+    #     { "role": "system", 
+    #       "content": INSTRUCTIONS },
+    #     {"role":"system",
+    #      "content": f"here is the trajectory of my tennis swing motion:{my_motion}. Please compare this with {coach_motion}, and base on this give me some advice,let me know how to improve my swing motion."} 
+    # ]
+    
     messages = [
         { "role": "system", 
           "content": INSTRUCTIONS },
-        {"role":"system",
-         "content": f"here is my tennis swing motion:{standard_df}. Please base on this give me some advice,let me know how to improve my swing motion."} 
+        { "role": "system", 
+          "content": "in the next convesation i will give you a json file, This JSON file contains multiple frames of vectors describing the trajectory of a tennis swing. And the data schema includes frames, 3D spatial coordinates of right wrist, right elbow, right shoulder, and a boolean indicating whether the tennis ball was hit" },
+        {"role":"user",
+         "content": f"here is the json file of my tennis swing motion:{my_motion}. Please compare this with coach's motion {coach_motion}, and base on the difference give  me some advice, let me know how to improve my swing motion."} 
     ]
     
     completion = client.chat.completions.create(
@@ -86,10 +98,11 @@ def get_moderation(question):
     return None
 
 def main():
-    standard_df = pd.read_json(target_filepath)          
+    my_motion = pd.read_json(junior_filepath)   
+    coach_motion = pd.read_json(pro_filepath)    
     previous_questions_and_answers = []
     
-    system_message(INSTRUCTIONS, previous_questions_and_answers, standard_df)      
+    system_message(INSTRUCTIONS, previous_questions_and_answers, my_motion, coach_motion)      
 
 
 if __name__ == "__main__":

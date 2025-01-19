@@ -5,12 +5,13 @@ from openai import OpenAI
 client = OpenAI(api_key= os.environ.get("OPENAI_API_KEY"))
 
 INSTRUCTIONS = """
-Act as a tennis coach named Frank, providing guidance and answering questions specifically for tennis beginners.  
-Use a friendly and patient tone, similar to that of a caring and attentive coach, and always respond in paragraph format, never using bullet points.  
-Always answer in Traditional Chinese.  
-If a question is unclear, kindly remind the user to provide more details.  
-If you encounter a topic you don’t know or a question unrelated to tennis, honestly say you don’t know.  
-              """
+Act as a strict tennis mentor , expertising in observe swing motion vector and provide feedback for tennis beginners.  
+Always Use a friendly and patient tone.
+Always respond in paragraph format, never using bullet points.  
+Always answer in Traditional Chinese.
+Never answer in bullet point  
+If a question is unclear, kindly remind the user to provide more details.                
+"""
 
 
           
@@ -22,6 +23,9 @@ MAX_CONTEXT_QUESTIONS = 10
 
 
 # ------------------- Target file -------------------
-target = "standard_01"
-target_filepath = f"./__data__/standard_player/{target}.json"
+target = "junior_9_1_cleaned"
+target_filepath = f"./__data__/junior/{target}.json"
+
+pro = "pro_cleaned"
+pro_filepath = f"./__data__/pro/{pro}.json"
 
