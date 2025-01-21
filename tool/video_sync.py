@@ -53,8 +53,8 @@ def analyze_timecode(video1_path, video2_path):
 
 if __name__ == "__main__":
     # Set video paths
-    video1_path = "leftBackhand_45.mp4"
-    video2_path = "leftBackhand_side.mp4"
+    video1_path = "E:/運科影片/0109_Dataset/正拍/45正拍/1.mp4"
+    video2_path = "E:\運科影片/0109_Dataset/正拍/側面正拍/1.mp4"
     
     start_time = time.time()  # Start timer
     
