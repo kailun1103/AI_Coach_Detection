@@ -70,12 +70,8 @@ def process_trajectories(left_path, leftfront_path, P1, P2):
         points_3d.append(frame_data)
 
     # Create output path by modifying input path
-    leftfront_path = 'junior_9/forehand/9_0/junior_45_9_0(2D_trajectory_smoothed).json'
-    # 先分割掉 "45" 這部分
     parts = leftfront_path.split('_45')
-    # 從第二部分取出 "_9_0"
-    second_part = parts[1].split('(')[0]  # 這會得到 "_9_0"
-    # 組合最終路徑
+    second_part = parts[1].split('(')[0] 
     output_path = parts[0] + second_part + '(3D_trajectory).json'
 
     # output_path = leftfront_path.replace('(2D_trajectory_smoothed).json', '(3D_trajectory).json')
