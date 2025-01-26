@@ -29,11 +29,11 @@ TRAIL_THICKNESS = 6
 BALL_TRAIL_THICKNESS = 4
 
 # 初始化模型
-ball_model = YOLO("model/yolov8_side_backhand_v1.pt")
+ball_model = YOLO('model/tennisball_OD_v1.pt')
 pose_model = YOLO("model/yolov8n-pose.pt")
 
 # 讀取影片
-video_path = "pro_45.mp4"
+video_path = "pro_45_3_1.mp4"
 cap = cv2.VideoCapture(video_path)
 
 if not cap.isOpened():
@@ -42,7 +42,7 @@ if not cap.isOpened():
 
 # 獲取原始影片的FPS並降低播放速度
 original_fps = int(cap.get(cv2.CAP_PROP_FPS))
-output_fps = original_fps // 3  # 將FPS降為1/3
+output_fps = original_fps // 5  # 將FPS降為1/3
 
 # 設置輸出影片的尺寸
 output_width = FIXED_WIDTH + 400

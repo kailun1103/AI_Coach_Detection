@@ -52,7 +52,7 @@ def process_video(pose_model, ball_model, video_path):
         for result in ball_results:
             for box in result.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
-                if float(box.conf[0]) > 0.5:
+                if float(box.conf[0]) > 0.2:
                     frame_data["tennis_ball"].update({
                         "x": (x1 + x2) // 2,
                         "y": (y1 + y2) // 2
@@ -88,11 +88,11 @@ if __name__ == "__main__":
     # Time model loading
     model_load_start = time.time()
     pose_model = YOLO('model/yolov8n-pose.pt')
-    ball_model = YOLO('model/yolov8_side_backhand_v1.pt')
+    ball_model = YOLO('model/tennisball_OD_v1.pt')
     model_load_time = time.time() - model_load_start
     print(f"Model loading time: {model_load_time:.8f}s")
 
-    video_path = 'leftBackhand_45.mp4'
+    video_path = 'pro_45_3_1.mp4'
 
     # Time trajectory analysis
     analysis_start = time.time()

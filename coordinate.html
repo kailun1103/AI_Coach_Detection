@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>影片播放器與軌跡圖</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffffff; /* 背景全白 */
+        }
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1600px;
+            gap: 20px;
+        }
+        .video-container {
+            flex: 1;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .chart-container {
+            flex: 1;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        video {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        .speed-control {
+            margin-top: 10px;
+        }
+        .speed-control label {
+            font-weight: bold;
+        }
+        .speed-control input[type="range"] {
+            width: 200px;
+            margin-left: 10px;
+        }
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 左側：影片播放器 -->
+    <div class="video-container">
+        <h2>影片播放器</h2>
+        <video id="myVideo" controls autoplay></video>
+        <div class="speed-control">
+            <label>播放速度：</label>
+            <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+            <span id="speedValue">1x</span>
+        </div>
+    </div>
+
+    <!-- 右側：軌跡圖 -->
+    <div class="chart-container">
+        <h2>Right Wrist Trajectory</h2>
+        <canvas id="trajectoryChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // 從 URL 參數中獲取影片和 JSON 檔案的路徑
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoPath = urlParams.get('video');
+    const jsonPath = urlParams.get('json');
+
+    // 影片播放器相關邏輯
+    const myVideo = document.getElementById("myVideo");
+    const speedSlider = document.getElementById("speedSlider");
+    const speedValue = document.getElementById("speedValue");
+
+    if (videoPath) {
+        myVideo.src = videoPath; // 設置影片來源
+        myVideo.load(); // 加載影片
+    }
+
+    speedSlider.addEventListener("input", function () {
+        const speed = speedSlider.value; // 獲取滑動條的值
+        myVideo.playbackRate = speed; // 設置播放速度
+        speedValue.textContent = speed + "x"; // 更新顯示的速度值
+    });
+
+    // 軌跡圖相關邏輯
+    let chart;
+
+    if (jsonPath) {
+        fetch(jsonPath)
+            .then(response => response.json())
+            .then(jsonData => {
+                const points = jsonData.map(frame => ({
+                    x: frame.right_wrist.x,
+                    y: frame.right_wrist.y,
+                    frame: frame.frame // 保留 frame 信息
+                }));
+
+                // 定義有問題的 frame 範圍
+                const errorStartFrame = 15;
+                const errorEndFrame = 32;
+
+                // 如果已經有圖表，先銷毀
+                if (chart) {
+                    chart.destroy();
+                }
+
+                const ctx = document.getElementById('trajectoryChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: '', // 清空標籤
+                                data: points,
+                                borderColor: points.map(point => {
+                                    // 如果 frame 在有問題的範圍內，設置為紅色，否則為藍色
+                                    return (point.frame >= errorStartFrame && point.frame <= errorEndFrame)
+                                        ? 'rgba(255, 0, 0, 1)' // 紅色
+                                        : 'rgba(54, 162, 235, 1)'; // 藍色
+                                }),
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderWidth: 2,
+                                fill: false,
+                                showLine: true,
+                                segment: {
+                                    borderColor: ctx => {
+                                        // 根據 frame 範圍動態設置線段顏色
+                                        const startFrame = points[ctx.p0DataIndex].frame;
+                                        const endFrame = points[ctx.p1DataIndex].frame;
+                                        if (startFrame >= errorStartFrame && endFrame <= errorEndFrame) {
+                                            return 'rgba(255, 0, 0, 1)'; // 紅色
+                                        }
+                                        return 'rgba(54, 162, 235, 1)'; // 藍色
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                display: true,
+                                title: {
+                                    display: true,
+                                    text: 'X Coordinate'
+                                }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                title: {
+                                    display: true,
+                                    text: 'Y Coordinate'
+                                },
+                                reverse: true // 反轉 Y 軸
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    // 移除標題
+                                    title: () => '',
+                                    // 自定義標籤內容
+                                    label: function (context) {
+                                        const x = context.parsed.x;
+                                        const y = context.parsed.y;
+                                        const frame = points[context.dataIndex].frame;
+                                        // 如果 frame 在有問題的範圍內，顯示 error 和建議
+                                        if (frame >= errorStartFrame && frame <= errorEndFrame) {
+                                            return `Frame: ${frame}, X: ${x.toFixed(2)}, Y: ${y.toFixed(2)} (error: 揮拍太快，建議稍微慢一點)`;
+                                        }
+                                        return `Frame: ${frame}, X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // 設置軌跡圖的高度與影片一致
+                const videoHeight = myVideo.clientHeight;
+                document.getElementById('trajectoryChart').style.height = `${videoHeight}px`;
+            })
+            .catch(error => {
+                console.error('Error loading JSON:', error);
+            });
+    }
+</script>
+
+</body>
+</html>

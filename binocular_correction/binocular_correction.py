@@ -20,11 +20,11 @@ imgpointsL = []     # 存儲左相機拍攝圖片中檢測到的角點二維座�
 
 
 # 讀取並處理每一張標定圖片
-for i in range(10):
+for i in range(16):
     t = str(i)
 
-    ChessImaLF = cv2.imread(f'binocular_correction/outdoor_1126/forehand/45/Outdoor_{i}.JPG', 0)
-    ChessImaL = cv2.imread(f'binocular_correction/outdoor_1126/forehand/side/Outdoor_{i}.JPG', 0)
+    ChessImaLF = cv2.imread(f'binocular_correction/indoor_0109/forehand/45/Indoor_{i}.JPG', 0)
+    ChessImaL = cv2.imread(f'binocular_correction/indoor_0109/forehand/side/Indoor_{i}.JPG', 0)
 
     # 在左和左前圖像中查找標定板角點
     retLF, cornersLF = cv2.findChessboardCorners(ChessImaLF, (10, 7), None)  
@@ -122,3 +122,17 @@ print("左相機投影矩陣:")
 print(P_left)
 print("\n左前相機投影矩陣:")
 print(P_leftfront)
+
+# Format and print the projection matrices
+def format_projection_matrix(matrix):
+    formatted = "[\n"
+    for row in matrix:
+        formatted += f"    [{row[0]:12.6f}, {row[1]:12.6f}, {row[2]:12.6f}, {row[3]:12.6f}],\n"
+    formatted += "]"
+    return formatted
+
+print("\n==== 投影矩陣計算結果 ====")
+print("左相機投影矩陣:")
+print(format_projection_matrix(P_left))
+print("\n左前相機投影矩陣:")
+print(format_projection_matrix(P_leftfront))

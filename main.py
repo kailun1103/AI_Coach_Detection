@@ -12,8 +12,8 @@ from drawing_3D_plotly import create_3d_plots
 start_total = time.perf_counter()
 
 # Input videos
-video_side = 'junior_9/forehand/9/1'
-video_45 = 'temp/junior_45.mp4'
+video_side = 'pro_1/pro_side_1_6.mp4'
+video_45 = 'pro_1/pro_45_1_6.mp4'
 
 # junior backhand
 # P1 = np.array([ # Left camera (main)
@@ -29,36 +29,36 @@ video_45 = 'temp/junior_45.mp4'
 # ])
 
 # junior forehand
-P1 = np.array([ # Left camera (main)
-    [4868.506691,    0.000000, 2819.088860,    0.000000],
-    [   0.000000, 3887.239287, 2362.952860,    0.000000],
-    [   0.000000,    0.000000,    1.000000,    0.000000]
-])
-
-P2 = np.array([ # 45-degree camera
-    [    -1532.746717,       704.787489,      4054.256764, -19560781.953567],
-    [    -2370.947477,      3331.290729,       326.229463,   9897228.332878],
-    [       -0.944408,         0.080699,         0.318719,      3568.669508]
-])
-
-# pro forehand
 # P1 = np.array([ # Left camera (main)
-#     [2259.233089,    0.000000, 2765.855088,    0.000000],
-#     [   0.000000, 2262.229625, 2527.097657,    0.000000],
+#     [4868.506691,    0.000000, 2819.088860,    0.000000],
+#     [   0.000000, 3887.239287, 2362.952860,    0.000000],
 #     [   0.000000,    0.000000,    1.000000,    0.000000]
 # ])
 
 # P2 = np.array([ # 45-degree camera
-#     [     133.791680,     -550.740908,     3565.586369, -2967047.706145],
-#     [   -1544.950048,     1821.751422,     2014.789599,  3406954.592979],
-#     [      -0.593895,       -0.198783,        0.779598,     1344.472848]
+#     [    -1532.746717,       704.787489,      4054.256764, -19560781.953567],
+#     [    -2370.947477,      3331.290729,       326.229463,   9897228.332878],
+#     [       -0.944408,         0.080699,         0.318719,      3568.669508]
 # ])
+
+# pro forehand
+P1 = np.array([
+    [ 2259.248492,     0.000000,  1651.846528,     0.000000],
+    [    0.000000,  2262.230378,  1553.020963,     0.000000],
+    [    0.000000,     0.000000,     1.000000,     0.000000],
+])
+
+P2 = np.array([
+    [  795.771338,  -329.492024,  2697.441025, -4465886.061337],
+    [ -966.406397,  2015.459737,  1255.438530, 2097693.969537],
+    [   -0.593810,    -0.198914,     0.779630,  1344.552439],
+])
 
 # Load models
 print("Step 1: Loading models...")
 start_model = time.perf_counter()
 yolo_pose_model = YOLO('model/yolov8n-pose.pt')
-yolo_tennis_ball_model = YOLO('model/yolov8_side_backhand_v1.pt')
+yolo_tennis_ball_model = YOLO('model/tennisball_OD_v1.pt')
 model_time = time.perf_counter() - start_model
 print(f"-- Model loading completed, time taken: {model_time:.4f} seconds")
 
@@ -101,6 +101,8 @@ start_smooth_3d = time.perf_counter()
 trajectory_3d_smoothing = smooth_3D_trajectory(trajectory_3d)
 smooth_3d_time = time.perf_counter() - start_smooth_3d
 print(f"-- 3D smoothing completed, time taken: {smooth_3d_time:.4f} seconds")
+
+create_3d_plots(trajectory_3d_smoothing)
 
 
 # Execution time summary

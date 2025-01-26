@@ -7,29 +7,27 @@ def create_3d_plots(data_file):
 
     total_frames = len(trajectory_data)
 
-    # 定義關節點顏色
     joints = {
-        'tennis_ball': '#ff0000',  # 紅色
-        'nose': '#00ff00',         # 綠色
-        'left_eye': '#0000ff',     # 藍色
-        'right_eye': '#00ffff',    # 青色
-        'left_ear': '#ff00ff',     # 洋紅色
-        'right_ear': '#ffff00',    # 黃色
-        'left_shoulder': '#800000', # 暗紅色
-        'right_shoulder': '#008000',# 暗綠色
-        'left_elbow': '#000080',   # 暗藍色
-        'right_elbow': '#808000',  # 橄欖色
-        'left_wrist': '#800080',   # 紫色
-        'right_wrist': '#008080',  # 藍綠色
-        'left_hip': '#ff8000',     # 橙色
-        'right_hip': '#0080ff',    # 淺藍色
-        'left_knee': '#ff0080',    # 粉紅色
-        'right_knee': '#80ff00',   # 淺綠色
-        'left_ankle': '#8000ff',   # 紫羅蘭色
-        'right_ankle': '#00ff80'   # 青綠色
+        'tennis_ball': '#ff0000',
+        'nose': '#00ff00',
+        'left_eye': '#0000ff',
+        'right_eye': '#00ffff',
+        'left_ear': '#ff00ff',
+        'right_ear': '#ffff00',
+        'left_shoulder': '#800000',
+        'right_shoulder': '#008000',
+        'left_elbow': '#000080',
+        'right_elbow': '#808000',
+        'left_wrist': '#800080',
+        'right_wrist': '#008080',
+        'left_hip': '#ff8000',
+        'right_hip': '#0080ff',
+        'left_knee': '#ff0080',
+        'right_knee': '#80ff00',
+        'left_ankle': '#8000ff',
+        'right_ankle': '#00ff80'
     }
 
-    # 定義骨架連接
     skeleton_connections = [
         ('nose', 'left_eye'), ('nose', 'right_eye'),
         ('left_eye', 'left_ear'), ('right_eye', 'right_ear'),
@@ -48,13 +46,13 @@ def create_3d_plots(data_file):
         ('right_knee', 'right_ankle')
     ]
 
-    # 收集所有有效座標
     all_x, all_y, all_z = [], [], []
     ball_x, ball_y, ball_z = [], [], []
     left_wrist_x, left_wrist_y, left_wrist_z = [], [], []
     right_wrist_x, right_wrist_y, right_wrist_z = [], [], []
+    frame_labels = []
     
-    for frame in trajectory_data:
+    for frame_idx, frame in enumerate(trajectory_data):
         for joint in joints:
             if (frame[joint]['x'] is not None and 
                 frame[joint]['y'] is not None and 
@@ -67,6 +65,7 @@ def create_3d_plots(data_file):
                     ball_x.append(frame[joint]['x'])
                     ball_y.append(frame[joint]['z'])
                     ball_z.append(frame[joint]['y'])
+                    frame_labels.append(f'F{frame_idx}')
                 elif joint == 'left_wrist':
                     left_wrist_x.append(frame[joint]['x'])
                     left_wrist_y.append(frame[joint]['z'])
@@ -79,21 +78,21 @@ def create_3d_plots(data_file):
     if not all_x or not all_y or not all_z:
         raise ValueError("No valid coordinate data found")
 
-    # 創建圖形
     fig = go.Figure()
 
-    # 添加球的軌跡線
     fig.add_trace(go.Scatter3d(
         x=ball_x,
         y=ball_y,
         z=ball_z,
-        mode='lines',
+        mode='lines+markers+text',
         name='Ball Trajectory',
         line=dict(color='red', width=2),
+        text=frame_labels,
+        textposition='top center',
+        textfont=dict(size=8),
         showlegend=True,
     ))
 
-    # 添加左手腕軌跡線
     fig.add_trace(go.Scatter3d(
         x=left_wrist_x,
         y=left_wrist_y,
@@ -104,7 +103,6 @@ def create_3d_plots(data_file):
         showlegend=True,
     ))
 
-    # 添加右手腕軌跡線
     fig.add_trace(go.Scatter3d(
         x=right_wrist_x,
         y=right_wrist_y,
@@ -115,23 +113,23 @@ def create_3d_plots(data_file):
         showlegend=True,
     ))
 
-    # 為每一幀創建骨架和關節點
     frames = []
     for frame_idx, frame in enumerate(trajectory_data):
         frame_data = []
         
-        # 添加球的完整軌跡（保持可見）
         frame_data.append(go.Scatter3d(
             x=ball_x,
             y=ball_y,
             z=ball_z,
-            mode='lines',
+            mode='lines+markers+text',
             line=dict(color='red', width=2),
+            text=frame_labels,
+            textposition='top center',
+            textfont=dict(size=8),
             name='Ball Trajectory',
             showlegend=True if frame_idx == 0 else False,
         ))
         
-        # 添加左手腕軌跡
         frame_data.append(go.Scatter3d(
             x=left_wrist_x,
             y=left_wrist_y,
@@ -142,7 +140,6 @@ def create_3d_plots(data_file):
             showlegend=True if frame_idx == 0 else False,
         ))
         
-        # 添加右手腕軌跡
         frame_data.append(go.Scatter3d(
             x=right_wrist_x,
             y=right_wrist_y,
@@ -153,7 +150,6 @@ def create_3d_plots(data_file):
             showlegend=True if frame_idx == 0 else False,
         ))
         
-        # 添加當前幀的關節點
         for joint_name, color in joints.items():
             if (frame[joint_name]['x'] is not None and 
                 frame[joint_name]['y'] is not None and 
@@ -175,7 +171,6 @@ def create_3d_plots(data_file):
                                 "Z: %{y:.1f}<br>"
                 ))
 
-        # 添加骨架連接
         for start_joint, end_joint in skeleton_connections:
             if (frame[start_joint]['x'] is not None and 
                 frame[start_joint]['y'] is not None and 
@@ -198,18 +193,15 @@ def create_3d_plots(data_file):
             name=f'frame_{frame_idx}'
         ))
     
-    # 添加初始幀的數據
     for trace in frames[0].data:
         fig.add_trace(trace)
 
-    # 計算坐標範圍
     max_range = max(
         max(all_x) - min(all_x),
         max(all_y) - min(all_y),
         max(all_z) - min(all_z)
     )
 
-    # 更新布局設置
     fig.update_layout(
         scene=dict(
             xaxis=dict(
@@ -298,14 +290,13 @@ def create_3d_plots(data_file):
         }],
         width=1000,
         height=800,
-        title='3D Body Pose Animation with Wrist Trajectories',
+        title='3D Body Pose Animation with Frame Labels',
     )
 
     fig.frames = frames
 
     output_path = data_file.replace('.json', '.html')
 
-    # 配置顯示設置
     config = {
         'displayModeBar': True,
         'displaylogo': False,
@@ -313,7 +304,6 @@ def create_3d_plots(data_file):
         'scrollZoom': True,
     }
 
-    # 保存和顯示
     fig.write_html(
         output_path,
         include_plotlyjs=True,
@@ -323,8 +313,7 @@ def create_3d_plots(data_file):
         auto_play=False
     )
     
-    # 顯示圖形
     fig.show(config=config)
 
 if __name__ == "__main__":
-    create_3d_plots('temp/junior_3D_trajectory.json')
+    create_3d_plots('pro_3_9(3D_trajectory_smoothed).json')

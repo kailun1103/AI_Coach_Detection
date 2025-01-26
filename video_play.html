@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自選影片播放器（滑動速度控制）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffffff; /* 背景全白 */
+        }
+        .video-container {
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        video {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        .speed-control {
+            margin-top: 10px;
+        }
+        .speed-control label {
+            font-weight: bold;
+        }
+        .speed-control input[type="range"] {
+            width: 200px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="video-container">
+    <h2>選擇影片檔案</h2>
+    <input type="file" id="fileInput" accept="video/*">
+    <video id="myVideo" controls autoplay></video>
+    <div class="speed-control">
+        <label>播放速度：</label>
+        <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+        <span id="speedValue">1x</span>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById("fileInput");
+    const myVideo = document.getElementById("myVideo");
+    const speedSlider = document.getElementById("speedSlider");
+    const speedValue = document.getElementById("speedValue");
+
+    // 當用戶選擇檔案時
+    fileInput.addEventListener("change", function (e) {
+        const file = e.target.files[0]; // 獲取選擇的檔案
+        if (file) {
+            const fileURL = URL.createObjectURL(file); // 創建檔案的URL
+            myVideo.src = fileURL; // 將影片的來源設置為選擇的檔案
+            myVideo.load(); // 加載影片
+        }
+    });
+
+    // 當滑動條值改變時
+    speedSlider.addEventListener("input", function () {
+        const speed = speedSlider.value; // 獲取滑動條的值
+        myVideo.playbackRate = speed; // 設置播放速度
+        speedValue.textContent = speed + "x"; // 更新顯示的速度值
+    });
+</script>
+
+</body>
+</html>
