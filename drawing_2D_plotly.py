@@ -102,4 +102,4 @@ def create_2d_plots(file_path):
     # fig_combined.show()
 
 if __name__ == "__main__":
-    create_2d_plots('pro_45_3_13(2D_trajectory).json')
+    create_2d_plots('pro_1_1_45(2D_trajectory_smoothed).json')

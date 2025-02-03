@@ -61,7 +61,7 @@ def combine_videos_fast(top_video_path, bottom_video_path, output_path):
     print("完成!")
 
 # 使用範例
-top_video = "pro_45.mp4"
-bottom_video = "pro_side.mp4"
+top_video = "pro_1_1_45_full_trail_slow.mp4"
+bottom_video = "pro_1_1_side_full_trail_slow.mp4"
 output_video = "merge.mp4"
 combine_videos_fast(top_video, bottom_video, output_video)

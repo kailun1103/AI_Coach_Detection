@@ -12,8 +12,8 @@ from drawing_3D_plotly import create_3d_plots
 start_total = time.perf_counter()
 
 # Input videos
-video_side = 'pro_1/pro_side_1_6.mp4'
-video_45 = 'pro_1/pro_45_1_6.mp4'
+video_side = 'pro_1_1_side.mp4'
+video_45 = 'pro_1_1_45.mp4'
 
 # junior backhand
 # P1 = np.array([ # Left camera (main)
