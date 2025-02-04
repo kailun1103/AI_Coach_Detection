@@ -23,10 +23,18 @@ class JsonClean:
         for frame in data:
             extracted = {
                 "frame": frame.get("frame"),
+                "left_eye": frame.get("left_eye"),  
+                "right_eye": frame.get("right_eye"),
+                
                 "right_wrist": frame.get("right_wrist"),
                 "right_elbow": frame.get("right_elbow"),
                 "right_shoulder": frame.get("right_shoulder"),
-                "tennis_ball_hit": frame.get("tennis_ball_hit")
+                
+                "left_knee": frame.get("left_knee"),
+                "right_knee": frame.get("right_knee"),
+                
+                "tennis_ball_hit": frame.get("tennis_ball_hit"),  # 加上逗號
+
             }
             frames.append(extracted)
         
@@ -59,19 +67,26 @@ class JsonClean:
       
     def self_compare(self, frames):
         diff_frames = []
+        
         for i in range(1, len(frames) - 1):
             current_frame = frames[i]
             previous_frame = frames[i - 1]
-            
             diff_frame = {
                 key: {
-                    k: round(current_frame[key][k] - previous_frame[key][k], 2) if key in current_frame and key in previous_frame and isinstance(current_frame[key], dict) else current_frame[key]
+                    k: round(current_frame[key][k] - previous_frame[key][k], 2) 
+                    if (key in current_frame and key in previous_frame and 
+                        isinstance(current_frame[key], dict) and 
+                        k in current_frame[key] and k in previous_frame[key] and 
+                        isinstance(current_frame[key][k], (int, float)) and 
+                        isinstance(previous_frame[key][k], (int, float)))
+                    else "null"
                     for k in current_frame[key]
                 } if isinstance(current_frame[key], dict) else current_frame[key]
                 for key in current_frame
             }
+            
             diff_frames.append(diff_frame)
-        
+
         return diff_frames
 
     def main(self):
