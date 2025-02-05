@@ -1,116 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D</title>
+    <title>3D Pose Visualization</title>
     <style>
         body { 
             margin: 0; 
             overflow: hidden; 
-            font-family: 'Microsoft JhengHei', Arial, sans-serif;
-            background: #1a1a1a;
+            background: #1a1a1a; 
         }
-        canvas { display: block; }
         #controls {
             position: fixed;
             top: 20px;
             left: 20px;
             background: rgba(30, 30, 30, 0.95);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            color: white;
             z-index: 1000;
-            max-height: 90vh;
-            overflow-y: auto;
-            width: 320px;
-            color: #ffffff;
-        }
-        .title {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #ffffff;
-        }
-        #fileInput {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 2px dashed #444;
-            border-radius: 8px;
-            cursor: pointer;
-            background: #2a2a2a;
-            color: #ffffff;
-        }
-        #fileInput:hover {
-            border-color: #666;
         }
         .control-group {
-            margin: 15px 0;
-            padding: 15px;
-            background: #2a2a2a;
-            border-radius: 8px;
-        }
-        #playButton {
-            background: #4CAF50;
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            margin-bottom: 10px;
-            transition: background 0.3s;
-        }
-        #playButton:hover {
-            background: #45a049;
-        }
-        .slider {
-            width: 100%;
             margin: 10px 0;
-            background: #444;
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .slider { 
+            width: 100%; 
+            margin: 10px 0; 
         }
         .checkbox-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-top: 15px;
+            gap: 5px;
         }
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            padding: 5px;
-            background: #2a2a2a;
-            border-radius: 5px;
-            color: #ffffff;
+        .marker-label {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 1px 2px;
+            font-family: monospace;
+            font-size: 8px;
+            line-height: 1.1;
+            border-radius: 2px;
+            white-space: pre-line;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
-        .color-dot {
-            width: 12px;
-            height: 12px;
+        .trajectory-point {
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            margin-right: 8px;
+            pointer-events: all;
+            cursor: pointer;
         }
-        #frameInfo {
-            text-align: center;
-            color: #ccc;
-            margin: 10px 0;
+        .trajectory-point:hover + .marker-label {
+            opacity: 1;
+        }
+        .warning-box {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            max-width: 250px;
+            font-size: 14px;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
     <div id="controls">
-        <div class="title">3D 人體姿態視覺化</div>
         <input type="file" id="fileInput" accept=".json">
         <div class="control-group">
             <button id="playButton">播放</button>
+            <button id="showFullTrajectoryButton">顯示完整軌跡</button>
             <div id="frameInfo">幀數: 0</div>
             <input type="range" id="slider" class="slider" value="0">
-            <div>
-                播放速度: <span id="speedValue">1x</span>
-                <input type="range" id="speedControl" class="slider" min="0.1" max="2" step="0.1" value="1">
-            </div>
+            <div>速度: <span id="speedValue">1x</span></div>
+            <input type="range" id="speedControl" class="slider" min="0.1" max="2" step="0.1" value="1">
         </div>
-        <div id="jointControls" class="checkbox-grid">
-        </div>
+        <div id="jointControls" class="checkbox-grid"></div>
     </div>
     
     <script type="importmap">
@@ -124,12 +107,63 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
+        // 全域變數
+        let scene, camera, renderer, controls, labelRenderer;
+        let joints3D = {}, lines = [];
+        let trajectoryData = [];
+        let currentFrame = 0;
+        let isPlaying = false;
+        let playbackSpeed = 1;
+        let frameInterval;
+        let showingFullTrajectory = false;
+        const SCALE_FACTOR = 0.001;
+
+        // 軌跡系統定義
+        const trajectorySystem = {
+            'right_wrist': {
+                color: '#ffff00',
+                highlightColor: '#ff0000',
+                highlightRange: {start: 20, end: 30},
+                points: [],
+                line: new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ 
+                    color: 0xffff00,
+                    linewidth: 2,
+                    transparent: true,
+                    opacity: 0.5,
+                    depthTest: true,
+                    depthWrite: false
+                })),
+                highlightLine: new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ 
+                    color: 0xff0000,
+                    linewidth: 5,
+                    transparent: true,
+                    opacity: 0.8,
+                    depthTest: true,
+                    depthWrite: false
+                }))
+            },
+            'tennis_ball': {
+                color: '#00ff00',
+                points: [],
+                line: new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ 
+                    color: 0x00ff00,
+                    linewidth: 2,
+                    transparent: true,
+                    opacity: 0.5,
+                    depthTest: true,
+                    depthWrite: false
+                }))
+            }
+        };
+
+        // 關節點定義
         const joints = {
-            'tennis_ball': { color: '#FF6B6B', size: 0.05, emission: true },
-            'nose': { color: '#4ECDC4', size: 0.015, emission: true },
-            'left_eye': { color: '#45B7D1', size: 0.012, emission: true },
-            'right_eye': { color: '#45B7D1', size: 0.012, emission: true },
+            'tennis_ball': { color: '#FF6B6B', size: 0.05 },
+            'nose': { color: '#4ECDC4', size: 0.015 },
+            'left_eye': { color: '#45B7D1', size: 0.012 },
+            'right_eye': { color: '#45B7D1', size: 0.012 },
             'left_ear': { color: '#96CEB4', size: 0.012 },
             'right_ear': { color: '#96CEB4', size: 0.012 },
             'left_shoulder': { color: '#FF8C42', size: 0.02 },
@@ -159,120 +193,251 @@
             ['right_hip', 'right_knee'], ['right_knee', 'right_ankle']
         ];
 
-        let scene, camera, renderer, controls;
-        let joints3D = {};
-        let lines = [];
-        let trajectoryData = [];
-        let currentFrame = 0;
-        let isPlaying = false;
-        let playbackSpeed = 1;
-        let frameInterval = null;
-        const SCALE_FACTOR = 0.001;
+        // 標記點建立函數
+        function createMarkerPoint(position, text, color) {
+            const group = new THREE.Group();
 
+            const pointDiv = document.createElement('div');
+            pointDiv.className = 'trajectory-point';
+            pointDiv.style.background = color;
+            const point = new CSS2DObject(pointDiv);
+            point.position.copy(position);
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'marker-label';
+            labelDiv.textContent = text;
+            const label = new CSS2DObject(labelDiv);
+            label.position.copy(position);
+
+            group.add(point);
+            group.add(label);
+            return group;
+        }
+
+        // 初始化函數
         function init() {
+            // 場景設置
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x1a1a1a);
             
+            // 相機設置
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 1.2, 2.5);
             
+            // 渲染器設置
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
 
-            controls = new OrbitControls(camera, renderer.domElement);
+            // 標籤渲染器設置
+            labelRenderer = new CSS2DRenderer();
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.domElement.style.position = 'absolute';
+            labelRenderer.domElement.style.top = '0px';
+            document.body.appendChild(labelRenderer.domElement);
+
+            // 控制器設置
+            controls = new OrbitControls(camera, labelRenderer.domElement);
             controls.enableDamping = true;
             controls.target.set(0, 0.8, 0);
             
-            const ambientLight = new THREE.AmbientLight(0x404040, 2);
-            scene.add(ambientLight);
+            // 光源和網格設置
+            scene.add(new THREE.AmbientLight(0x404040, 2));
+            scene.add(new THREE.DirectionalLight(0xffffff, 1));
+            scene.add(new THREE.GridHelper(10, 20, 0x444444, 0x333333));
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(5, 5, 5);
-            directionalLight.castShadow = true;
-            scene.add(directionalLight);
-            
-            const gridHelper = new THREE.GridHelper(10, 20, 0x444444, 0x333333);
-            scene.add(gridHelper);
-
-            const planeGeometry = new THREE.PlaneGeometry(10, 10);
-            const planeMaterial = new THREE.MeshStandardMaterial({
-                color: 0x1a1a1a,
-                metalness: 0.5,
-                roughness: 0.5,
-                transparent: true,
-                opacity: 0.5
+            // 添加軌跡線和高亮線
+            Object.values(trajectorySystem).forEach(system => {
+                scene.add(system.line);
+                if (system.highlightLine) {
+                    scene.add(system.highlightLine);
+                }
             });
-            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-            plane.rotation.x = -Math.PI / 2;
-            plane.receiveShadow = true;
-            scene.add(plane);
-            
+
+            // 添加警告框
+            const warningBox = document.createElement('div');
+            warningBox.className = 'warning-box';
+            warningBox.textContent = '此軌跡範圍有問題，速度太快，揮的很低';
+            document.body.appendChild(warningBox);
+
+            // 創建關節點
             Object.entries(joints).forEach(([name, props]) => {
-                const geometry = new THREE.SphereGeometry(props.size, 32, 32);
-                const material = new THREE.MeshPhongMaterial({
-                    color: props.color,
-                    shininess: 100,
-                    emissive: props.emission ? props.color : 0x000000,
-                    emissiveIntensity: props.emission ? 0.5 : 0
-                });
-                
-                const sphere = new THREE.Mesh(geometry, material);
-                sphere.castShadow = true;
-                sphere.receiveShadow = true;
-                joints3D[name] = sphere;
-                scene.add(sphere);
+                const mesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(props.size, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: props.color })
+                );
+                joints3D[name] = mesh;
+                scene.add(mesh);
             });
             
+            // 創建骨架線
             skeleton_connections.forEach(() => {
-                const lineMaterial = new THREE.LineBasicMaterial({
-                    color: 0x00ff99,
-                    linewidth: 2,
-                    transparent: true,
-                    opacity: 0.6
-                });
-                const line = new THREE.Line(new THREE.BufferGeometry(), lineMaterial);
+                const line = new THREE.Line(
+                    new THREE.BufferGeometry(),
+                    new THREE.LineBasicMaterial({ 
+                        color: 0x00ff99,
+                        linewidth: 2,
+                        transparent: true,
+                        opacity: 0.8,
+                        depthTest: true,
+                        depthWrite: false
+                    })
+                );
                 lines.push(line);
                 scene.add(line);
             });
-            
+
             createControls();
             setupEventListeners();
             animate();
         }
 
+        // 控制項創建
         function createControls() {
             const container = document.getElementById('jointControls');
-            container.innerHTML = '';
-            
             Object.entries(joints).forEach(([name, props]) => {
                 const div = document.createElement('div');
-                div.className = 'checkbox-item';
-                
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.id = `show_${name}`;
                 checkbox.checked = true;
-                
-                const label = document.createElement('label');
-                
-                const colorDot = document.createElement('span');
-                colorDot.className = 'color-dot';
-                colorDot.style.backgroundColor = props.color;
-                
-                label.appendChild(colorDot);
-                label.appendChild(document.createTextNode(name));
-                
                 div.appendChild(checkbox);
-                div.appendChild(label);
+                div.appendChild(document.createTextNode(name));
                 container.appendChild(div);
-                
-                checkbox.addEventListener('change', () => updateVisibility());
+                checkbox.addEventListener('change', updateVisibility);
+            });
+        }
+        // 清除軌跡
+        function clearTrajectories() {
+            Object.values(trajectorySystem).forEach(system => {
+                // 移除所有標記點
+                system.points.forEach(point => {
+                    scene.remove(point);
+                });
+                system.points = [];
+                // 清除線條
+                system.line.geometry.setFromPoints([]);
+                system.line.visible = false;
+                // 清除高亮線條
+                if (system.highlightLine) {
+                    system.highlightLine.geometry.setFromPoints([]);
+                    system.highlightLine.visible = false;
+                }
             });
         }
 
+        // 計算完整軌跡
+        function calculateFullTrajectory() {
+            clearTrajectories();
+
+            if (!showingFullTrajectory) {
+                return;
+            }
+
+            // 收集有效位置
+            const validPositions = [];
+            trajectoryData.forEach(frame => {
+                const positions = Object.entries(frame)
+                    .filter(([name, pos]) => pos && 
+                        pos.x !== null && pos.y !== null && pos.z !== null && 
+                        pos.x !== undefined && pos.y !== undefined && pos.z !== undefined
+                    )
+                    .map(([_, pos]) => pos);
+                if (positions.length > 0) {
+                    validPositions.push(...positions);
+                }
+            });
+
+            // 計算中心點和最低點
+            const center = validPositions.reduce((acc, pos) => ({
+                x: acc.x + pos.x / validPositions.length,
+                z: acc.z + pos.z / validPositions.length
+            }), { x: 0, z: 0 });
+
+            const minY = Math.min(...trajectoryData.map(frame => 
+                Math.min(...['left_ankle', 'right_ankle']
+                    .map(name => frame[name]?.y ?? Infinity))
+            ));
+
+            const points = {
+                'right_wrist': [],
+                'tennis_ball': []
+            };
+
+            // 收集所有點並創建標記
+            trajectoryData.forEach((frame, frameIndex) => {
+                ['right_wrist', 'tennis_ball'].forEach(jointName => {
+                    const system = trajectorySystem[jointName];
+                    const pos = frame[jointName];
+                    if (pos && pos.x !== null && pos.y !== null && pos.z !== null &&
+                        pos.x !== undefined && pos.y !== undefined && pos.z !== undefined) {
+                        
+                        const point = new THREE.Vector3(
+                            (pos.x - center.x) * SCALE_FACTOR,
+                            (pos.y - minY) * SCALE_FACTOR,
+                            -(pos.z - center.z) * SCALE_FACTOR
+                        );
+
+                        points[jointName].push({
+                            position: point,
+                            frameIndex: frameIndex
+                        });
+
+                        // 判斷是否為高亮區間
+                        let pointColor = system.color;
+                        if (jointName === 'right_wrist' && 
+                            system.highlightRange && 
+                            frameIndex >= system.highlightRange.start && 
+                            frameIndex <= system.highlightRange.end) {
+                            pointColor = system.highlightColor;  // 使用高亮顏色
+                        }
+
+                        const text = `Frame: ${frameIndex}\nX: ${pos.x.toFixed(1)}\nY: ${pos.y.toFixed(1)}\nZ: ${pos.z.toFixed(1)}`;
+                        const markerGroup = createMarkerPoint(point, text, pointColor);  // 使用選定的顏色
+                        scene.add(markerGroup);
+                        system.points.push(markerGroup);
+                    }
+                });
+            });
+
+            // 更新正常軌跡線和高亮線段
+            Object.entries(points).forEach(([jointName, pointArray]) => {
+                if (pointArray.length > 0) {
+                    const system = trajectorySystem[jointName];
+                    
+                    if (jointName === 'right_wrist' && system.highlightRange) {
+                        // 分割正常段和高亮段
+                        const normalPoints = [];
+                        const highlightPoints = [];
+                        
+                        pointArray.forEach(point => {
+                            if (point.frameIndex >= system.highlightRange.start && 
+                                point.frameIndex <= system.highlightRange.end) {
+                                highlightPoints.push(point.position);
+                            } else {
+                                normalPoints.push(point.position);
+                            }
+                        });
+
+                        // 更新正常線段
+                        system.line.geometry.setFromPoints(normalPoints);
+                        system.line.visible = true;
+
+                        // 更新高亮線段
+                        if (system.highlightLine && highlightPoints.length > 0) {
+                            system.highlightLine.geometry.setFromPoints(highlightPoints);
+                            system.highlightLine.visible = true;
+                        }
+                    } else {
+                        // 其他軌跡正常顯示
+                        system.line.geometry.setFromPoints(pointArray.map(p => p.position));
+                        system.line.visible = true;
+                    }
+                }
+            });
+        }
+
+        // 更新可見性
         function updateVisibility() {
             Object.entries(joints3D).forEach(([name, mesh]) => {
                 mesh.visible = document.getElementById(`show_${name}`).checked;
@@ -280,203 +445,178 @@
 
             skeleton_connections.forEach((connection, index) => {
                 const [start, end] = connection;
-                const startVisible = document.getElementById(`show_${start}`).checked;
-                const endVisible = document.getElementById(`show_${end}`).checked;
-                lines[index].visible = startVisible && endVisible;
+                lines[index].visible = document.getElementById(`show_${start}`).checked && 
+                                     document.getElementById(`show_${end}`).checked;
             });
         }
 
-        function setupEventListeners() {
-            const slider = document.getElementById('slider');
-            const playButton = document.getElementById('playButton');
-            const speedControl = document.getElementById('speedControl');
-            
-            slider.addEventListener('input', (e) => {
-                currentFrame = parseInt(e.target.value);
-                document.getElementById('frameInfo').textContent = `幀數: ${currentFrame}`;
-                updatePose(currentFrame);
-            });
-            
-            playButton.addEventListener('click', togglePlayback);
-            
-            speedControl.addEventListener('input', (e) => {
-                playbackSpeed = parseFloat(e.target.value);
-                document.getElementById('speedValue').textContent = `${playbackSpeed.toFixed(1)}x`;
-                if (isPlaying) restartPlayback();
-            });
+        // 更新姿態
+        function updatePose(frameIndex) {
+            if (!trajectoryData[frameIndex]) return;
+            const frame = trajectoryData[frameIndex];
 
-            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
-            
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-        }
+            const validPositions = Object.entries(frame)
+                .filter(([name, pos]) => pos && 
+                    pos.x !== null && pos.y !== null && pos.z !== null && 
+                    pos.x !== undefined && pos.y !== undefined && pos.z !== undefined
+                );
 
-        function togglePlayback() {
-            isPlaying = !isPlaying;
-            const playButton = document.getElementById('playButton');
-            playButton.textContent = isPlaying ? '暫停' : '播放';
-            playButton.style.background = isPlaying ? '#f44336' : '#4CAF50';
-            
-            if (isPlaying) {
-                startPlayback();
-            } else {
-                clearInterval(frameInterval);
-            }
-        }
+            if (validPositions.length === 0) return;
 
-        function startPlayback() {
-            const frameTime = 1000 / (30 * playbackSpeed);
-            frameInterval = setInterval(() => {
-                if (currentFrame >= trajectoryData.length - 1) {
-                    currentFrame = 0;
+            const center = validPositions.reduce((acc, [_, pos]) => ({
+                x: acc.x + pos.x / validPositions.length,
+                z: acc.z + pos.z / validPositions.length
+            }), { x: 0, z: 0 });
+
+            const minY = Math.min(...['left_ankle', 'right_ankle']
+                .map(name => {
+                    const pos = frame[name];
+                    return (pos && pos.y !== null && pos.y !== undefined) ? pos.y : Infinity;
+                }));
+
+            // 更新節點位置
+            Object.entries(joints3D).forEach(([name, mesh]) => {
+                const pos = frame[name];
+                if (pos && pos.x !== null && pos.y !== null && pos.z !== null &&
+                    pos.x !== undefined && pos.y !== undefined && pos.z !== undefined) {
+                    mesh.position.set(
+                        (pos.x - center.x) * SCALE_FACTOR,
+                        (pos.y - minY) * SCALE_FACTOR,
+                        -(pos.z - center.z) * SCALE_FACTOR
+                    );
+                    mesh.visible = true;
                 } else {
-                    currentFrame++;
+                    mesh.visible = false;
                 }
-                updateFrame();
-            }, frameTime);
+            });
+
+            // 更新骨架線
+            skeleton_connections.forEach((connection, index) => {
+                const [start, end] = connection;
+                const startPos = frame[start];
+                const endPos = frame[end];
+
+                if (startPos && endPos && 
+                    startPos.x !== null && startPos.y !== null && startPos.z !== null &&
+                    endPos.x !== null && endPos.y !== null && endPos.z !== null &&
+                    startPos.x !== undefined && startPos.y !== undefined && startPos.z !== undefined &&
+                    endPos.x !== undefined && endPos.y !== undefined && endPos.z !== undefined) {
+                    
+                    lines[index].geometry.setFromPoints([
+                        new THREE.Vector3(
+                            (startPos.x - center.x) * SCALE_FACTOR,
+                            (startPos.y - minY) * SCALE_FACTOR,
+                            -(startPos.z - center.z) * SCALE_FACTOR
+                        ),
+                        new THREE.Vector3(
+                            (endPos.x - center.x) * SCALE_FACTOR,
+                            (endPos.y - minY) * SCALE_FACTOR,
+                            -(endPos.z - center.z) * SCALE_FACTOR
+                        )
+                    ]);
+                    lines[index].visible = true;
+                } else {
+                    lines[index].visible = false;
+                }
+            });
         }
 
-        function restartPlayback() {
-            if (isPlaying) {
-                clearInterval(frameInterval);
-                startPlayback();
-            }
-        }
-
+        // 更新幀
         function updateFrame() {
-            const slider = document.getElementById('slider');
-            slider.value = currentFrame;
+            document.getElementById('slider').value = currentFrame;
             document.getElementById('frameInfo').textContent = `幀數: ${currentFrame}`;
             updatePose(currentFrame);
         }
 
-        function updatePose(frameIndex) {
-    if (!trajectoryData[frameIndex]) return;
-    const frame = trajectoryData[frameIndex];
-
-    // 計算當前幀的所有關節點的中心點
-    let centerX = 0;
-    let centerZ = 0;
-    let pointCount = 0;
-    
-    // 找到最低的 y 座標（腳的位置）和計算 x,z 的中心
-    let minY = Infinity;
-    Object.entries(frame).forEach(([name, pos]) => {
-        if (pos && typeof pos.x === 'number' && typeof pos.z === 'number') {
-            centerX += pos.x;
-            centerZ += pos.z;
-            pointCount++;
+        // 設置事件監聽器
+        function setupEventListeners() {
+            document.getElementById('slider').addEventListener('input', e => {
+                currentFrame = parseInt(e.target.value);
+                updateFrame();
+            });
             
-            if (pos.y !== undefined && (name === 'left_ankle' || name === 'right_ankle')) {
-                minY = Math.min(minY, pos.y);
-            }
-        }
-    });
-
-    // 計算中心點偏移
-    centerX = centerX / pointCount;
-    centerZ = centerZ / pointCount;
-
-    // 更新所有關節點的位置，將模型置中
-    Object.entries(joints3D).forEach(([name, mesh]) => {
-        if (frame[name]) {
-            mesh.position.set(
-                (frame[name].x - centerX) * SCALE_FACTOR,
-                (frame[name].y - minY) * SCALE_FACTOR,
-                -(frame[name].z - centerZ) * SCALE_FACTOR
-            );
-        }
-    });
-
-    // 更新骨架線
-    skeleton_connections.forEach((connection, index) => {
-        const [start, end] = connection;
-        if (frame[start] && frame[end]) {
-            const points = [
-                new THREE.Vector3(
-                    (frame[start].x - centerX) * SCALE_FACTOR,
-                    (frame[start].y - minY) * SCALE_FACTOR,
-                    -(frame[start].z - centerZ) * SCALE_FACTOR
-                ),
-                new THREE.Vector3(
-                    (frame[end].x - centerX) * SCALE_FACTOR,
-                    (frame[end].y - minY) * SCALE_FACTOR,
-                    -(frame[end].z - centerZ) * SCALE_FACTOR
-                )
-            ];
-            lines[index].geometry.setFromPoints(points);
-        }
-    });
-}
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    let content = e.target.result
-                        .replace(/^\uFEFF/, '')
-                        .replace(/^['"]|['"]$/g, '')
-                        .trim();
-                    
-                    let data = JSON.parse(content);
-                    trajectoryData = Array.isArray(data) ? data : [data];
-                    
-                    const isValidData = trajectoryData.every(frame => {
-                        return frame.hasOwnProperty('frame') && 
-                               Object.keys(joints).every(key => 
-                                   !frame[key] || (
-                                       frame[key].x !== undefined && 
-                                       frame[key].y !== undefined && 
-                                       frame[key].z !== undefined
-                                   )
-                               );
-                    });
-                    
-                    if (!isValidData) {
-                        throw new Error('無效的數據格式：每個幀都必須包含關節點座標');
-                    }
-                    
-                    const slider = document.getElementById('slider');
-                    slider.max = trajectoryData.length - 1;
-                    slider.value = 0;
-                    document.getElementById('frameInfo').textContent = '幀數: 0';
-                    
-                    currentFrame = 0;
-                    updatePose(0);
-                    
-                    console.log('數據載入成功:', trajectoryData.length, '幀');
-                } catch (error) {
-                    console.error('錯誤詳情:', error);
-                    alert('解析 JSON 文件時出錯。請確保文件格式正確。\n錯誤: ' + error.message);
+            document.getElementById('playButton').addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                const btn = document.getElementById('playButton');
+                btn.textContent = isPlaying ? '暫停' : '播放';
+                btn.style.background = isPlaying ? '#f44336' : '#4CAF50';
+                
+                if (isPlaying) {
+                    clearInterval(frameInterval);
+                    frameInterval = setInterval(() => {
+                        currentFrame = (currentFrame + 1) % trajectoryData.length;
+                        updateFrame();
+                    }, 1000 / (30 * playbackSpeed));
+                } else {
+                    clearInterval(frameInterval);
                 }
-            };
+            });
+
+            document.getElementById('showFullTrajectoryButton').addEventListener('click', () => {
+                showingFullTrajectory = !showingFullTrajectory;
+                const btn = document.getElementById('showFullTrajectoryButton');
+                btn.textContent = showingFullTrajectory ? '隱藏軌跡' : '顯示完整軌跡';
+                btn.style.background = showingFullTrajectory ? '#f44336' : '#4CAF50';
+                
+                if (showingFullTrajectory) {
+                    calculateFullTrajectory();
+                } else {
+                    clearTrajectories();
+                }
+                updateFrame();
+            });
             
-            reader.onerror = (error) => {
-                console.error('檔案讀取錯誤:', error);
-                alert('讀取檔案時出錯。請重試。');
-            };
-            
-            reader.readAsText(file);
+            document.getElementById('speedControl').addEventListener('input', e => {
+                playbackSpeed = parseFloat(e.target.value);
+                document.getElementById('speedValue').textContent = `${playbackSpeed.toFixed(1)}x`;
+                if (isPlaying) {
+                    clearInterval(frameInterval);
+                    frameInterval = setInterval(() => {
+                        currentFrame = (currentFrame + 1) % trajectoryData.length;
+                        updateFrame();
+                    }, 1000 / (30 * playbackSpeed));
+                }
+            });
+
+            document.getElementById('fileInput').addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = e => {
+                    try {
+                        const data = JSON.parse(e.target.result.replace(/^\uFEFF/, '').trim());
+                        trajectoryData = Array.isArray(data) ? data : [data];
+                        
+                        clearTrajectories();
+                        document.getElementById('slider').max = trajectoryData.length - 1;
+                        currentFrame = 0;
+                        updateFrame();
+                    } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                        alert('JSON 格式錯誤');
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                labelRenderer.setSize(window.innerWidth, window.innerHeight);
+            });
         }
 
+        // 動畫循環
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
-            
-            // 添加輕微的浮動效果
-            Object.values(joints3D).forEach(joint => {
-                joint.position.y += Math.sin(Date.now() * 0.002) * 0.0001;
-            });
-            
             renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
         }
 
+        // 初始化場景
         init();
     </script>
 </body>
