@@ -63,7 +63,7 @@ def process_video_fast(input_path, output_path, speed_factor=1.0):
     print("完成!")
 
 # 使用範例
-input_video = "GX010240.MP4"
-output_video = "leftBackhand_side.mp4"
+input_video = "pro_1_1_side_完成.mp4"
+output_video = "pro_1_1_side_temp.mp4"
 speed_factor = 1.0  # 保持原速
 process_video_fast(input_video, output_video, speed_factor)
