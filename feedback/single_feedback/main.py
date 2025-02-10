@@ -6,35 +6,36 @@ import pandas as pd
 import single_feedback.config as config
 
 load_dotenv()
-
+# -----------------------------
+# --------Model setting--------
+# -----------------------------
 client = config.client
-INSTRUCTIONS = config.INSTRUCTIONS 
-
 TEMPERATURE = config.TEMPERATURE
 MAX_TOKENS = config.MAX_TOKENS
 FREQUENCY_PENALTY = config.FREQUENCY_PENALTY
 PRESENCE_PENALTY = config.PRESENCE_PENALTY
 MAX_CONTEXT_QUESTIONS = config.MAX_CONTEXT_QUESTIONS
-
-target = config.target
-junior_filepath = config.target_filepath
-
+TOP_P = config.TOP_P
+# -----------------------------
+# --------Prompt setting--------
+# -----------------------------
+INSTRUCTIONS = config.INSTRUCTIONS 
+PROMPT_1 = config.PROMPT_1
+# -----------------------------
+# --------File setting--------
+# -----------------------------
 pro = config.pro
 pro_filepath = config.pro_filepath
-
-def system_message(INSTRUCTIONS, previous, my_motion,coach_motion):
-    # messages = [
-    #     { "role": "system", 
-    #       "content": INSTRUCTIONS },
-    #     {"role":"system",
-    #      "content": f"here is the trajectory of my tennis swing motion:{my_motion}. Please compare this with {coach_motion}, and base on this give me some advice,let me know how to improve my swing motion."} 
-    # ]
-    
+# -----------------------------
+# -------------DEF-------------
+# -----------------------------
+def system_message(INSTRUCTIONS, my_motion, coach_motion):    
+    print ("\nGernerating Response......\n")
     messages = [
         { "role": "system", 
           "content": INSTRUCTIONS },
         { "role": "system", 
-          "content": "in the next convesation i will give you a json file, This JSON file contains multiple frames of vectors describing the trajectory of a tennis swing. And the data schema includes frames, 3D spatial coordinates of right wrist, right elbow, right shoulder, and a boolean indicating whether the tennis ball was hit" },
+          "content": PROMPT_1 },
         {"role":"user",
          "content": f"here is the json file of my tennis swing motion:{my_motion}. Please compare this with coach's motion {coach_motion}, and base on the difference give  me some advice, let me know how to improve my swing motion."} 
     ]
@@ -44,65 +45,61 @@ def system_message(INSTRUCTIONS, previous, my_motion,coach_motion):
         messages=messages,
         temperature=TEMPERATURE,
         max_tokens=MAX_TOKENS,
-        top_p=1,
+        top_p=TOP_P,
         frequency_penalty=FREQUENCY_PENALTY,
         presence_penalty=PRESENCE_PENALTY,
     )
     
+
+    
     response = completion.choices[0].message.content
+    
     messages.append({ "role": "assistant", "content": response })       
     
-    print ("\n", Fore.CYAN + Style.BRIGHT + "網球教練Frank: " + Style.NORMAL + response ,"\n")
-    previous.append(messages)
-
-def get_response(INSTRUCTIONS, previous_questions_and_answers, new_question, standard_df):
-    messages = [ ]
+    print (Fore.CYAN + Style.BRIGHT + "網球教練Frank: " + Style.NORMAL + response)
     
-    # add the previous questions and answers
-    for question, answer in previous_questions_and_answers[-MAX_CONTEXT_QUESTIONS:]:
-        messages.append({ "role": "user", "content": question })
-        messages.append({ "role": "assistant", "content": answer })    
-        
-    # Enter new Question
-    messages.append({ "role": "user", "content": new_question })
-
+    ai_feedback =  [msg for msg in messages if msg["role"] == "assistant"]
+    return ai_feedback 
+    
+def conclude(INSTRUCTIONS,ai_feedback):
+    print ("\nGernerating Conclusion......\n")
+    
+    messages = [
+        { "role": "system", 
+          "content": INSTRUCTIONS },
+        {"role":"user",
+         "content": f"Based on the previous {ai_feedback}, give me a clear and easy-to-understand conclusion about my swing motion in Traditional Chinese, as if you were a coach giving friendly, spoken feedback."} 
+    ]
     completion = client.chat.completions.create(
         model="gpt-4o",
         messages=messages,
         temperature=TEMPERATURE,
         max_tokens=MAX_TOKENS,
-        top_p=1,
+        top_p=TOP_P,
         frequency_penalty=FREQUENCY_PENALTY,
-        presence_penalty=PRESENCE_PENALTY,
-    )
-    return completion.choices[0].message.content
-
-def get_moderation(question):
-    errors = {
-        "hate": "Content that expresses, incites, or promotes hate based on race, gender, ethnicity, religion, nationality, sexual orientation, disability status, or caste.",
-        "hate/threatening": "Hateful content that also includes violence or serious harm towards the targeted group.",
-        "self-harm": "Content that promotes, encourages, or depicts acts of self-harm, such as suicide, cutting, and eating disorders.",
-        "sexual": "Content meant to arouse sexual excitement, such as the description of sexual activity, or that promotes sexual services (excluding sex education and wellness).",
-        "sexual/minors": "Sexual content that includes an individual who is under 18 years old.",
-        "violence": "Content that promotes or glorifies violence or celebrates the suffering or humiliation of others.",
-        "violence/graphic": "Violent content that depicts death, violence, or serious physical injury in extreme graphic detail.",
-    }
-    response = client.moderations.create(input=question)
-    if response.results[0].flagged:
-        result = [
-            error
-            for category, error in errors.items()
-            if response.results[0].categories[category]
-        ]
-        return result
-    return None
-
-def main():
-    my_motion = pd.read_json(junior_filepath)   
-    coach_motion = pd.read_json(pro_filepath)    
-    previous_questions_and_answers = []
+        presence_penalty=PRESENCE_PENALTY
+    ) 
     
-    system_message(INSTRUCTIONS, previous_questions_and_answers, my_motion, coach_motion)      
+    response = completion.choices[0].message.content
+    print ("---CONCLUSION---")
+    print ("\n",response)
+    
+def main():
+    target = [f"junior_9_{i}_cleaned" for i in range(3)]
+    target_filepaths = [f"./__data__/junior/{t}.json" for t in target]
+    
+    ai_feedback = []
+    
+    for t in target_filepaths:
+        my_motion = pd.read_json(t)
+        coach_motion = pd.read_json(pro_filepath)            
+        response = system_message(INSTRUCTIONS, my_motion, coach_motion)
+        ai_feedback.append(response)
+    
+    conclude(INSTRUCTIONS,ai_feedback)
+
+        
+    
 
 
 if __name__ == "__main__":
