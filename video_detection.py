@@ -3,225 +3,267 @@ import numpy as np
 from ultralytics import YOLO
 import time
 
-def resize_frame(frame, width=None, height=None, inter=cv2.INTER_AREA):
-    dim = None
-    (h, w) = frame.shape[:2]
+# COCO 預設 17 個關節的名稱，可視需求調整/增加
+body_parts_list = [
+    "nose", "left_eye", "right_eye", "left_ear", "right_ear",
+    "left_shoulder", "right_shoulder", "left_elbow", "right_elbow",
+    "left_wrist", "right_wrist", "left_hip", "right_hip",
+    "left_knee", "right_knee", "left_ankle", "right_ankle"
+]
 
+def resize_frame(frame, width=None, height=None, inter=cv2.INTER_AREA):
     if width is None and height is None:
         return frame
-
+    h, w = frame.shape[:2]
     if width is None:
         r = height / float(h)
         dim = (int(w * r), height)
     else:
         r = width / float(w)
         dim = (width, int(h * r))
+    return cv2.resize(frame, dim, interpolation=inter)
 
-    resized = cv2.resize(frame, dim, interpolation=inter)
-    return resized
-
-def process_video(video_path, FIXED_WIDTH=1280, FIXED_HEIGHT=720, TRACKED_KEYPOINTS=[10], 
-                 TRAIL_THICKNESS=6, BALL_TRAIL_THICKNESS=4):
-    # 初始化模型
-    ball_model = YOLO('model/tennisball_OD_v1.pt')
-    pose_model = YOLO("model/yolov8n-pose.pt")
-
-    # 讀取影片
+def process_video(
+    video_path,
+    ball_model_path='model/tennisball_OD_v1.pt',
+    pose_model_path='model/yolov8n-pose.pt',
+    # 輸出主畫面大小 (推論 & 顯示都用這尺寸)
+    OUTPUT_WIDTH=1280,
+    OUTPUT_HEIGHT=720,
+    # 每幾幀推論一次
+    skip_frames=3,
+    # YOLO 批次大小
+    yolo_batch_size=8
+):
+    device_str = 'cuda'  # 若無GPU，就改為 'cpu'
+    ball_model = YOLO(ball_model_path).to(device_str)
+    pose_model = YOLO(pose_model_path).to(device_str)
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
-        print(f"無法讀取影片：{video_path}")
+        print(f"無法讀取影片: {video_path}")
         return
 
-    # 設置輸出影片參數
     original_fps = int(cap.get(cv2.CAP_PROP_FPS))
-    output_fps = original_fps // 1
-    output_width = FIXED_WIDTH + 400
-    output_height = FIXED_HEIGHT
-    output_path = video_path.replace('.mp4','_full_trail_slow.mp4')
+
+    frames_for_output = []
+    frames_for_infer = []
+    infer_indices = []
+
+    frame_idx = 0
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame_idx += 1
+
+        resized_frame = resize_frame(frame, OUTPUT_WIDTH, OUTPUT_HEIGHT)
+        frames_for_output.append(resized_frame)
+
+        if frame_idx % skip_frames == 0:
+            frames_for_infer.append(resized_frame)
+            infer_indices.append(frame_idx)
+
+    cap.release()
+    total_frames = len(frames_for_output)
+
+    if total_frames == 0:
+        return
+
+    pose_results_batch = pose_model.predict(
+        frames_for_infer,
+        verbose=False,
+        device=device_str,
+        batch=yolo_batch_size
+    )
+    ball_results_batch = ball_model.predict(
+        frames_for_infer,
+        verbose=False,
+        device=device_str,
+        batch=yolo_batch_size
+    )
+
+    ball_positions = [None] * total_frames
+    ball_confidences = [None] * total_frames
+    keypoints_per_frame = [None] * total_frames
+
+    for i, fidx in enumerate(infer_indices):
+        pose_result = pose_results_batch[i]
+        ball_result = ball_results_batch[i]
+
+        if pose_result.keypoints is not None and len(pose_result.keypoints) > 0:
+            kpts = pose_result.keypoints.xy[0]  # shape (17,2)
+            kpts_xy = [(int(x), int(y)) for x, y in kpts]
+        else:
+            kpts_xy = None
+
+        boxes = ball_result.boxes
+        if boxes is not None and len(boxes) > 0:
+            box = boxes[0]
+            x1, y1, x2, y2 = box.xyxy[0]
+            cx = int((x1 + x2) / 2)
+            cy = int((y1 + y2) / 2)
+            ball_pos = (cx, cy)
+            ball_conf = float(box.conf[0])
+        else:
+            ball_pos = None
+            ball_conf = None
+
+        idx_in_list = fidx - 1
+        ball_positions[idx_in_list] = ball_pos
+        ball_confidences[idx_in_list] = ball_conf
+        keypoints_per_frame[idx_in_list] = kpts_xy
+
+    last_ball = None
+    last_conf = None
+    last_kpts = None
+    for i in range(total_frames):
+        if ball_positions[i] is None:
+            ball_positions[i] = last_ball
+            ball_confidences[i] = last_conf
+        else:
+            last_ball = ball_positions[i]
+            last_conf = ball_confidences[i]
+
+        if keypoints_per_frame[i] is None:
+            keypoints_per_frame[i] = last_kpts
+        else:
+            last_kpts = keypoints_per_frame[i]
+
+    output_path = video_path
+
+    info_panel_width = 400
+    output_width = OUTPUT_WIDTH + info_panel_width  # 1680
+    output_height = OUTPUT_HEIGHT                  # 720
+
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_path, fourcc, output_fps, (output_width, output_height))
+    out = cv2.VideoWriter(output_path, fourcc, original_fps, (output_width, output_height))
 
-    # 身體部位定義
-    body_parts = {
-        0: "nose", 1: "left_eye", 2: "right_eye", 3: "left_ear", 4: "right_ear",
-        5: "left_shoulder", 6: "right_shoulder", 7: "left_elbow", 8: "right_elbow",
-        9: "left_wrist", 10: "right_wrist", 11: "left_hip", 12: "right_hip",
-        13: "left_knee", 14: "right_knee", 15: "left_ankle", 16: "right_ankle"
-    }
-
-    # 初始化軌跡
+    TRACKED_KEYPOINTS = [10]
     keypoint_trails = {kp: [] for kp in TRACKED_KEYPOINTS}
     ball_trail = []
 
-    # 第一次遍歷收集軌跡
-    print("第一次遍歷視頻以收集軌跡點...")
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-            
-        frame = resize_frame(frame, width=FIXED_WIDTH, height=FIXED_HEIGHT)
-        
-        # 收集姿態點
-        pose_results = pose_model(frame)
-        for result in pose_results:
-            if result.keypoints is not None:
-                keypoints = result.keypoints.xy[0]
-                for kp_idx in TRACKED_KEYPOINTS:
-                    if kp_idx < len(keypoints):
-                        x, y = map(int, keypoints[kp_idx])
-                        keypoint_trails[kp_idx].append((x, y))
-        
-        # 收集球軌跡
-        ball_results = ball_model(frame)
-        ball_found = False
-        for result in ball_results:
-            boxes = result.boxes
-            for box in boxes:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                center_x = int((x1 + x2) / 2)
-                center_y = int((y1 + y2) / 2)
-                ball_trail.append((center_x, center_y))
-                ball_found = True
-                break
-            if ball_found:
-                break
-        if not ball_found:
-            ball_trail.append(None)
 
-    # 重置視頻
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-    frame_count = 0
+    for i in range(total_frames):
+        frame = frames_for_output[i].copy()
 
-    print("開始處理視頻並繪製軌跡...")
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-            
-        frame_count += 1
-        if frame_count % 30 == 0:
-            print(f"已處理 {frame_count} 幀")
+        ball_pos = ball_positions[i]
+        ball_conf = ball_confidences[i]
+        kpts = keypoints_per_frame[i]
 
-        frame = resize_frame(frame, width=FIXED_WIDTH, height=FIXED_HEIGHT)
-        annotated_frame = frame.copy()
+        ball_trail.append(ball_pos)
 
-        # 繪製球軌跡
-        current_ball_trail = [p for p in ball_trail[:frame_count] if p is not None]
-        for i in range(1, len(current_ball_trail)):
-            progress = i / len(current_ball_trail)
-            color = (0, int(255 * (1 - progress)), int(255 * progress))
-            cv2.line(annotated_frame, current_ball_trail[i-1],
-                    current_ball_trail[i], color, BALL_TRAIL_THICKNESS)
-
-        # 網球檢測
-        ball_results = ball_model(frame)
-        ball_detected = False
-        center_x, center_y = None, None
-        conf = 0.0
-        
-        for result in ball_results:
-            boxes = result.boxes
-            for box in boxes:
-                ball_detected = True
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                center_x = int((x1 + x2) / 2)
-                center_y = int((y1 + y2) / 2)
-                conf = float(box.conf)
-                cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.circle(annotated_frame, (center_x, center_y), 5, (0, 0, 255), -1)
-                break
-            if ball_detected:
-                break
-
-        # 創建信息面板
-        info_panel = np.ones((output_height, 400, 3), dtype=np.uint8) * 40
-
-        # 添加標題區塊（深綠色背景）
-        title_height = 50
-        cv2.rectangle(info_panel, (0, 0), (400, title_height), (0, 100, 0), -1)
-        cv2.putText(info_panel, "Tennis Ball Detection", (10, 35), 
-                    cv2.FONT_HERSHEY_DUPLEX, 0.9, (255, 255, 255), 2)
-
-        # 球的資訊區塊
-        y_offset = 70
-        if ball_detected:
-            cv2.putText(info_panel, "Ball Status: Detected", (10, y_offset), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            cv2.putText(info_panel, f"Position: ({center_x}, {center_y})", 
-                        (10, y_offset + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)
-            cv2.putText(info_panel, f"Confidence: {conf:.2f}", 
-                        (10, y_offset + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)
+        if kpts is not None:
+            for kp_idx in TRACKED_KEYPOINTS:
+                if kp_idx < len(kpts):
+                    keypoint_trails[kp_idx].append(kpts[kp_idx])
+                else:
+                    keypoint_trails[kp_idx].append(None)
         else:
-            cv2.putText(info_panel, "Ball Status: Not Detected", (10, y_offset), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-            cv2.putText(info_panel, "Position: (None, None)", 
-                        (10, y_offset + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)
+            for kp_idx in TRACKED_KEYPOINTS:
+                keypoint_trails[kp_idx].append(None)
 
-        # 姿態估計標題區塊（棕色背景）
-        pose_title_y = y_offset + 90
-        cv2.rectangle(info_panel, (0, pose_title_y), (400, pose_title_y + 40), (139, 69, 19), -1)
-        cv2.putText(info_panel, "Pose Estimation", (10, pose_title_y + 30), 
-                    cv2.FONT_HERSHEY_DUPLEX, 0.9, (255, 255, 255), 2)
+        valid_ball_positions = [p for p in ball_trail if p is not None]
+        for b in range(1, len(valid_ball_positions)):
+            p1 = valid_ball_positions[b - 1]
+            p2 = valid_ball_positions[b]
+            if p1 and p2:
+                progress = b / len(valid_ball_positions)
+                color = (0, int(255*(1 - progress)), int(255*progress))
+                cv2.line(frame, p1, p2, color, 4)  # 球軌跡稍微細一點
 
-        # 繪製姿態點資訊
-        pose_y_offset = pose_title_y + 60
-        pose_results = pose_model(frame)
-
-        if len(pose_results) > 0 and pose_results[0].keypoints is not None:
-            keypoints = pose_results[0].keypoints.xy[0]
-            
-            # 標記姿態點
-            for i, keypoint in enumerate(keypoints):
-                x, y = map(int, keypoint)
-                color = (0, 0, 255) if i in TRACKED_KEYPOINTS else (0, 255, 0)
-                cv2.circle(annotated_frame, (x, y), 5, color, -1)
-                cv2.putText(annotated_frame, str(i), (x+10, y+10), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-                
-                # 顯示座標資訊（單列）
-                part_name = body_parts.get(i, "unknown")
-                info_text = f"{part_name:15s}: ({x:4d}, {y:4d})"
-                cv2.putText(info_panel, info_text, 
-                        (10, pose_y_offset + i*25), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
-        else:
-            cv2.putText(info_panel, "No keypoints detected", (10, pose_y_offset), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
-
-        # 繪製身體節點軌跡
+        # -- 繪製姿態軌跡 (keypoints=10)
         for kp_idx, trail in keypoint_trails.items():
-            current_trail = trail[:frame_count]
-            for i in range(1, len(current_trail)):
-                progress = i / len(current_trail)
-                color = (int(255 * (1 - progress)),
-                        int(255 * progress),
-                        0)
-                cv2.line(annotated_frame, 
-                        current_trail[i-1],
-                        current_trail[i], 
-                        color,
-                        TRAIL_THICKNESS)
-        
-        # 合併幀
-        combined_frame = np.hstack((annotated_frame, info_panel))
+            valid_trail = [p for p in trail if p is not None]
+            for t in range(1, len(valid_trail)):
+                p1 = valid_trail[t-1]
+                p2 = valid_trail[t]
+                progress = t / len(valid_trail)
+                color = (int(255*(1 - progress)), int(255*progress), 0)
+                cv2.line(frame, p1, p2, color, 4)
+
+        if kpts is not None:
+            for idx, (xx, yy) in enumerate(kpts):
+                color = (0, 0, 255) if idx in TRACKED_KEYPOINTS else (0, 255, 0)
+                cv2.circle(frame, (xx, yy), 5, color, -1)
+                cv2.putText(frame, str(idx), (xx+5, yy+10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
+
+        info_panel = np.ones((output_height, info_panel_width, 3), dtype=np.uint8) * 40
+
+        header_height = 50
+        cv2.rectangle(info_panel, (0, 0), (info_panel_width, header_height), (0, 150, 0), -1)
+        cv2.putText(info_panel, "Tennis Ball Detection", (10, 35),
+                    cv2.FONT_HERSHEY_DUPLEX, 0.8, (255, 255, 255), 2)
+
+        y_text = header_height + 30
+
+        if ball_pos is not None:
+            cv2.putText(info_panel, "Ball Status: Detected", (10, y_text),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        else:
+            cv2.putText(info_panel, "Ball Status: Not Detected", (10, y_text),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        y_text += 30
+
+        if ball_pos is not None:
+            cx, cy = ball_pos
+            cv2.putText(info_panel, f"Position: ({cx}, {cy})", (10, y_text),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1)
+            y_text += 30
+
+            if ball_conf is not None:
+                cv2.putText(info_panel, f"Confidence: {ball_conf:.2f}", (10, y_text),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1)
+                y_text += 30
+
+        # (2) 藍色區塊 (Pose Estimation Title)
+        pose_header_height = 40
+        pose_header_top = y_text
+        pose_header_bottom = pose_header_top + pose_header_height
+
+        cv2.rectangle(info_panel,
+                      (0, pose_header_top),
+                      (info_panel_width, pose_header_bottom),
+                      (255, 100, 0),  # BGR=(255,100,0) 約藍色
+                      -1)
+        cv2.putText(info_panel, "Pose Estimation",
+                    (10, pose_header_top + 28),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8,
+                    (255, 255, 255), 2)
+
+        # 結束後再把 y_text 往下移一些，避免文字與藍色區重疊
+        y_text = pose_header_bottom + 30
+
+        # (3) 列印所有 keypoints 座標
+        if kpts is not None:
+            for idx, part_name in enumerate(body_parts_list):
+                if idx < len(kpts):
+                    xx, yy = kpts[idx]
+                    text_line = f"{part_name:<15}: ({xx}, {yy})"
+                else:
+                    text_line = f"{part_name:<15}: ( -, - )"
+                cv2.putText(info_panel, text_line, (10, y_text),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (220,220,220), 1)
+                y_text += 22
+                if y_text >= output_height - 10:
+                    # 超過面板底部就中斷(避免文字被截斷)
+                    break
+        else:
+            cv2.putText(info_panel, "No keypoints found",
+                        (10, y_text),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+        # 合併左右畫面
+        combined_frame = np.hstack((frame, info_panel))
         out.write(combined_frame)
-        cv2.imshow("Tennis Ball and Pose Detection with Full Trail", combined_frame)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
     out.release()
-    cv2.destroyAllWindows()
-    print(f"處理完成，輸出影片保存為：{output_path}")
-    print(f"總共處理了 {frame_count} 幀")
 
 if __name__ == "__main__":
-    start_time = time.time()
-    
-    video_path = "pro_1_1_45.mp4"
-    print("開始處理影片...")
+    total_start = time.time()
+    video_path="pro_1_1_45_temp.mp4"
+
     process_video(video_path)
-    
-    print(f"執行時間: {time.time() - start_time:.4f}秒")
+
+    total_end = time.time()
+    print(f"===== 程式總耗時: {total_end - total_start:.2f} 秒 =====")

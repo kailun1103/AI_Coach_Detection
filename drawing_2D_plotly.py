@@ -11,7 +11,7 @@ def create_2d_plots(file_path):
                 for point in data if key in point and point[key]['x'] is not None and point[key]['y'] is not None]
 
     trajectory_data = load_data(file_path)
-    wrist_data = extract_coordinates(trajectory_data, 'right_wrist')
+    wrist_data = extract_coordinates(trajectory_data, 'left_wrist')
     ball_data = extract_coordinates(trajectory_data, 'tennis_ball')
     
     def get_common_layout(title):
@@ -91,7 +91,7 @@ def create_2d_plots(file_path):
     fig_wrist.add_trace(create_frame_labels(wrist_data, 'blue'))
     fig_wrist.update_layout(get_common_layout('Wrist Trajectory'))
     fig_wrist.write_html(fig_wrist_name)
-    # fig_wrist.show()
+    fig_wrist.show()
 
     # Combined Trajectory
     # fig_combined = go.Figure()
@@ -102,4 +102,4 @@ def create_2d_plots(file_path):
     # fig_combined.show()
 
 if __name__ == "__main__":
-    create_2d_plots('pro_1_1_45(2D_trajectory_smoothed).json')
+    create_2d_plots('pro_1_1_side_temp(2D_trajectory_smoothed).json')

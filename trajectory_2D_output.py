@@ -92,11 +92,13 @@ if __name__ == "__main__":
     model_load_time = time.time() - model_load_start
     print(f"Model loading time: {model_load_time:.8f}s")
 
-    video_path = 'pro_45_3_1.mp4'
+    video_path = 'pro_1_1_45.mp4'
 
     # Time trajectory analysis
     analysis_start = time.time()
+
     output_path = analyze_trajectory(pose_model, ball_model, video_path)
+
     analysis_time = time.time() - analysis_start
     print(f"Trajectory analysis time: {analysis_time:.8f}s")
 

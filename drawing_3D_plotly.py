@@ -316,4 +316,4 @@ def create_3d_plots(data_file):
     fig.show(config=config)
 
 if __name__ == "__main__":
-    create_3d_plots('pro_3_9(3D_trajectory_smoothed).json')
+    create_3d_plots('pro_1_1_temp(3D_trajectory_smoothed).json')
