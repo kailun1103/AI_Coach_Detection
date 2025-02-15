@@ -52,7 +52,7 @@ def process_video(pose_model, ball_model, video_path):
         for result in ball_results:
             for box in result.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
-                if float(box.conf[0]) > 0.2:
+                if float(box.conf[0]) > 0.8: # 信心值
                     frame_data["tennis_ball"].update({
                         "x": (x1 + x2) // 2,
                         "y": (y1 + y2) // 2

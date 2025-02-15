@@ -23,6 +23,6 @@ def crop_images_with_ratio(folder_path, ratio=0.7):
             cropped_img.save(file_path, quality=95)
             print(f'已處理: {filename} ({width}x{height} -> {new_width}x{new_height})')
 
-folder_path = 'binocular_correction/outdoor_1126/forehand/123'
-ratio = 0.55
+folder_path = 'binocular_correction/outdoor_1126/backhand'
+ratio = 0.7
 crop_images_with_ratio(folder_path, ratio)

@@ -20,11 +20,11 @@ imgpointsL = []     # 存儲左相機拍攝圖片中檢測到的角點二維座�
 
 
 # 讀取並處理每一張標定圖片
-for i in range(10):
+for i in range(9):
     t = str(i)
 
-    ChessImaLF = cv2.imread(f'binocular_correction/outdoor_1126/forehand/45/outdoor_{i}.JPG', 0)
-    ChessImaL = cv2.imread(f'binocular_correction/outdoor_1126/forehand/side/outdoor_{i}.JPG', 0)
+    ChessImaLF = cv2.imread(f'binocular_correction/outdoor_1126/backhand/45/outdoor_{i}.JPG', 0)
+    ChessImaL = cv2.imread(f'binocular_correction/outdoor_1126/backhand/side/outdoor_{i}.JPG', 0)
 
     # 在左和左前圖像中查找標定板角點
     retLF, cornersLF = cv2.findChessboardCorners(ChessImaLF, (10, 7), None)  

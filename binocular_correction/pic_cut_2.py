@@ -21,8 +21,8 @@ class ImageCropperApp:
         self.current_file_path = None
         
         # 記住裁切範圍的變數
-        self.saved_crop_coords = None  # 儲存第一次裁切的座標比例
-        self.use_saved_coords = tk.BooleanVar(value=False)  # 是否使用儲存的座標
+        self.saved_crop_coords = None
+        self.use_saved_coords = tk.BooleanVar(value=False)
         
         # 剪裁區域座標
         self.start_x = None
@@ -30,6 +30,12 @@ class ImageCropperApp:
         self.end_x = None
         self.end_y = None
         self.dragging = False
+        
+        # 控制點變數
+        self.control_points = []
+        self.active_point = None
+        self.point_size = 6
+        self.control_point_tags = ["top_left", "top_right", "bottom_left", "bottom_right"]
         
         # 建立UI元件
         self.create_widgets()
@@ -52,9 +58,10 @@ class ImageCropperApp:
         self.canvas.grid(row=1, column=0, columnspan=3, pady=10)
         
         # 綁定滑鼠事件
-        self.canvas.bind("<ButtonPress-1>", self.start_crop)
-        self.canvas.bind("<B1-Motion>", self.update_crop)
-        self.canvas.bind("<ButtonRelease-1>", self.end_crop)
+        self.canvas.bind("<ButtonPress-1>", self.on_press)
+        self.canvas.bind("<B1-Motion>", self.on_drag)
+        self.canvas.bind("<ButtonRelease-1>", self.on_release)
+        self.canvas.bind("<Motion>", self.update_cursor)
         
         # 按鈕區域
         button_frame = ttk.Frame(self.main_frame)
@@ -66,7 +73,6 @@ class ImageCropperApp:
         ttk.Button(button_frame, text="剪裁", command=self.crop_current_image).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="批次剪裁", command=self.batch_crop).pack(side=tk.LEFT, padx=5)
         
-        # 新增使用已儲存範圍的選項
         ttk.Checkbutton(button_frame, text="使用已儲存的裁切範圍", 
                        variable=self.use_saved_coords).pack(side=tk.LEFT, padx=5)
         
@@ -74,6 +80,90 @@ class ImageCropperApp:
         self.status_label = ttk.Label(self.main_frame, text="")
         self.status_label.grid(row=3, column=0, columnspan=3, pady=5)
         
+    def on_press(self, event):
+        x, y = event.x, event.y
+        
+        # 檢查是否點擊到控制點
+        for i, point in enumerate(self.control_points):
+            px, py = point
+            if abs(x - px) <= self.point_size and abs(y - py) <= self.point_size:
+                self.active_point = i
+                return
+        
+        # 如果沒有點擊到控制點，就開始新的選取
+        self.start_x = x
+        self.start_y = y
+        self.end_x = x
+        self.end_y = y
+        self.dragging = True
+        self.canvas.delete("crop_box")
+        self.canvas.delete("control_point")
+        self.control_points = []
+
+    def on_drag(self, event):
+        if self.active_point is not None:
+            # 調整控制點
+            x, y = event.x, event.y
+            if self.active_point == 0:  # 左上
+                self.start_x, self.start_y = x, y
+            elif self.active_point == 1:  # 右上
+                self.end_x, self.start_y = x, y
+            elif self.active_point == 2:  # 左下
+                self.start_x, self.end_y = x, y
+            elif self.active_point == 3:  # 右下
+                self.end_x, self.end_y = x, y
+        elif self.dragging:
+            # 新選取
+            self.end_x = event.x
+            self.end_y = event.y
+        
+        self.update_selection()
+
+    def on_release(self, event):
+        self.dragging = False
+        self.active_point = None
+        self.update_selection()
+
+    def update_cursor(self, event):
+        x, y = event.x, event.y
+        
+        # 檢查滑鼠是否在控制點上
+        for point in self.control_points:
+            px, py = point
+            if abs(x - px) <= self.point_size and abs(y - py) <= self.point_size:
+                self.canvas.config(cursor="crosshair")
+                return
+        
+        self.canvas.config(cursor="")
+
+    def update_selection(self):
+        self.canvas.delete("crop_box")
+        self.canvas.delete("control_point")
+        
+        if None not in (self.start_x, self.start_y, self.end_x, self.end_y):
+            # 繪製選取框
+            self.canvas.create_rectangle(
+                self.start_x, self.start_y, self.end_x, self.end_y,
+                outline="red", width=2, tags="crop_box"
+            )
+            
+            # 更新控制點位置
+            self.control_points = [
+                (self.start_x, self.start_y),  # 左上
+                (self.end_x, self.start_y),    # 右上
+                (self.start_x, self.end_y),    # 左下
+                (self.end_x, self.end_y)       # 右下
+            ]
+            
+            # 繪製控制點
+            for (x, y), tag in zip(self.control_points, self.control_point_tags):
+                self.canvas.create_oval(
+                    x - self.point_size, y - self.point_size,
+                    x + self.point_size, y + self.point_size,
+                    fill="white", outline="red",
+                    tags=("control_point", tag)
+                )
+    
     def browse_folder(self):
         folder_selected = filedialog.askdirectory()
         if folder_selected:
@@ -121,44 +211,18 @@ class ImageCropperApp:
         except Exception as e:
             messagebox.showerror("錯誤", f"無法載入圖片: {str(e)}")
     
-    def start_crop(self, event):
-        canvas = event.widget
-        self.start_x = canvas.canvasx(event.x)
-        self.start_y = canvas.canvasy(event.y)
-        self.dragging = True
-        
-        # 清除舊的選擇框
-        canvas.delete("crop_box")
-    
-    def update_crop(self, event):
-        if not self.dragging:
-            return
-            
-        canvas = event.widget
-        self.end_x = canvas.canvasx(event.x)
-        self.end_y = canvas.canvasy(event.y)
-        
-        # 更新選擇框
-        canvas.delete("crop_box")
-        canvas.create_rectangle(
-            self.start_x, self.start_y, self.end_x, self.end_y,
-            outline="red", width=2, tags="crop_box"
-        )
-    
-    def end_crop(self, event):
-        self.dragging = False
-    
     def reset_selection(self):
         self.canvas.delete("crop_box")
+        self.canvas.delete("control_point")
         self.start_x = None
         self.start_y = None
         self.end_x = None
         self.end_y = None
+        self.control_points = []
         if not self.use_saved_coords.get():
             self.saved_crop_coords = None
     
     def batch_crop(self):
-        """批次處理所有圖片"""
         if self.saved_crop_coords is None:
             messagebox.showwarning("警告", "請先在第一張圖片上選擇裁切範圍")
             return

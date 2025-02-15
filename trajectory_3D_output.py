@@ -14,22 +14,31 @@ def triangulate_point(P1, P2, point1, point2):
     return X[:3] / X[3]
 
 def fix_trajectory(data):
+    # 找到第一個擊球幀
     start_frame = None
-    end_frame = None
-    
     for i, frame in enumerate(data):
         if frame['tennis_ball_hit']:
             start_frame = i
-        if frame['tennis_ball']['x'] is not None:
+            break
+    
+    if start_frame is None:
+        return data
+        
+    # 從擊球幀開始，找到最後一個有球的幀
+    end_frame = None
+    for i in range(start_frame, len(data)):
+        if data[i]['tennis_ball']['x'] is not None:
             end_frame = i
-            
-    if start_frame is None or end_frame is None:
+    
+    # 如果沒有找到有效的結束幀或起始幀，直接返回原始數據
+    if start_frame is None or end_frame is None or end_frame <= start_frame:
         return data
         
     start_pos = data[start_frame]['tennis_ball']
     end_pos = data[end_frame]['tennis_ball']
     num_frames = end_frame - start_frame + 1
     
+    # 生成平滑的軌跡
     for axis in ['x', 'y', 'z']:
         start_val = start_pos[axis]
         end_val = end_pos[axis]
@@ -105,19 +114,19 @@ if __name__ == "__main__":
     start = time.perf_counter()
     
     P1 = np.array([
-        [5830.127771, 0, 2707.891358, 0],
-        [0, 5660.852212, 2650.794043, 0],
-        [0, 0, 1, 0] 
-    ])
-   
-    P2 = np.array([
-        [-127.726676, -549.005678, 4533.763086, -23449322.445458],
-        [-1883.494533, 3034.703903, 1416.289936, 6432610.718249],
-        [-0.860417, -0.091385, 0.501330, 2218.320368]
+        [ 2259.248492,     0.000000,  1651.846528,     0.000000],
+        [    0.000000,  2262.230378,  1553.020963,     0.000000],
+        [    0.000000,     0.000000,     1.000000,     0.000000],
     ])
 
-    input_path_1 = 'temp/junior_side_trajectory_smoothed.json'
-    input_path_2 = 'temp/junior_45_trajectory_smoothed.json'
+    P2 = np.array([
+        [  795.771338,  -329.492024,  2697.441025, -4465886.061337],
+        [ -966.406397,  2015.459737,  1255.438530, 2097693.969537],
+        [   -0.593810,    -0.198914,     0.779630,  1344.552439],
+    ])
+
+    input_path_1 = 'junior_forehand/junior_17/17_1/17_1_side(2D_trajectory_smoothed).json'
+    input_path_2 = 'junior_forehand/junior_17/17_1/17_1_45(2D_trajectory_smoothed).json'
     
     output_path = process_trajectories(input_path_1, input_path_2, P1, P2)
     print(f"Execution time: {time.perf_counter() - start:.4f}s")

@@ -33,8 +33,8 @@ def combine_videos_cpu(top_video_path, bottom_video_path):
     # print(f"總幀數: {total_frames}")
     
     # 使用 mp4v 編碼器
-    output_path = 'pro_1_1.mp4'
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    output_path = 'merge.mp4'
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height*2))
     
     # 設定批次大小
@@ -77,9 +77,9 @@ def combine_videos_cpu(top_video_path, bottom_video_path):
 
 if __name__ == "__main__":
     start_time = time.time()
-    
-    top_video = "pro_1_1_45_temp.mp4"
-    bottom_video = "pro_1_1_side_temp.mp4"
+
+    top_video = '17_1_45_sync.mp4'
+    bottom_video = '17_1_side_sync.mp4'
     
     print("開始合併影片...")
     combine_videos_cpu(top_video, bottom_video)

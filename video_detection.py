@@ -33,7 +33,9 @@ def process_video(
     # 每幾幀推論一次
     skip_frames=3,
     # YOLO 批次大小
-    yolo_batch_size=8
+    yolo_batch_size=8,
+    # 球偵測信心值閾值
+    ball_conf_threshold=0.8
 ):
     device_str = 'cuda'  # 若無GPU，就改為 'cpu'
     ball_model = YOLO(ball_model_path).to(device_str)
@@ -99,11 +101,16 @@ def process_video(
         boxes = ball_result.boxes
         if boxes is not None and len(boxes) > 0:
             box = boxes[0]
-            x1, y1, x2, y2 = box.xyxy[0]
-            cx = int((x1 + x2) / 2)
-            cy = int((y1 + y2) / 2)
-            ball_pos = (cx, cy)
-            ball_conf = float(box.conf[0])
+            # 加入信心值閾值判斷
+            if float(box.conf[0]) >= ball_conf_threshold:
+                x1, y1, x2, y2 = box.xyxy[0]
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
+                ball_pos = (cx, cy)
+                ball_conf = float(box.conf[0])
+            else:
+                ball_pos = None
+                ball_conf = None
         else:
             ball_pos = None
             ball_conf = None
@@ -129,7 +136,7 @@ def process_video(
         else:
             last_kpts = keypoints_per_frame[i]
 
-    output_path = video_path
+    output_path = video_path.replace('.mp4', '_processed.mp4')
 
     info_panel_width = 400
     output_width = OUTPUT_WIDTH + info_panel_width  # 1680
@@ -141,7 +148,6 @@ def process_video(
     TRACKED_KEYPOINTS = [10]
     keypoint_trails = {kp: [] for kp in TRACKED_KEYPOINTS}
     ball_trail = []
-
 
     for i in range(total_frames):
         frame = frames_for_output[i].copy()
@@ -231,10 +237,8 @@ def process_video(
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8,
                     (255, 255, 255), 2)
 
-        # 結束後再把 y_text 往下移一些，避免文字與藍色區重疊
         y_text = pose_header_bottom + 30
 
-        # (3) 列印所有 keypoints 座標
         if kpts is not None:
             for idx, part_name in enumerate(body_parts_list):
                 if idx < len(kpts):
@@ -246,24 +250,24 @@ def process_video(
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (220,220,220), 1)
                 y_text += 22
                 if y_text >= output_height - 10:
-                    # 超過面板底部就中斷(避免文字被截斷)
                     break
         else:
             cv2.putText(info_panel, "No keypoints found",
                         (10, y_text),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
-        # 合併左右畫面
         combined_frame = np.hstack((frame, info_panel))
         out.write(combined_frame)
 
     out.release()
+    return output_path
 
 if __name__ == "__main__":
     total_start = time.time()
-    video_path="pro_1_1_45_temp.mp4"
-
-    process_video(video_path)
+    video_path = "pro_1_1_45_temp.mp4"
+    
+    # 你可以調整 ball_conf_threshold 的值（範圍 0-1）
+    output_path = process_video(video_path)
 
     total_end = time.time()
     print(f"===== 程式總耗時: {total_end - total_start:.2f} 秒 =====")

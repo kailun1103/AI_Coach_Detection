@@ -10,7 +10,6 @@ from drawing_3D_plotly import create_3d_plots
 from video_detection import process_video
 from video_sync import synchronize_videos
 from video_merge import combine_videos_cpu
-from trajectory_2D_output_video_detection import process_tennis_video
 import concurrent.futures
 
 def analyze_videos_parallel(yolo_pose_model, yolo_tennis_ball_model, video_side, video_45):
@@ -69,8 +68,8 @@ def main():
     timing_results = {}
 
     # 輸入影片
-    video_side = 'pro_1_1_side_temp.mp4'
-    video_45 = 'pro_1_1_45_temp.mp4'
+    video_side = 'pro_1_1/pro_side_1_1.mp4'
+    video_45 = 'pro_1_1/pro_45_1_1.mp4'
 
     # 專業選手正手
     P1 = np.array([
