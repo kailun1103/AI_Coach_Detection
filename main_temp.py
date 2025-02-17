@@ -66,10 +66,11 @@ def main():
     # 開始計算總執行時間
     start_total = time.perf_counter()
     timing_results = {}
+    
 
     # 輸入影片
-    video_side = 'pro_1_1/pro_side_1_1.mp4'
-    video_45 = 'pro_1_1/pro_45_1_1.mp4'
+    video_side = 'trajectory/張凱倫__trajectory/張凱倫__2/張凱倫__2_side.mp4'
+    video_45 = 'trajectory/張凱倫__trajectory/張凱倫__2/張凱倫__2_45.mp4'
 
     # 專業選手正手
     P1 = np.array([
@@ -134,7 +135,7 @@ def main():
 
     print("\n步驟8：同步影片中...")
     start = time.perf_counter()
-    output_path_1, output_path_2 = synchronize_videos(str(video_side), video_45, 
+    output_path_1, output_path_2 = synchronize_videos(video_side, video_45, 
                                                      trajectory_side_smoothing, 
                                                      trajectory_45_smoothing)
     timing_results['影片同步'] = time.perf_counter() - start

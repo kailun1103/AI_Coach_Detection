@@ -35,7 +35,7 @@ def process_video(
     # YOLO 批次大小
     yolo_batch_size=8,
     # 球偵測信心值閾值
-    ball_conf_threshold=0.8
+    ball_conf_threshold=0.2
 ):
     device_str = 'cuda'  # 若無GPU，就改為 'cpu'
     ball_model = YOLO(ball_model_path).to(device_str)

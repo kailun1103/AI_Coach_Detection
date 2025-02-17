@@ -1,1 +1,6 @@
 junior_forehand
+.venv
+.vscode
+ffprobe.exe
+ffmpeg.exe
+trajectory
