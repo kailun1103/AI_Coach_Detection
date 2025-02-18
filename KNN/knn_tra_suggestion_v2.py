@@ -57,6 +57,10 @@ def find_nearest_suggestion(trajectory_frames, merged_dataset, trajectory_filena
         if data["filename"] == trajectory_filename:
             continue  # Skip itself to avoid self-comparison
 
+        suggestion_text = data.get("suggestion", "")
+        if "是否擊球:X" in suggestion_text:
+            continue  # suggestion have "是否擊球:X" pass
+
         total_distance = 0  # Accumulate the Euclidean distance for all frames
         valid_comparisons = 0  # Count valid frame comparisons
 
