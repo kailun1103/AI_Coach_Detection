@@ -6,3 +6,7 @@ RemindMe.md
 _command.sh
 _remindme.md
 .env
+node_modules/
+*.mp4
+__data__/
+node_modules/
