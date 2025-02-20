@@ -4,7 +4,7 @@ python -m venv venv
 venv\Scripts\activate # (PS) activate env
 deactivate #exit Env.
 
-clear ; git add . ; git commit -m "" ; git push -u origin max-qat
+clear ; git add . ; git commit -m "250210 revising feedback" ; git push -u origin max-qat
 
 clear ; git checkout max-prod ; git merge max-qat ; git add . ; git commit -m "" ; git push -u origin max-prod
 

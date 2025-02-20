@@ -1,10 +1,12 @@
 from clean.main import JsonClean as clean
 
-from single_feedback.main import main as open_ai 
+# from single_feedback.main import AIFeedback
+from single_feedback.main import KNNFeedback
 
 # # clean data
 # for i in range(10):
 #     instance = clean(i)
 #     instance.main()
 
-open_ai()
+main = KNNFeedback()
+main.main()

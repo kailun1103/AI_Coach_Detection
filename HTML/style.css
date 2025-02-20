@@ -1,0 +1,149 @@
+body {
+    margin: 0;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    background: rgba(146, 145, 148, 0.377);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 97vh;
+}
+
+.left-panel {
+    flex: 1.5 1 300px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    column-gap: 10px;
+    border-radius: 8px;
+    border: 2px solid #020086;
+    box-shadow: 0 0 10px rgba(111, 0, 255, 0.377), 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    /* 設定最大寬度 */
+    max-height: 800px;
+    /* 設定最大高度 */
+}
+
+.right-panel {
+    flex: 1.5 1 300px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    column-gap: 10px;
+    border-radius: 8px;
+    border: 2px solid #020086;
+    box-shadow: 0 0 10px rgba(111, 0, 255, 0.377), 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    /* 設定最大寬度 */
+    max-height: 800px;
+    /* 設定最大高度 */
+}
+
+video {
+    width: 99%;
+    max-width: 800px;
+    max-height: 600vh;
+    background: black;
+    margin: 0 auto 20px auto;
+    border-radius: 4px;
+    display: block;
+}
+
+
+.file-input {
+    margin-bottom: 10px;
+    display: block;
+    width: 90%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    /* 靠左對齊 */
+}
+
+/* 隱藏原生文件上傳按鈕 */
+.file-input::-webkit-file-upload-button {
+    visibility: hidden;
+}
+
+.file-input::before {
+    content: 'Upload File';
+    display: inline-block;
+    background-color: #8400ff;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.file-input:hover::before {
+    background-color: #8400ff;
+}
+
+.file-input:active::before {
+    background-color: #8400ff;
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f8f8;
+    border-radius: 4px;
+}
+
+
+
+.chart-box {
+    background: rgb(255, 255, 255);
+    padding: 5px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 780px;
+    aspect-ratio: 800 / 240;
+    box-shadow: inset 0 0 0 10px white, 0 2px 4px rgba(106, 6, 255, 0.1);
+}
+
+.trajectory-controls {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 5px;
+}
+
+h2 {
+    color: #8d00e5;
+    text-align: center;
+    font-family: "Arial", sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 0 0 15px 0;
+    padding: 10px 20px;
+    border-bottom: 3px solid #8d00e5;
+}
+
+.filename {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+#speedValue {
+    min-width: 40px;
+    text-align: right;
+}
