@@ -106,17 +106,31 @@ async def check_model_status():
         "tennis_ball_model_loaded": yolo_tennis_ball_model is not None
     }
 
-@app.post("/input_data")
+@app.get("/input_data")
 async def input_user_data(
-    name: str = Form(..., title="User Name", description="Enter your full name"),
-    height: float = Form(..., title="Height (cm)", description="Your height in centimeters"),
-    dominant_hand: DominantHand = Form(..., title="Dominant Hand", description="Select left or right hand")
+    name: str,
+    height: float,
+    dominant_hand: int  # 0為左手，1為右手
 ):
     """
     接收使用者資料，建立使用者特定資料夾與 JSON 紀錄
+    GET 請求版本：
+    - name: 使用者名稱
+    - height: 身高(cm)
+    - dominant_hand: 0=左手, 1=右手
     """
     start_time = time.time()
     try:
+        # 檢查 dominant_hand 輸入
+        if dominant_hand not in [0, 1]:
+            raise HTTPException(
+                status_code=400,
+                detail="dominant_hand must be 0 (left) or 1 (right)"
+            )
+            
+        # 轉換 dominant_hand 數值為字串
+        hand = "left" if dominant_hand == 0 else "right"
+        
         global current_user_folder, current_user_name
         current_user_name = name
         
@@ -128,7 +142,7 @@ async def input_user_data(
         data_to_save = {
             "name": name,
             "height": height,
-            "hand": dominant_hand,
+            "hand": hand,
             "timestamp": time.strftime("%Y_%m_%d_%H_%M_%S"),
             "file_path": str(current_user_folder)
         }
