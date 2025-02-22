@@ -8,10 +8,19 @@ from typing import Optional
 import aiohttp
 import uvicorn
 from fastapi import FastAPI, HTTPException, Form
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ultralytics import YOLO
 
 app = FastAPI(title="GoPro Controller API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允許所有來源
+    allow_credentials=True,
+    allow_methods=["*"],  # 允許所有方法
+    allow_headers=["*"]   # 允許所有 headers
+)
 
 # ----------------------------------------
 # Global Variables
