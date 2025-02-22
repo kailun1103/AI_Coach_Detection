@@ -1,78 +1,45 @@
 const videoPlayer = document.getElementById('videoPlayer');
-const videoSelect = document.getElementById('videoSelect');
-const videoPath = "./assets/video"
 const speedControl = document.getElementById('speedControl');
 const speedValue = document.getElementById('speedValue');
-
-const Json_45_Path = "./assets/json/45";
-const Json_side_Path = "./assets/json/side";
-
-
-// document.getElementById('jsonInput1').addEventListener('change', async (e) => {
-//     const file = e.target.files[0];
-//     if (file) {
-//         document.getElementById('filename1').textContent = file.name;
-//         const text = await file.text();
-//         try {
-//             const data = JSON.parse(text);
-//             createChart('trajectoryChart1', data);
-//         } catch (parseError) {
-//             console.error("解析 JSON 發生錯誤：", parseError);
-//         }
-//     }
-// });
-
-// // 監聽 jsonInput2 檔案選擇
-// document.getElementById('jsonInput2').addEventListener('change', async (e) => {
-//     const file = e.target.files[0];
-//     if (file) {
-//         document.getElementById('filename2').textContent = file.name;
-//         const text = await file.text();
-//         try {
-//             const data = JSON.parse(text);
-//             createChart('trajectoryChart2', data);
-//         } catch (parseError) {
-//             console.error("解析 JSON 發生錯誤：", parseError);
-//         }
-//     }
-// });
+const Json_45_Path = "./assets/player01/";
+const Json_side_Path = "./assets/player01/";
 
 
+// -----------------------------------------------------------------------------
+// -----Video Process-----------------------------------------------------------
+// -----------------------------------------------------------------------------
+const folderSelect = document.getElementById('folderSelect');
+const videoSelect = document.getElementById('videoSelect');
+const basePath = "./assets/";
 
-let charts = {
-    chart1: null,
-    chart2: null
-};
-
-// 變更影片播放速度
-speedControl.addEventListener('input', (e) => {
-    const speed = e.target.value;
-    videoPlayer.playbackRate = speed;
-    speedValue.textContent = speed + 'x';
-});
-
-
-async function fetchVideoList() {
+async function fetchFolderList() {
     try {
-        const response = await fetch('/getVideos'); // 從伺服器請求影片清單
+        const response = await fetch('/getFolders');
+        const folders = await response.json();
+        folderSelect.innerHTML = '<option value="">Choose Player Name</option>' + folders.map(folder => `<option value="${folder}">${folder}</option>`).join('');
+    } catch (error) {
+        console.error("無法獲取資料夾清單：", error);
+    }
+}
+
+async function fetchVideoList(folder) {
+    try {
+        const response = await fetch(`/getVideos?folder=${folder}`);
         const videos = await response.json();
-
-        // 清空下拉選單
-        videoSelect.innerHTML = '<option value="">請選擇影片</option>';
-
-        // 動態新增選項
-        videos.forEach(video => {
-            const option = document.createElement('option');
-            option.value = `${videoPath}/${video}`;
-            option.textContent = video;
-            videoSelect.appendChild(option);
-        });
+        videoSelect.innerHTML = '<option value="">Choose Video</option>' + videos.filter(video => video.endsWith('.mp4')).map(video => `<option value="${basePath}${folder}/${video}">${video}</option>`).join('');
     } catch (error) {
         console.error("無法獲取影片清單：", error);
     }
 }
 
-videoSelect.addEventListener('change', (e) => {
+folderSelect.addEventListener('change', e => {
+    const selectedFolder = e.target.value;
+    selectedFolder ? fetchVideoList(selectedFolder) : videoSelect.innerHTML = '<option value="">Choose Video</option>';
+});
+
+document.addEventListener('DOMContentLoaded', fetchFolderList);
+
+videoSelect.addEventListener('change', e => {
     const selectedVideo = e.target.value;
     if (selectedVideo) {
         videoPlayer.src = selectedVideo;
@@ -80,12 +47,15 @@ videoSelect.addEventListener('change', (e) => {
     }
 });
 
-fetchVideoList();
 
+// -----------------------------------------------------------------------------
+// -----Json Process-----------------------------------------------------------
+// -----------------------------------------------------------------------------
 
-
-
-
+let charts = {
+    chart1: null,
+    chart2: null
+};
 
 // 創建軌跡圖表
 function createChart(canvasId, data) {
@@ -147,8 +117,6 @@ function createChart(canvasId, data) {
         }
     });
 }
-
-
 
 
 async function fetchJsonList(directory) {

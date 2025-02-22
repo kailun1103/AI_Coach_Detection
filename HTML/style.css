@@ -51,11 +51,15 @@ video {
     display: block;
 }
 
-
-.file-input {
-    margin-bottom: 10px;
-    display: block;
-    width: 90%;
+.file-input,
+.video-input {
+    margin-bottom: 0;
+    /* 取消 margin-bottom，避免影響並排 */
+    display: inline-block;
+    width: auto;
+    /* 讓寬度根據內容調整 */
+    flex: 1;
+    /* 讓兩個 select 平均分配空間 */
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -64,7 +68,6 @@ video {
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: left;
-    /* 靠左對齊 */
 }
 
 /* 隱藏原生文件上傳按鈕 */

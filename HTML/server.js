@@ -7,17 +7,40 @@ const port = 3000;
 
 app.use(express.static(path.join(__dirname)));
 
+app.listen(port, () => {
+    console.log(`伺服器運行於 http://localhost:${port}`);
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API: 讀取 assets/video 資料夾中的 MP4 檔案清單
+app.get('/getFolders', (req, res) => {
+    const assetsDir = path.join(__dirname, 'assets');
+    fs.readdir(assetsDir, (err, files) => {
+        if (err) {
+            console.error("讀取資料夾失敗：", err);
+            return res.status(500).json({ error: '無法讀取資料夾' });
+        }
+        // 只保留目錄（資料夾）
+        const folders = files.filter(file => {
+            const filePath = path.join(assetsDir, file);
+            return fs.statSync(filePath).isDirectory();
+        });
+        res.json(folders);
+    });
+});
+
 app.get('/getVideos', (req, res) => {
-    const videoDir = path.join(__dirname, 'assets', 'video');
+    const folder = req.query.folder;
+    if (!folder) {
+        return res.status(400).json({ error: '請提供 folder 參數' });
+    }
+    const videoDir = path.join(__dirname, 'assets', folder);
     fs.readdir(videoDir, (err, files) => {
         if (err) {
-            console.error("讀取影片資料夾失敗：", err);
-            return res.status(500).json({ error: '無法讀取影片資料夾' });
+            console.error(`讀取 ${folder} 資料夾失敗：`, err);
+            return res.status(500).json({ error: `無法讀取 ${folder} 資料夾` });
         }
         // 過濾出副檔名為 .mp4 的檔案
         const mp4Files = files.filter(file => file.toLowerCase().endsWith('.mp4'));
@@ -45,6 +68,3 @@ app.get("/getjson", (req, res) => {
 });
 
 
-app.listen(port, () => {
-    console.log(`伺服器運行於 http://localhost:${port}`);
-});
