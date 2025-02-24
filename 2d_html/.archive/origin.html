@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video and Trajectory Comparison</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            gap: 20px;
+            min-height: 100vh;
+        }
+
+        .left-panel {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .right-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        video {
+            width: 100%;
+            max-height: 60vh;
+            background: black;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .file-input {
+            margin-bottom: 10px;
+            display: block;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        .speed-control input[type="range"] {
+            flex: 1;
+        }
+
+        .chart-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: calc(40vh - 20px);
+        }
+
+        .trajectory-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+            margin: 0 0 15px 0;
+        }
+
+        .filename {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        #speedValue {
+            min-width: 40px;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="left-panel">
+        <h2>Video Player</h2>
+        <input type="file" id="videoInput" accept="video/*" class="file-input">
+        <video id="videoPlayer" controls></video>
+        <div class="speed-control">
+            <label>Playback Speed:</label>
+            <input type="range" id="speedControl" min="0.25" max="2" step="0.25" value="1">
+            <span id="speedValue">1x</span>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="trajectory-controls">
+            <h2>Trajectory Files</h2>
+            <input type="file" id="jsonInput1" accept=".json" class="file-input">
+            <input type="file" id="jsonInput2" accept=".json" class="file-input">
+        </div>
+
+        <div class="chart-box">
+            <div class="filename" id="filename1"></div>
+            <canvas id="trajectoryChart1"></canvas>
+        </div>
+
+        <div class="chart-box">
+            <div class="filename" id="filename2"></div>
+            <canvas id="trajectoryChart2"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Video handling
+        const videoInput = document.getElementById('videoInput');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const speedControl = document.getElementById('speedControl');
+        const speedValue = document.getElementById('speedValue');
+
+        videoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                videoPlayer.src = url;
+            }
+        });
+
+        speedControl.addEventListener('input', (e) => {
+            const speed = e.target.value;
+            videoPlayer.playbackRate = speed;
+            speedValue.textContent = speed + 'x';
+        });
+
+        // Trajectory charts
+        let charts = {
+            chart1: null,
+            chart2: null
+        };
+
+        function createChart(canvasId, data, filename) {
+            const points = data
+                .map(frame => ({
+                    x: frame.right_wrist?.x,
+                    y: frame.right_wrist?.y,
+                    frame: frame.frame
+                }))
+                .filter(point => point.x != null && point.y != null);
+
+            // Get the canvas context
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            // Create new chart
+            charts[canvasId] = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Wrist Trajectory',
+                        data: points,
+                        borderColor: '#4DC4C0',
+                        backgroundColor: 'rgba(77, 196, 192, 0.5)',
+                        showLine: true,
+                        pointRadius: 3,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 0
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'X Position'
+                            },
+                            grid: {
+                                color: '#E5E5E5'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            reverse: true,
+                            title: {
+                                display: true,
+                                text: 'Y Position'
+                            },
+                            grid: {
+                                color: '#E5E5E5'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `Frame: ${context.raw.frame}, X: ${context.raw.x.toFixed(2)}, Y: ${context.raw.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Handle trajectory file inputs
+        document.getElementById('jsonInput1').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('filename1').textContent = file.name;
+                const text = await file.text();
+                const data = JSON.parse(text);
+                createChart('trajectoryChart1', data);
+            }
+        });
+
+        document.getElementById('jsonInput2').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('filename2').textContent = file.name;
+                const text = await file.text();
+                const data = JSON.parse(text);
+                createChart('trajectoryChart2', data);
+            }
+        });
+    </script>
+</body>
+
+</html>
