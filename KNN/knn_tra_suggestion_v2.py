@@ -58,8 +58,8 @@ def find_nearest_suggestion(trajectory_frames, merged_dataset, trajectory_filena
             continue  # Skip itself to avoid self-comparison
 
         suggestion_text = data.get("suggestion", "")
-        if "是否擊球:X" in suggestion_text:
-            continue  # suggestion have "是否擊球:X" pass
+        if "是否擊球:否" in suggestion_text:
+            continue  # suggestion have "是否擊球:否" pass
 
         total_distance = 0  # Accumulate the Euclidean distance for all frames
         valid_comparisons = 0  # Count valid frame comparisons
@@ -105,7 +105,7 @@ def find_nearest_suggestion(trajectory_frames, merged_dataset, trajectory_filena
 # Main execution function
 if __name__ == "__main__":
     # Dynamically pass filename
-    dynamic_filename = "9_8(3D_trajectory_smoothed).json"  # This can be changed to different video filenames
+    dynamic_filename = "9_4(3D_trajectory_smoothed).json"  # This can be changed to different video filenames
 
     # Define paths
     base_path = "E:/git_repos/AI_Coach_Detection/KNN"

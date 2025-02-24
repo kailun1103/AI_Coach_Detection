@@ -2,7 +2,7 @@
     {
         "filename": "10_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不夠完整、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不夠完整、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -5519,7 +5519,7 @@
     {
         "filename": "10_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不夠完整、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不夠完整、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -10561,7 +10561,7 @@
     {
         "filename": "10_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不夠完整、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不夠完整、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -15888,7 +15888,7 @@
     {
         "filename": "12_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:擊球點離身體太近",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:擊球點離身體太近",
         "data": [
             {
                 "frame": 0,
@@ -21120,7 +21120,7 @@
     {
         "filename": "12_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:擊球點離身體太近",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:擊球點離身體太近",
         "data": [
             {
                 "frame": 0,
@@ -26352,7 +26352,7 @@
     {
         "filename": "12_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:X、其他:擊球點離身體太近",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:否、其他:擊球點離身體太近",
         "data": [
             {
                 "frame": 0,
@@ -31299,7 +31299,7 @@
     {
         "filename": "13_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:擊球點過晚",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:擊球點過晚",
         "data": [
             {
                 "frame": 0,
@@ -36436,7 +36436,7 @@
     {
         "filename": "13_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:X、其他:擊球點過晚",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:否、其他:擊球點過晚",
         "data": [
             {
                 "frame": 0,
@@ -41478,7 +41478,7 @@
     {
         "filename": "13_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:X、其他:擊球點過晚",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:否、其他:擊球點過晚",
         "data": [
             {
                 "frame": 0,
@@ -46995,7 +46995,7 @@
     {
         "filename": "14_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:X、其他:手眼協調可以再加強、擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:否、其他:手眼協調可以再加強、擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -51942,7 +51942,7 @@
     {
         "filename": "14_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:X、其他:手眼協調可以再加強、擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:否、其他:手眼協調可以再加強、擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -57364,7 +57364,7 @@
     {
         "filename": "14_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:X、其他:手眼協調可以再加強、擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:否、其他:手眼協調可以再加強、擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -62406,7 +62406,7 @@
     {
         "filename": "15_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:過度用手打球、膝蓋:O、是否擊球:X、其他:擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:過度用手打球、膝蓋:沒問題!、是否擊球:否、其他:擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -67638,7 +67638,7 @@
     {
         "filename": "15_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:過度用手打球、膝蓋:O、是否擊球:X、其他:擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:過度用手打球、膝蓋:沒問題!、是否擊球:否、其他:擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -72205,7 +72205,7 @@
     {
         "filename": "15_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:過度用手打球、膝蓋:O、是否擊球:X、其他:擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:過度用手打球、膝蓋:沒問題!、是否擊球:否、其他:擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -76107,7 +76107,7 @@
     {
         "filename": "16_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:O、是否擊球:X、其他:擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:沒問題!、是否擊球:否、其他:擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -81434,7 +81434,7 @@
     {
         "filename": "16_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:O、是否擊球:X、其他:擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:沒問題!、是否擊球:否、其他:擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -85336,7 +85336,7 @@
     {
         "filename": "16_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:O、是否擊球:O、其他:擊球點掌握不佳",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:沒問題!、是否擊球:是、其他:擊球點掌握不佳",
         "data": [
             {
                 "frame": 0,
@@ -90283,7 +90283,7 @@
     {
         "filename": "17_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:下半身轉身動作不足、是否擊球:X、其他:球點預判錯誤",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:下半身轉身動作不足、是否擊球:否、其他:球點預判錯誤",
         "data": [
             {
                 "frame": 0,
@@ -95135,7 +95135,7 @@
     {
         "filename": "17_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:下半身轉身動作不足、是否擊球:X、其他:球點預判錯誤",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:下半身轉身動作不足、是否擊球:否、其他:球點預判錯誤",
         "data": [
             {
                 "frame": 0,
@@ -100557,7 +100557,7 @@
     {
         "filename": "17_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:下半身轉身動作不足、是否擊球:O、其他:球點預判錯誤",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不足、手肘:拉拍不足、膝蓋:下半身轉身動作不足、是否擊球:是、其他:球點預判錯誤",
         "data": [
             {
                 "frame": 0,
@@ -104269,7 +104269,7 @@
     {
         "filename": "18_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不足、手肘:右手往後拉拍太直、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不足、手肘:右手往後拉拍太直、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -109596,7 +109596,7 @@
     {
         "filename": "18_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不足、手肘:右手往後拉拍太直、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不足、手肘:右手往後拉拍太直、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -114923,7 +114923,7 @@
     {
         "filename": "18_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不足、手肘:右手往後拉拍太直、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不足、手肘:右手往後拉拍太直、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -120345,7 +120345,7 @@
     {
         "filename": "23_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:無收拍動作、手肘:拉拍動作略不足、膝蓋:O、是否擊球:O、其他:右手肩膀沒有輔助",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:無收拍動作、手肘:拉拍動作略不足、膝蓋:沒問題!、是否擊球:是、其他:右手肩膀沒有輔助",
         "data": [
             {
                 "frame": 0,
@@ -125767,7 +125767,7 @@
     {
         "filename": "23_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:無收拍動作、手肘:拉拍動作略不足、膝蓋:O、是否擊球:O、其他:右手肩膀沒有輔助",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:無收拍動作、手肘:拉拍動作略不足、膝蓋:沒問題!、是否擊球:是、其他:右手肩膀沒有輔助",
         "data": [
             {
                 "frame": 0,
@@ -130619,7 +130619,7 @@
     {
         "filename": "23_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:無收拍動作、手肘:拉拍動作略不足、膝蓋:O、是否擊球:O、其他:右手肩膀沒有輔助",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:無收拍動作、手肘:拉拍動作略不足、膝蓋:沒問題!、是否擊球:是、其他:右手肩膀沒有輔助",
         "data": [
             {
                 "frame": 0,
@@ -135566,7 +135566,7 @@
     {
         "filename": "2_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:O、是否擊球:O、其他:揮拍可以由下往上刷、擊球點判斷不良",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:沒問題!、是否擊球:是、其他:揮拍可以由下往上刷、擊球點判斷不良",
         "data": [
             {
                 "frame": 0,
@@ -141083,7 +141083,7 @@
     {
         "filename": "2_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:O、是否擊球:O、其他:揮拍可以由下往上刷、擊球點判斷不良",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:沒問題!、是否擊球:是、其他:揮拍可以由下往上刷、擊球點判斷不良",
         "data": [
             {
                 "frame": 0,
@@ -146790,7 +146790,7 @@
     {
         "filename": "2_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:O、是否擊球:O、其他:揮拍可以由下往上刷、擊球點判斷不良",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:沒問題!、是否擊球:是、其他:揮拍可以由下往上刷、擊球點判斷不良",
         "data": [
             {
                 "frame": 0,
@@ -152307,7 +152307,7 @@
     {
         "filename": "4_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:O、其他:預備動作不夠",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:是、其他:預備動作不夠",
         "data": [
             {
                 "frame": 0,
@@ -157824,7 +157824,7 @@
     {
         "filename": "4_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:O、其他:預備動作不夠",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:是、其他:預備動作不夠",
         "data": [
             {
                 "frame": 0,
@@ -163246,7 +163246,7 @@
     {
         "filename": "4_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:O、其他:預備動作不夠",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍不完整、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:是、其他:預備動作不夠",
         "data": [
             {
                 "frame": 0,
@@ -168763,7 +168763,7 @@
     {
         "filename": "5_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍未完成、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:O、其他:預備動作不夠",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍未完成、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:是、其他:預備動作不夠",
         "data": [
             {
                 "frame": 0,
@@ -174470,7 +174470,7 @@
     {
         "filename": "5_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍未完成、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:O、其他:預備動作不夠",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍未完成、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:是、其他:預備動作不夠",
         "data": [
             {
                 "frame": 0,
@@ -180177,7 +180177,7 @@
     {
         "filename": "5_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍未完成、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:O、其他:預備動作不夠",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍未完成、手肘:過度依賴手臂打球、膝蓋:下半身轉身動作不足、是否擊球:是、其他:預備動作不夠",
         "data": [
             {
                 "frame": 0,
@@ -184174,7 +184174,7 @@
     {
         "filename": "6_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:輔助手可以協助收拍",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:輔助手可以協助收拍",
         "data": [
             {
                 "frame": 0,
@@ -189691,7 +189691,7 @@
     {
         "filename": "6_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:輔助手可以協助收拍",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:輔助手可以協助收拍",
         "data": [
             {
                 "frame": 0,
@@ -194733,7 +194733,7 @@
     {
         "filename": "6_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:X、其他:輔助手可以協助收拍",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:否、其他:輔助手可以協助收拍",
         "data": [
             {
                 "frame": 0,
@@ -200250,7 +200250,7 @@
     {
         "filename": "7_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:下半身轉身動作不足、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:下半身轉身動作不足、是否擊球:否、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -205102,7 +205102,7 @@
     {
         "filename": "7_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:下半身轉身動作不足、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:下半身轉身動作不足、是否擊球:否、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -210524,7 +210524,7 @@
     {
         "filename": "7_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:下半身轉身動作不足、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:下半身轉身動作不足、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -216041,7 +216041,7 @@
     {
         "filename": "8_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -221178,7 +221178,7 @@
     {
         "filename": "8_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -226220,7 +226220,7 @@
     {
         "filename": "8_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:肩膀轉身動作不足、手碗:收拍動作不足、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -231262,7 +231262,7 @@
     {
         "filename": "9_1(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍略不完整、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍略不完整、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -236304,7 +236304,7 @@
     {
         "filename": "9_2(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍略不完整、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍略不完整、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -242011,7 +242011,7 @@
     {
         "filename": "9_3(3D_trajectory_smoothed).json",
         "level": "junior",
-        "suggestion": "頭:O、肩膀:O、手碗:收拍略不完整、手肘:手軸彎曲沒有彈性、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:收拍略不完整、手肘:手軸彎曲沒有彈性、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -247813,7 +247813,7 @@
     {
         "filename": "pro_1_1(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -252855,7 +252855,7 @@
     {
         "filename": "pro_1_10(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -257517,7 +257517,7 @@
     {
         "filename": "pro_1_11(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -262084,7 +262084,7 @@
     {
         "filename": "pro_1_12(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -266841,7 +266841,7 @@
     {
         "filename": "pro_1_13(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -271693,7 +271693,7 @@
     {
         "filename": "pro_1_14(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -276545,7 +276545,7 @@
     {
         "filename": "pro_1_15(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -281207,7 +281207,7 @@
     {
         "filename": "pro_1_16(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -285584,7 +285584,7 @@
     {
         "filename": "pro_1_2(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -289961,7 +289961,7 @@
     {
         "filename": "pro_1_3(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -294338,7 +294338,7 @@
     {
         "filename": "pro_1_4(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -298905,7 +298905,7 @@
     {
         "filename": "pro_1_5(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -303662,7 +303662,7 @@
     {
         "filename": "pro_1_6(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -308134,7 +308134,7 @@
     {
         "filename": "pro_1_7(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -312986,7 +312986,7 @@
     {
         "filename": "pro_1_8(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -317363,7 +317363,7 @@
     {
         "filename": "pro_1_9(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -321645,7 +321645,7 @@
     {
         "filename": "pro_2_1(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -326212,7 +326212,7 @@
     {
         "filename": "pro_2_10(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -330589,7 +330589,7 @@
     {
         "filename": "pro_2_11(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -334776,7 +334776,7 @@
     {
         "filename": "pro_2_12(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -340483,7 +340483,7 @@
     {
         "filename": "pro_2_13(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -345335,7 +345335,7 @@
     {
         "filename": "pro_2_14(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -349617,7 +349617,7 @@
     {
         "filename": "pro_2_15(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -354469,7 +354469,7 @@
     {
         "filename": "pro_2_16(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -359701,7 +359701,7 @@
     {
         "filename": "pro_2_2(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -364648,7 +364648,7 @@
     {
         "filename": "pro_2_3(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -369595,7 +369595,7 @@
     {
         "filename": "pro_2_4(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -373687,7 +373687,7 @@
     {
         "filename": "pro_2_5(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -378064,7 +378064,7 @@
     {
         "filename": "pro_2_6(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -383771,7 +383771,7 @@
     {
         "filename": "pro_2_7(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -388528,7 +388528,7 @@
     {
         "filename": "pro_2_8(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -393665,7 +393665,7 @@
     {
         "filename": "pro_2_9(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -398517,7 +398517,7 @@
     {
         "filename": "pro_3_1(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -403654,7 +403654,7 @@
     {
         "filename": "pro_3_10(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -409551,7 +409551,7 @@
     {
         "filename": "pro_3_12(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -414878,7 +414878,7 @@
     {
         "filename": "pro_3_13(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -420015,7 +420015,7 @@
     {
         "filename": "pro_3_14(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -425817,7 +425817,7 @@
     {
         "filename": "pro_3_2(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -430764,7 +430764,7 @@
     {
         "filename": "pro_3_3(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -436471,7 +436471,7 @@
     {
         "filename": "pro_3_4(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -441988,7 +441988,7 @@
     {
         "filename": "pro_3_5(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -447885,7 +447885,7 @@
     {
         "filename": "pro_3_6(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -452452,7 +452452,7 @@
     {
         "filename": "pro_3_7(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -457779,7 +457779,7 @@
     {
         "filename": "pro_3_8(3D_trajectory_smoothed).json",
         "level": "pro",
-        "suggestion": "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,
@@ -463770,8 +463770,8 @@
     },
     {
         "filename": "2_1(3D_trajectory_smoothed).json",
-        "level": "unknown",
-        "suggestion": "無",
+        "level": "pro",
+        "suggestion": "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無",
         "data": [
             {
                 "frame": 0,

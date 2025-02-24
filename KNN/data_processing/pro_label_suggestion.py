@@ -56,7 +56,7 @@ def merge_json_files(input_folder, output_file):
 
 # 使用方式
 input_folder = "E:/git_repos/AI_Coach_Detection/KNN/Pro_Labeled_Dataset"  # 設定你的 JSON 資料夾路徑
-output_file = "E:/git_repos/AI_Coach_Detection/KNN/pro_merged.json"  # 輸出的 JSON 檔案名稱
+output_file = "E:/git_repos/AI_Coach_Detection/KNN/pro_labeled.json"  # 輸出的 JSON 檔案名稱
 merge_json_files(input_folder, output_file)
 
 
