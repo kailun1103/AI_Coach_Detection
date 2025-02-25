@@ -10,7 +10,8 @@ body {
 }
 
 .left-panel {
-    flex: 1.5 1 300px;
+    width: 600px;
+    height: 720px;
     background: white;
     display: flex;
     flex-direction: column;
@@ -18,15 +19,45 @@ body {
     column-gap: 10px;
     border-radius: 8px;
     border: 2px solid #020086;
-    box-shadow: 0 0 10px rgba(111, 0, 255, 0.377), 0 2px 4px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    /* 設定最大寬度 */
-    max-height: 800px;
-    /* 設定最大高度 */
+    box-shadow: 0 0 10px rgba(111, 0, 255, 0.377), 0
 }
 
+
+.file-input,
+.video-input {
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    display: inline-block;
+    width: auto;
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #8e44ad;
+    border-radius: 4px;
+    background-color: #8e44ad;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    text-transform: uppercase;
+    color: #fff;
+    font-weight: bold;
+}
+
+#videoPlayer {
+    display: block;
+    width: 570px;
+    height: 480px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+
+
+
 .right-panel {
-    flex: 1.5 1 300px;
+    width: 790px;
+    height: 720px;
     background: white;
     display: flex;
     flex-direction: column;
@@ -35,11 +66,8 @@ body {
     border-radius: 8px;
     border: 2px solid #020086;
     box-shadow: 0 0 10px rgba(111, 0, 255, 0.377), 0 2px 4px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-    /* 設定最大寬度 */
-    max-height: 800px;
-    /* 設定最大高度 */
 }
+
 
 video {
     width: 99%;
@@ -51,63 +79,48 @@ video {
     display: block;
 }
 
-.file-input,
-.video-input {
-    margin-bottom: 0;
-    /* 取消 margin-bottom，避免影響並排 */
-    display: inline-block;
-    width: auto;
-    /* 讓寬度根據內容調整 */
-    flex: 1;
-    /* 讓兩個 select 平均分配空間 */
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #fff;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: left;
-}
-
-/* 隱藏原生文件上傳按鈕 */
-.file-input::-webkit-file-upload-button {
-    visibility: hidden;
-}
-
-.file-input::before {
-    content: 'Upload File';
-    display: inline-block;
-    background-color: #8400ff;
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.file-input:hover::before {
-    background-color: #8400ff;
-}
-
-.file-input:active::before {
-    background-color: #8400ff;
-}
-
 .speed-control {
     display: flex;
+    font-size: 20px;
+    font-weight: bold;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    margin-top: 10px;
+    margin: 0 10px;
     padding: 10px;
-    background: #f8f8f8;
+    background: #8e44ad;
+    color: #fff;
     border-radius: 4px;
 }
 
+#speedControl {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
 
+#speedControl {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 300px;
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right,
+            #e1b8ff 0%,
+            #c575ff var(--val, 50%),
+            white var(--val, 50%),
+            white 100%);
+}
+
+#speedControl::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #c575ff;
+    cursor: pointer;
+}
 
 .chart-box {
     background: rgb(255, 255, 255);
@@ -115,6 +128,7 @@ video {
     border-radius: 8px;
     width: 100%;
     max-width: 780px;
+    margin-bottom: 20px;
     aspect-ratio: 800 / 240;
     box-shadow: inset 0 0 0 10px white, 0 2px 4px rgba(106, 6, 255, 0.1);
 }
@@ -135,18 +149,37 @@ h2 {
     font-weight: bold;
     text-transform: uppercase;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-    margin: 0 0 15px 0;
-    padding: 10px 20px;
+    margin: 0 0 3px 0;
+    padding: 10px 10px;
     border-bottom: 3px solid #8d00e5;
 }
 
 .filename {
-    color: #666;
-    font-size: 0.9em;
+    color: #00f7ff;
+    font-size: 1em;
     margin-bottom: 10px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #00f7ffde, #ff00f7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
-#speedValue {
-    min-width: 40px;
-    text-align: right;
+.ai-feedback {
+    background-color: #ecd6fc;
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    color: #8d00e5;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: 2px solid #8d00e5;
+    border-radius: 8px;
+    text-align: left;
+    display: inline-block;
 }
