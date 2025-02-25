@@ -2,7 +2,7 @@ import os
 import time
 
 def combine_videos_ffmpeg(top_video, bottom_video):
-    output_video = bottom_video.replace('_45_processed.mp4','_full_video.mp4')
+    output_video = top_video.replace('_45_processed.mp4','_full_video.mp4')
     cmd = (
         f'ffmpeg -hwaccel cuda -i "{top_video}" -i "{bottom_video}" '
         f'-filter_complex "[0:v][1:v]vstack=inputs=2[v]" -map "[v]" '
@@ -14,8 +14,8 @@ def combine_videos_ffmpeg(top_video, bottom_video):
 
 if __name__ == "__main__":
     start_time = time.time()  # 記錄開始時間
-    top_video = "張凱倫__2_45_processed.mp4"
-    bottom_video = "張凱倫__2_side_processed.mp4"
+    top_video = "synchronized_videos/0224_45_sync.mp4"
+    bottom_video = "synchronized_videos/0224_side_sync.mp4"
 
     print("開始合併影片（超高畫質 + GPU 加速）...")
     combine_videos_ffmpeg(top_video, bottom_video)

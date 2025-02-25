@@ -316,4 +316,4 @@ def create_3d_plots(data_file):
     fig.show(config=config)
 
 if __name__ == "__main__":
-    create_3d_plots('output.json')
+    create_3d_plots("testing_0224__1(3D_trajectory_smoothed)_only_swing.json")

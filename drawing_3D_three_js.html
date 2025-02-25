@@ -59,7 +59,7 @@
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
         #feedbackGroup {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            position: fixed; top: 20px; right: 20px; z-index: 3000;
             transform: translateY(-100%); transition: transform 0.3s ease;
             padding-bottom: 30px;
         }
@@ -94,7 +94,7 @@
         #toggleControls.expanded::before { transform: none; }
         #controls {
             transform: translateX(-400px); transition: transform 0.3s ease;
-            z-index: 999; position: fixed; top: 20px; left: 20px;
+            z-index: 2000; position: fixed; top: 20px; left: 20px;
             background: rgba(30,30,30,0.95); padding: 20px; border-radius: 15px;
             width: 320px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             max-height: 90vh; overflow-y: auto; scrollbar-width: thin;
@@ -132,7 +132,7 @@
             text-transform: uppercase; letter-spacing: 1px;
         }
         .control-header_error {
-            font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #f00;
+            font-size: 14px; font-weight: bold; margin-bottom: 10px; color: rgb(255, 255, 255);
             text-transform: uppercase; letter-spacing: 1px;
         }
         .collapsible {
@@ -211,7 +211,7 @@
             transition: opacity 0.2s ease;
         }
         .trajectory-point {
-            z-index: 9998 !important; pointer-events: none; width: 6px; height: 6px;
+            z-index: 1999 !important; pointer-events: none; width: 6px; height: 6px;
             border-radius: 50%; pointer-events: all; cursor: pointer;
         }
         .trajectory-point:hover + .marker-label { opacity: 1; }
@@ -236,7 +236,7 @@
         <div id="jointControls" class="checkbox-grid"></div>
     </div>
 
-    <div id="feedbackGroup">
+    <div id="feedbackGroup" class="expanded">
         <button id="feedbackToggle"></button>
         <div class="feedback-container">
             <div id="feedbackBox" class="feedback-box">
@@ -273,15 +273,15 @@
                 <div class="control-group">
                     <div class="control-header">Recording Control</div>
                     <form class="api-form" data-endpoint="/start_recording">
-                        <button type="submit" class="control-button">Start Recording</button>
+                        <button id="startRecordingButton" type="submit" class="control-button">Start Recording</button>
                     </form>
                     <form class="api-form" data-endpoint="/stop_recording">
-                        <button type="submit" class="control-button">Stop Recording</button>
+                        <button id="stopRecordingButton" type="submit" class="control-button">Stop Recording</button>
                     </form>
                     <form class="api-form" data-endpoint="/stop_recording_and_download">
-                        <button type="submit" class="control-button">Stop & Download</button>
+                        <button type="submit" class="control-button">Processing Trajectory</button>
                     </form>
-                </div>
+                </div> 
             </div>
         </div>
     </div>
@@ -552,16 +552,25 @@
             return file.text().then(txt => {
                 resetAllStates();
                 trajectoryData = JSON.parse(txt.replace(/^\uFEFF/, '').trim());
-                if(!Array.isArray(trajectoryData)) trajectoryData = [trajectoryData];
+                if (!Array.isArray(trajectoryData)) trajectoryData = [trajectoryData];
                 computeGlobalCenterAndMinY();
                 document.getElementById('slider').max = trajectoryData.length - 1;
                 updateFrame();
+
+                // 預設顯示全軌跡：設定變數、修改按鈕文字與顏色，並計算軌跡
+                showingFullTrajectory = true;
+                const btn = document.getElementById('showFullTrajectoryButton');
+                btn.textContent = 'hide trajectory';
+                btn.style.background = '#f44336';
+                calculateFullTrajectory();
+
                 return loadFeedbackFile(file.name);
+
             }).catch(e => { console.error(e); alert('Error: '+e.message); });
         }
 
         function loadFeedbackFile(mainFileName) {
-            const feedbackFileName = mainFileName.replace('(3D_trajectory_smoothed)','_feedback');
+            const feedbackFileName = mainFileName.replace('(3D_trajectory_smoothed)','_gpt_feedback');
             const fi = document.getElementById('dirInput');
             if(!fi) return;
             const fFile = Array.from(fi.files).find(f => f.name === feedbackFileName);
@@ -844,18 +853,47 @@
         }
 
         function setupApiHandlers() {
-            const base='http://192.168.0.149:8000';
-            document.querySelectorAll('.api-form').forEach(f=>{
-                f.addEventListener('submit', async e=>{
+            const base = 'http://192.168.0.149:8000';
+            document.querySelectorAll('.api-form').forEach(f => {
+                f.addEventListener('submit', async e => {
                     e.preventDefault();
-                    const ep=f.dataset.endpoint, formData=new FormData(f), params=new URLSearchParams();
-                    for(const [k,v] of formData.entries()) params.append(k,v);
-                    const url=`${base}${ep}?${params}`;
+                    const ep = f.dataset.endpoint;
+                    
+                    // 如果是 Start Recording 且已被 disable，則不送出請求
+                    if (ep === '/start_recording' && document.getElementById('startRecordingButton').disabled) {
+                        return;
+                    }
+                    
+                    const formData = new FormData(f);
+                    const params = new URLSearchParams();
+                    for (const [k, v] of formData.entries()) params.append(k, v);
+                    const url = `${base}${ep}?${params}`;
+                    
+                    // 如果是 Start Recording，送出後 disable 按鈕
+                    if (ep === '/start_recording') {
+                        document.getElementById('startRecordingButton').disabled = true;
+                    }
+                    
                     try {
-                        const r=await fetch(url,{method:'GET',headers:{'Accept':'application/json','Content-Type':'application/json'},mode:'cors'});
-                        const d=await r.json();
-                        if(r.status===200) showMsg('Success!','success'); else throw new Error(d.detail||'Request failed');
-                    } catch(err){ showMsg(err.message,'error'); }
+                        const r = await fetch(url, {
+                            method: 'GET',
+                            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                            mode: 'cors'
+                        });
+                        const d = await r.json();
+                        if (r.status === 200) {
+                            showMsg('Success!', 'success');
+                            
+                            // 如果是 Stop Recording，則在成功後重新啟用 Start Recording 按鈕
+                            if (ep === '/stop_recording') {
+                                document.getElementById('startRecordingButton').disabled = false;
+                            }
+                        } else {
+                            throw new Error(d.detail || 'Request failed');
+                        }
+                    } catch (err) {
+                        showMsg(err.message, 'error');
+                    }
                 });
             });
         }
@@ -873,6 +911,31 @@
             renderer.render(scene,camera);
             labelRenderer.render(scene,camera);
         }
+        
+        document.getElementById("trajectoryAnalysis").addEventListener("click", async function() {
+            const button = document.getElementById("trajectoryAnalysis");
+            // 禁用按鈕並改變文字
+            button.disabled = true;
+            button.textContent = "處理中";
+
+            try {
+                const response = await fetch("http://192.168.0.149:8000/gpt_response");
+                const data = await response.json();
+                if (data.status === "success") {
+                // 將結論顯示在 overallContent 區塊中
+                document.getElementById("overallContent").textContent = data.conclusion;
+                } else {
+                document.getElementById("overallContent").textContent = "分析失敗，請稍後再試。";
+                }
+            } catch (error) {
+                document.getElementById("overallContent").textContent = "Error: " + error;
+            }
+            
+            // 處理完成後，按鈕文字改回，但仍保持禁用狀態
+            button.textContent = "trajectoryAnalysis";
+            });
+
+
 
         init();
     </script>

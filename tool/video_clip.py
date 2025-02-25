@@ -82,7 +82,7 @@ def process_video_fast(input_path, output_path, speed_factor=1.0):
         print(f"\n只完成了 {frames_processed}/{frames_to_process} 幀的處理")
 
 # 使用範例
-input_video = "pro_1_1_side_temp.mp4"
+input_video = 'trajectory/testing_0224__trajectory/trajectory__1/testing_0224__1_side.mp4'
 output_video = "output_pro_1_1_side.mp4"  # 改用不同的輸出檔名
 speed_factor = 1.0  # 保持原速
 process_video_fast(input_video, output_video, speed_factor)

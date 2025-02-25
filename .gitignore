@@ -1,7 +1,8 @@
 junior_forehand
 .venv
 .vscode
+knn_dataset.json
+open_ai_key.py
 ffprobe.exe
 ffmpeg.exe
 trajectory
-merged_dataset.json

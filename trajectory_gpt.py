@@ -2,13 +2,13 @@ import os, itertools
 from openai import OpenAI
 import pandas as pd 
 import single_feedback.prompt as prompt, single_feedback.model_config as model_config
-
+from open_ai_key import api_key
 
 
 class AIFeedback ():
     def __init__ (self):
         # ---CLIENT---
-        self.client = OpenAI(api_key= os.environ.get("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=api_key)
         # ---MODEL CONFIG---
         self.MODEL = model_config.MODEL
         self.TEMPERATURE = model_config.TEMPERATURE
@@ -33,51 +33,76 @@ class AIFeedback ():
         )   
         return completion
 
-    def response(self,my_motion,knn_feedback):
-        
-        print ("\nGernerating Response......\n")
-        
+    def response(self, my_motion, knn_feedback):
+        # 初始化 messages 列表
         messages = [
-            { "role": "system", 
-            "content": self.INSTRUCTIONS },
-            { "role": "system", 
-            "content": self.DATADESCIRBE },
-            {"role":"user",
-            "content": f"""
-            
-                Rephrase {knn_feedback}, Describe the analysis results of each body part, 
-                answer it in "suggestion" schema.
-                
-                Based on this {my_motion}, 
-                infer in which frame section (e.g. 1-58) the issue described in the feedback occurs.
-                answer it in "frame" schema.
-                
-                """} 
+            {"role": "system", "content": self.INSTRUCTIONS},
+            {"role": "system", "content": self.DATADESCIRBE},
         ]
-        
-        # ---RESPONSE---
-        completion = self.model_config(messages)
-        response = completion.choices[0].message.content
-        messages.append({ "role": "assistant", "content": response })      
-        print ("網球教練Frank: " + response)
-        
-        # ---SAVE FEEDBACK---
-        ai_feedback =  [msg for msg in messages if msg["role"] == "assistant"]
-        return ai_feedback 
 
-    def conclude(self,ai_feedback):
-        print ("\nGernerating Conclusion......\n")
-        
+        # 若 knn_feedback 為特定正向回饋訊息
+        if knn_feedback == "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、其他:沒問題!":
+            knn_response = "沒有觀察到顯著問題，請繼續保持！"
+            frame_response = "0-0"
+
+            messages.append({"role": "assistant", "content": frame_response})
+            messages.append({"role": "assistant", "content": knn_response})
+
+            print(f'{{\n  "frame": "{frame_response}",\n  "suggestion": "{knn_response}"\n}}')
+
+            # ---SAVE FEEDBACK---
+            ai_feedback = [msg for msg in messages if msg["role"] == "assistant"]
+            return ai_feedback
+
+        # 否則，進行一般的回應流程
+        else:
+            messages.append({
+                "role": "user",
+                "content": f"""
+                    observe analysis results: {knn_feedback}, 
+                    Rephrase the analysis results of each body part in 1 sentence
+                """
+            })
+            knn_completion = self.model_config(messages)
+            knn_response = knn_completion.choices[0].message.content
+
+            messages.append({
+                "role": "user",
+                "content": f"""
+                    Based on this {my_motion}, 
+                    Speculate in which frame section the issue described in the feedback occurs, 
+                    answer will only be in format "number"-"number" and nothing more, for example:13-24
+                """
+            })
+            frame_completion = self.model_config(messages)
+            frame_response = frame_completion.choices[0].message.content
+
+            messages.append({"role": "assistant", "content": frame_response})
+            messages.append({"role": "assistant", "content": knn_response})
+
+            print(f'{{\n  "frame": "{frame_response}",\n  "suggestion": "{knn_response}"\n}}')
+
+            # ---SAVE FEEDBACK---
+            ai_feedback = [msg for msg in messages if msg["role"] == "assistant"]
+            return ai_feedback
+
+    def conclude(self,ai_feedback): 
+
+        print('ai_feedback')
+        print(ai_feedback)
+        print('ai_feedback')
+
         messages = [
             { "role": "system", 
             "content": self.INSTRUCTIONS },
             {"role":"user",
             "content": f"""
-            
+    
                 Based on the previous {ai_feedback}, 
-                give me a clear and easy-to-understand conclusion about my swing motion in Traditional Chinese, 
-                as if you were a coach giving friendly, spoken feedback.
-                
+                You will see a KNN analysis feedback on different body parts of a tennis beginner during various swing attempts.
+                For each body part listed below, conclude the issue in one sentence. Finally, provide one sentence of advice to help improve the beginner's swing.
+                Body parts: Head, Shoulders, Wrists, Elbows, Knees.
+    
                 """
             } 
         ]
@@ -107,64 +132,44 @@ class AIFeedback ():
             processed.append(new_item)
         return processed
         
-    def find_filepath(self, target_name, max_count=3):
+    def find_filepath(self, filename, max_count=3):
         filepaths = []
         for i in range(1, max_count + 1):
-            file_path = f"trajectory/{target_name}__trajectory/trajectory__{i}/{target_name}__{i}(3D_trajectory_smoothed).json"
+            file_path = f"trajectory/嘉洋__trajectory/trajectory__{i}/{filename}{i}(3D_trajectory_smoothed).json"
             print(file_path)
             if not os.path.exists(file_path):
+                print(1)
                 break
             filepaths.append(file_path)
         return filepaths
     
-    def find_filepath_txt(self, target_name, max_count=3):
+    def find_filepathtxt(self, filename, max_count=3):
         filepaths = []
         for i in range(1, max_count + 1):
-            file_path = f"trajectory/{target_name}__trajectory/trajectory__{i}/{target_name}__{i}(3D_trajectory_smoothed).txt"
+            file_path = f"trajectory/嘉洋__trajectory/trajectory__{i}/{filename}{i}_knn_feedback.txt"
             print(file_path)
             if not os.path.exists(file_path):
+                print(2)
                 break
             filepaths.append(file_path)
         return filepaths
 
     def main(self):
         ai_feedback = []
-        target_name = "嘉洋"
         
-        # 加入除錯訊息
-        json_filepaths = self.find_filepath(target_name)
-        txt_filepaths = self.find_filepath_txt(target_name)
+        json_filepaths = self.find_filepath("嘉洋__")
+        txt_filepaths = self.find_filepathtxt("嘉洋__")
         
-        print(f"找到的 JSON 檔案: {json_filepaths}")
-        print(f"找到的 TXT 檔案: {txt_filepaths}")
-        
-        if not json_filepaths or not txt_filepaths:
-            print("錯誤：沒有找到檔案，請檢查檔案路徑是否正確")
-            return
-            
         for j, k in zip(json_filepaths, txt_filepaths):
-            print(f"\n處理檔案：{j}")
-            try:
-                motion = pd.read_json(j)
-                knn = pd.read_fwf(k)
-                motion = self.process_data(motion)
-                response = self.response(motion, knn)
-                ai_feedback.append(response)
-            except Exception as e:
-                print(f"處理檔案時發生錯誤: {str(e)}")
-        
-        if not ai_feedback:
-            print("錯誤：沒有生成任何回饋")
-            return
-        
-        print('------------ai_feedback------------')
-        print(ai_feedback)
-        print('------------ai_feedback------------')
-            
-        self.conclude(ai_feedback)
+            motion = pd.read_json(j)
+            knn = pd.read_csv(k, header=None).iloc[0, 0]  # 讀取第一行第一個欄位
 
+            motion = self.process_data(motion)
+            response = self.response(motion, knn)
+            ai_feedback.append(response)
+        
+        self.conclude(ai_feedback)
 
 if __name__ == "__main__":
     feedback = AIFeedback()
     feedback.main()
-    

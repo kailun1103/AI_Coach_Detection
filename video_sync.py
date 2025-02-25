@@ -125,7 +125,6 @@ def synchronize_videos(input_path_1, input_path_2, json_path_1, json_path_2):
     print(f"\n最終影片資訊:")
     print(f"兩個影片都是 {frames_to_process} 幀, {final_duration:.2f} 秒")
     print("\n同步完成!")
-    return output_path_1, output_path_2
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -136,6 +135,6 @@ if __name__ == "__main__":
     json_path_2 = "pro_1_1_side_temp(2D_trajectory_smoothed).json"
 
     print("開始執行影片同步...")
-    output_path_1, output_path_2 = synchronize_videos(input_video_1, input_video_2, json_path_1, json_path_2)
+    synchronize_videos(input_video_1, input_video_2, json_path_1, json_path_2)
     
     print(f"執行時間: {time.time() - start_time:.4f}秒")

@@ -1,104 +1,126 @@
 import os
-from openai import OpenAI
-import pandas as pd 
-import single_feedback.prompt as prompt, single_feedback.model_config as model_config
+import pandas as pd
+import json
 import time
+import single_feedback.prompt as prompt
+import single_feedback.model_config as model_config
+from openai import OpenAI
+from open_ai_key import api_key
 
-class AIFeedback():
-    def __init__(self):
-        # ---CLIENT---
-        self.client = OpenAI(api_key= os.environ.get("OPENAI_API_KEY"))
-        # ---MODEL CONFIG---
-        self.MODEL = model_config.MODEL
-        self.TEMPERATURE = model_config.TEMPERATURE
-        self.MAX_TOKENS = model_config.MAX_TOKENS
-        self.FREQUENCY_PENALTY = model_config.FREQUENCY_PENALTY
-        self.PRESENCE_PENALTY = model_config.PRESENCE_PENALTY
-        self.MAX_CONTEXT_QUESTIONS = model_config.MAX_CONTEXT_QUESTIONS
-        self.TOP_P = model_config.TOP_P
-        # ---MODEL PROMPT---
-        self.INSTRUCTIONS = prompt.INSTRUCTIONS 
-        self.DATADESCIRBE = prompt.DATADESCIRBE
-  
-    def model_config(self, messages):
-        completion = self.client.chat.completions.create(
-            model=self.MODEL,
-            messages=messages,
-            temperature=self.TEMPERATURE,
-            max_tokens=self.MAX_TOKENS,
-            top_p=self.TOP_P,
-            frequency_penalty=self.FREQUENCY_PENALTY,
-            presence_penalty=self.PRESENCE_PENALTY,
-        )   
-        return completion
+# --- 設定 API 參數與載入 Prompt 與模型設定 ---
+client = OpenAI(api_key=api_key)
+MODEL = model_config.MODEL
+TEMPERATURE = model_config.TEMPERATURE
+MAX_TOKENS = model_config.MAX_TOKENS
+FREQUENCY_PENALTY = model_config.FREQUENCY_PENALTY
+PRESENCE_PENALTY = model_config.PRESENCE_PENALTY
+TOP_P = model_config.TOP_P
 
-    def response(self, my_motion, knn_feedback):
-        print("\nGernerating Response......")
-        
-        messages = [
-            {"role": "system", "content": self.INSTRUCTIONS},
-            {"role": "system", "content": self.DATADESCIRBE},
-            {"role": "user", "content": f"""
-                Rephrase {knn_feedback}, Describe the analysis results of each body part, 
-                answer it in "suggestion" schema.
-                
+INSTRUCTIONS = prompt.INSTRUCTIONS
+DATADESCIRBE = prompt.DATADESCIRBE
+
+def create_chat_completion(messages):
+    """
+    以給定的 messages 呼叫 OpenAI ChatCompletion
+    回傳產生的 completion 結果
+    """
+    completion = client.chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        temperature=TEMPERATURE,
+        max_tokens=MAX_TOKENS,
+        top_p=TOP_P,
+        frequency_penalty=FREQUENCY_PENALTY,
+        presence_penalty=PRESENCE_PENALTY,
+    )
+    return completion
+
+def generate_feedback(json_filepath, txt_filepath):
+    """
+    讀取 JSON (運動軌跡) 與 KNN 結果(txt)，並綜合兩者資訊產出 GPT 回饋
+    最後將結果輸出為 _gpt_feedback.json 檔
+    """
+    # 讀取運動軌跡資料與 KNN 回饋
+    my_motion = pd.read_json(json_filepath)
+    knn_feedback = pd.read_csv(txt_filepath, header=None).iloc[0, 0]
+
+    # 初始化 messages 列表
+    messages = [
+        {"role": "system", "content": INSTRUCTIONS},
+        {"role": "system", "content": DATADESCIRBE},
+    ]
+
+    # 如果 knn_feedback 為特定正向回饋訊息
+    if knn_feedback == "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無":
+        knn_response = "沒有觀察到顯著問題，請繼續保持！"
+        frame_response = "0-0"
+
+        # 將 frame 與建議回饋一起附加到 messages 中
+        messages.append({"role": "assistant", "content": frame_response})
+        messages.append({"role": "assistant", "content": knn_response})
+
+    else:
+        # 第一次讓 GPT 根據 KNN Feedback 產生中文敘述
+        messages.append({
+            "role": "user",
+            "content": f"""
+                observe analysis results: {knn_feedback}, 
+                Rephrase the analysis results of each body part in 1 sentence
+            """
+        })
+        knn_completion = create_chat_completion(messages)
+        knn_response = knn_completion.choices[0].message.content
+
+        # 讓 GPT 根據 json 內容推測大致在第幾幀區間會出現問題
+        messages.append({
+            "role": "user",
+            "content": f"""
                 Based on this {my_motion}, 
-                infer in which frame section (e.g. 1-58) the issue described in the feedback occurs.
-                answer it in "frame" schema.
-            """} 
-        ]
-        
-        completion = self.model_config(messages)
-        response = completion.choices[0].message.content
-        print("網球教練Frank: " + response)
-        return response
+                Speculate in which frame section the issue described in the feedback occurs. 
+                Please provide a broader frame range covering more frames (e.g., a range of at least 8 frames), 
+                and You MUST respond with a numeric range only, in the format "number-number" (e.g., "13-24"), 
+                containing only digits and a hyphen, with no additional text or formatting.
+            """
+        })
+        frame_completion = create_chat_completion(messages)
+        frame_response = frame_completion.choices[0].message.content
 
-    def process_data(self, motion):
-        processed = []
-        for index, row in motion.iterrows():
-            new_item = {}
-            new_item["frame"] = row.get("frame")
-            right_wrist = row.get("right_wrist", {})
-            processed_right_wrist = {}
-            for key in ["x", "y", "z"]:
-                value = right_wrist.get(key)
-                if isinstance(value, (int, float)):
-                    processed_right_wrist[key] = round(value, 2)
-                else:
-                    processed_right_wrist[key] = value
-            new_item["right_wrist"] = processed_right_wrist
-            new_item["tennis_ball_hit"] = row.get("tennis_ball_hit")
-            angle = row.get("tennis_ball_angle")
-            new_item["tennis_ball_angle"] = round(angle, 2) if isinstance(angle, (int, float)) else angle
-            processed.append(new_item)
-        return processed
+        # 將數字範圍與 knn_response 加入到 messages (可以用於後續檢視或除錯)
+        messages.append({"role": "assistant", "content": frame_response})
+        messages.append({"role": "assistant", "content": knn_response})
 
-    def main(self, json_path, txt_path):
-        start_time = time.time()
-        
-        print(f"開始處理檔案...")
-        print(f"JSON檔案: {json_path}")
-        print(f"TXT檔案: {txt_path}")
-        
-        # 讀取檔案
-        motion = pd.read_json(json_path)
-        with open(txt_path, 'r', encoding='utf-8') as f:
-            knn = f.read()
-        
-        # 處理資料
-        motion = self.process_data(motion)
-        
-        # 生成回饋
-        response = self.response(motion, knn)
-        
-        end_time = time.time()
-        print(f"\n處理完成，耗時: {end_time - start_time:.2f} 秒")
-        
-        return response
+    # 處理換行符號
+    frame_response = frame_response.replace("\n", "")
+    knn_response = knn_response.replace("\n", "")
 
-# 使用範例
+    # 構造 JSON 格式回傳結果
+    ai_feedback = {
+        "problem_frame": frame_response,
+        "suggestion": knn_response,
+    }
+
+    print(ai_feedback)
+
+    # 輸出檔案路徑 (以原檔案名稱 + "_gpt_feedback.json")
+    output_filepath = json_filepath.replace('(3D_trajectory_smoothed)_only_swing.json', '_gpt_feedback.json')
+    with open(output_filepath, "w", encoding="utf-8") as f:
+        json.dump(ai_feedback, f, ensure_ascii=False, indent=2)
+
+    return output_filepath
+
+
 if __name__ == "__main__":
-    feedback = AIFeedback()
-    json_file = "張凱倫__2(3D_trajectory_smoothed).json"
-    txt_file = "張凱倫__2(3D_trajectory_smoothed).txt"
-    feedback.main(json_file, txt_file)
+    json_path = "嘉洋__3(3D_trajectory_smoothed).json"
+    txt_path = "嘉洋__3_knn_feedback.txt"
+
+    # 開始計時
+    start_time = time.time()
+
+    # 產生並輸出回饋
+    output_filepath = generate_feedback(json_path, txt_path)
+
+    # 結束計時
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print("AI Feedback:")
+    print(f"Processing time: {elapsed_time:.2f} seconds")

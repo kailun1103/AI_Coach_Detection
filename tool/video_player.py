@@ -66,5 +66,5 @@ def play_video(video_path):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    video_path = "23_3_side.mp4"
+    video_path = "0224_full_video.mp4"
     play_video(video_path)

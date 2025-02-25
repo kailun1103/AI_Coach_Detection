@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 import time
+import torch  # 添加torch導入
+
 
 # COCO 預設 17 個關節的名稱，可視需求調整/增加
 body_parts_list = [
@@ -35,9 +37,10 @@ def process_video(
     # YOLO 批次大小
     yolo_batch_size=8,
     # 球偵測信心值閾值
-    ball_conf_threshold=0.2
+    ball_conf_threshold=0.8
 ):
     device_str = 'cuda'  # 若無GPU，就改為 'cpu'
+
     ball_model = YOLO(ball_model_path).to(device_str)
     pose_model = YOLO(pose_model_path).to(device_str)
     cap = cv2.VideoCapture(video_path)
@@ -255,6 +258,9 @@ def process_video(
             cv2.putText(info_panel, "No keypoints found",
                         (10, y_text),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            
+        if frame.shape[0] != output_height:
+            frame = cv2.resize(frame, (OUTPUT_WIDTH, output_height))
 
         combined_frame = np.hstack((frame, info_panel))
         out.write(combined_frame)
@@ -264,7 +270,7 @@ def process_video(
 
 if __name__ == "__main__":
     total_start = time.time()
-    video_path = "pro_1_1_45_temp.mp4"
+    video_path = 'trajectory/lun__trajectory/trajectory__5/lun__5_45.mp4'
     
     # 你可以調整 ball_conf_threshold 的值（範圍 0-1）
     output_path = process_video(video_path)
