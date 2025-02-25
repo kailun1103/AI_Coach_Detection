@@ -33,51 +33,71 @@ class AIFeedback ():
         )   
         return completion
 
-    def response(self,my_motion,knn_feedback):
-        
-        print ("\nGernerating Response......\n")
-        
+    def response(self, my_motion, knn_feedback):
+        # 初始化 messages 列表
         messages = [
-            { "role": "system", 
-            "content": self.INSTRUCTIONS },
-            { "role": "system", 
-            "content": self.DATADESCIRBE },
-            {"role":"user",
-            "content": f"""
-            
-                Rephrase {knn_feedback}, Describe the analysis results of each body part, 
-                answer it in "suggestion" schema.
-                
-                Based on this {my_motion}, 
-                infer in which frame section (e.g. 1-58) the issue described in the feedback occurs.
-                answer it in "frame" schema.
-                
-                """} 
+            {"role": "system", "content": self.INSTRUCTIONS},
+            {"role": "system", "content": self.DATADESCIRBE},
         ]
-        
-        # ---RESPONSE---
-        completion = self.model_config(messages)
-        response = completion.choices[0].message.content
-        messages.append({ "role": "assistant", "content": response })      
-        print ("網球教練Frank: " + response)
-        
-        # ---SAVE FEEDBACK---
-        ai_feedback =  [msg for msg in messages if msg["role"] == "assistant"]
-        return ai_feedback 
 
-    def conclude(self,ai_feedback):
-        print ("\nGernerating Conclusion......\n")
-        
+        # 若 knn_feedback 為特定正向回饋訊息
+        if knn_feedback == "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、其他:沒問題!":
+            knn_response = "沒有觀察到顯著問題，請繼續保持！"
+            frame_response = "0-0"
+
+            messages.append({"role": "assistant", "content": frame_response})
+            messages.append({"role": "assistant", "content": knn_response})
+
+            print(f'{{\n  "frame": "{frame_response}",\n  "suggestion": "{knn_response}"\n}}')
+
+            # ---SAVE FEEDBACK---
+            ai_feedback = [msg for msg in messages if msg["role"] == "assistant"]
+            return ai_feedback
+
+        # 否則，進行一般的回應流程
+        else:
+            messages.append({
+                "role": "user",
+                "content": f"""
+                    observe analysis results: {knn_feedback}, 
+                    Rephrase the analysis results of each body part in 1 sentence
+                """
+            })
+            knn_completion = self.model_config(messages)
+            knn_response = knn_completion.choices[0].message.content
+
+            messages.append({
+                "role": "user",
+                "content": f"""
+                    Based on this {my_motion}, 
+                    Speculate in which frame section the issue described in the feedback occurs, 
+                    answer will only be in format "number"-"number" and nothing more, for example:13-24
+                """
+            })
+            frame_completion = self.model_config(messages)
+            frame_response = frame_completion.choices[0].message.content
+
+            messages.append({"role": "assistant", "content": frame_response})
+            messages.append({"role": "assistant", "content": knn_response})
+
+            print(f'{{\n  "frame": "{frame_response}",\n  "suggestion": "{knn_response}"\n}}')
+
+            # ---SAVE FEEDBACK---
+            ai_feedback = [msg for msg in messages if msg["role"] == "assistant"]
+            return ai_feedback
+
+    def conclude(self,ai_feedback):        
         messages = [
             { "role": "system", 
             "content": self.INSTRUCTIONS },
             {"role":"user",
             "content": f"""
-            
+    
                 Based on the previous {ai_feedback}, 
-                give me a clear and easy-to-understand conclusion about my swing motion in Traditional Chinese, 
-                as if you were a coach giving friendly, spoken feedback.
-                
+                You will see a KNN analysis feedback on different body parts of a tennis beginner during various swing attempts.
+                For each body part listed below, conclude the issue in one sentence. Finally, provide one sentence of advice to help improve the beginner's swing.
+                Body parts: Head, Shoulders, Wrists, Elbows, Knees.
+    
                 """
             } 
         ]
@@ -125,7 +145,8 @@ class AIFeedback ():
         
         for j, k in zip(json_filepaths, txt_filepaths):
             motion = pd.read_json(j)
-            knn = pd.read_fwf(k)
+            knn = pd.read_csv(k, header=None).iloc[0, 0]  # 讀取第一行第一個欄位
+
             motion = self.process_data(motion)
             response = self.response(motion, knn)
             ai_feedback.append(response)
