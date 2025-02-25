@@ -1,4 +1,1 @@
 openai
-python-dotenv
-colorama
-npm install electron

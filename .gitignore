@@ -1,13 +1,6 @@
 venv/
-video/
-data/
 RemindMe.md
-.ignorefile.md
 _command.sh
-_remindme.md
 .env
 node_modules/
 *.mp4
-__data__/
-filter-repo.py
-.command.sh
