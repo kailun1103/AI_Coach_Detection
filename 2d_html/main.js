@@ -1,7 +1,27 @@
 const videoPlayer = document.getElementById('videoPlayer');
+// --- Speed ---------------------------------------------
 const speedControl = document.getElementById('speedControl');
 const speedValue = document.getElementById('speedValue');
 
+function updateSpeed() {
+    // 取得目前速度 (轉成數字)
+    const speed = Number(speedControl.value);
+    videoPlayer.playbackRate = speed;
+    speedValue.textContent = `${speed.toFixed(2)}x`;
+
+    // 計算目前滑塊位置百分比：(當前值 - 最小值) / (最大值 - 最小值) * 100%
+    const min = Number(speedControl.min);
+    const max = Number(speedControl.max);
+    const percent = ((speed - min) / (max - min)) * 100;
+    speedControl.style.setProperty('--val', percent + '%');
+}
+
+speedControl.addEventListener('input', updateSpeed);
+// 頁面載入時初始化
+updateSpeed();
+
+
+// ---Video to Json---------------------------------------------
 const folderSelect = document.getElementById('folderSelect');
 const videoSelect = document.getElementById('videoSelect');
 const basePath = "./assets/";
@@ -10,7 +30,7 @@ async function fetchFolderList() {
     try {
         const response = await fetch('/getFolders');
         const folders = await response.json();
-        folderSelect.innerHTML = '<option value="">Choose Player Name</option>' + folders.map(folder => `<option value="${folder}">${folder}</option>`).join('');
+        folderSelect.innerHTML = '<option value="">Player Name</option>' + folders.map(folder => `<option value="${folder}">${folder}</option>`).join('');
     } catch (error) {
         console.error("Unable to fetch folder list:", error);
     }
