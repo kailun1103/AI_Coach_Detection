@@ -4,12 +4,10 @@ const speedControl = document.getElementById('speedControl');
 const speedValue = document.getElementById('speedValue');
 
 function updateSpeed() {
-    // 取得目前速度 (轉成數字)
     const speed = Number(speedControl.value);
     videoPlayer.playbackRate = speed;
     speedValue.textContent = `${speed.toFixed(2)}x`;
 
-    // 計算目前滑塊位置百分比：(當前值 - 最小值) / (最大值 - 最小值) * 100%
     const min = Number(speedControl.min);
     const max = Number(speedControl.max);
     const percent = ((speed - min) / (max - min)) * 100;
@@ -17,7 +15,6 @@ function updateSpeed() {
 }
 
 speedControl.addEventListener('input', updateSpeed);
-// 頁面載入時初始化
 updateSpeed();
 
 
