@@ -16,10 +16,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/getFolders', (req, res) => {
-    const assetsDir = path.join(__dirname, 'assets');
+    const assetsDir = path.join(__dirname, 'trajectory');
     fs.readdir(assetsDir, (err, files) => {
         if (err) {
-            console.error("讀取資料夾失敗：", err);
+            // console.error("讀取資料夾失敗：", err);
             return res.status(500).json({ error: '無法讀取資料夾' });
         }
         // 只保留目錄（資料夾）
@@ -36,10 +36,10 @@ app.get('/getVideos', (req, res) => {
     if (!folder) {
         return res.status(400).json({ error: '請提供 folder 參數' });
     }
-    const videoDir = path.join(__dirname, 'assets', folder);
+    const videoDir = path.join(__dirname, 'trajectory', folder);
     fs.readdir(videoDir, (err, files) => {
         if (err) {
-            console.error(`讀取 ${folder} 資料夾失敗：`, err);
+            // console.error(`讀取 ${folder} 資料夾失敗：`, err);
             return res.status(500).json({ error: `無法讀取 ${folder} 資料夾` });
         }
         // 過濾出副檔名為 .mp4 的檔案
@@ -47,6 +47,7 @@ app.get('/getVideos', (req, res) => {
         res.json(mp4Files);
     });
 });
+
 
 app.get("/getjson", (req, res) => {
     const dir = req.query.dir;
@@ -66,5 +67,3 @@ app.get("/getjson", (req, res) => {
         res.json(jsonFiles);
     });
 });
-
-

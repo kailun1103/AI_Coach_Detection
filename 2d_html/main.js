@@ -21,12 +21,13 @@ updateSpeed();
 // ---Video to Json---------------------------------------------
 const folderSelect = document.getElementById('folderSelect');
 const videoSelect = document.getElementById('videoSelect');
-const basePath = "./assets/";
+const basePath = "./trajectory/";
 
 async function fetchFolderList() {
     try {
         const response = await fetch('/getFolders');
-        const folders = await response.json();
+        const folders_full = await response.json();
+        const folders = folders_full.map(folder_full => folder_full.split('__')[0]);
         folderSelect.innerHTML = '<option value="">Player Name</option>' + folders.map(folder => `<option value="${folder}">${folder}</option>`).join('');
     } catch (error) {
         console.error("Unable to fetch folder list:", error);
@@ -34,12 +35,28 @@ async function fetchFolderList() {
 }
 
 async function fetchVideoList(folder) {
-    try {
-        const response = await fetch(`/getVideos?folder=${folder}`);
-        const videos = await response.json();
-        videoSelect.innerHTML = '<option value="">Choose Video</option>' + videos.filter(video => video.endsWith('.mp4')).map(video => `<option value="${basePath}${folder}/${video}">${video}</option>`).join('');
-    } catch (error) {
-        console.error("Unable to fetch video list:", error);
+    // 新增預設選項
+    videoSelect.innerHTML = `<option value="">select trajectory</option>`;
+
+    for (let i = 1; i <= 5; i++) {
+        try {
+
+            const response = await fetch(`/getVideos?folder=${folder}__trajectory/trajectory__${i}`);
+            if (!response.ok) {
+                console.warn(`trajectory_${i} not found, skip.`);
+                continue;
+            }
+            const videos_all = await response.json();
+            const videos = videos_all.filter(v => v.includes('full_video'));
+            console.log(videos);
+            videoSelect.innerHTML += videos
+                .filter(video => video.endsWith('.mp4'))
+                .map(video => `<option value="${basePath}${folder}/trajectory_${i}/${video}">${video}</option>`)
+                .join('');
+        } catch (error) {
+            // console.error(`Error fetching trajectory_${i}:`, error);
+            continue;
+        }
     }
 }
 
@@ -51,19 +68,43 @@ folderSelect.addEventListener('change', e => {
 document.addEventListener('DOMContentLoaded', fetchFolderList);
 
 videoSelect.addEventListener('change', e => {
-    const selectedVideo = e.target.value;
+    const selected_path = e.target.value;
+    let pathParts = selected_path.split('/');
+    pathParts[2] = pathParts[2] + '__trajectory';
+    pathParts[3] = pathParts[3].replace('trajectory_', 'trajectory__');
+    const selectedVideo = pathParts.join('/');
+    console.log(selectedVideo);
+
     if (selectedVideo) {
         videoPlayer.src = selectedVideo;
-        videoPlayer.play();
+        console.log("TARGET DEBUG", selectedVideo)
+
+        const playPromise = videoPlayer.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => { error });
+        }
+
         const pathParts = selectedVideo.split('/');
-        const folderName = pathParts[2];
-        const fileName = pathParts[3];
-        const prefix = fileName.replace('_full_video.mp4', '');
-        const Json_45_Path = `${basePath}${folderName}/${prefix}_45(2D_trajectory_smoothed).json`;
-        const Json_side_Path = `${basePath}${folderName}/${prefix}_side(2D_trajectory_smoothed).json`;
-        handleFileSelection(Json_45_Path, Json_side_Path);
+        if (pathParts.length >= 4) {
+            const folderName = pathParts[2];
+            const fileName = pathParts[3];
+            const trajectory = pathParts[4];
+            const prefix = trajectory.replace('_full_video.mp4', '');
+            console.log("資料夾名稱：", folderName, "檔案名稱：", fileName, "tra：", trajectory, "prefix：", prefix, "basePath：", basePath);
+
+            const Json_45_Path = `${basePath}${folderName}/${fileName}/${prefix}_45(2D_trajectory_smoothed).json`;
+            const Json_side_Path = `${basePath}${folderName}/${fileName}/${prefix}_side(2D_trajectory_smoothed).json`;
+
+            handleFileSelection(Json_45_Path, Json_side_Path);
+        }
     }
 });
+
+
+
+
+document.addEventListener('DOMContentLoaded', fetchFolderList);
+
 
 async function handleFileSelection(filePath45, filePathSide) {
     try {
