@@ -77,7 +77,7 @@ def generate_feedback(json_filepath, txt_filepath):
             "content": f"""
                 Based on this {my_motion}, 
                 Speculate in which frame section the issue described in the feedback occurs. 
-                Please provide a broader frame range covering more frames (e.g., a range of at least 8 frames), 
+                Please provide a broader frame range covering more frames (e.g., a range of at least 15 frames), 
                 and You MUST respond with a numeric range only, in the format "number-number" (e.g., "13-24"), 
                 containing only digits and a hyphen, with no additional text or formatting.
             """

@@ -6,3 +6,4 @@ open_ai_key.py
 ffprobe.exe
 ffmpeg.exe
 trajectory
+__pycache__/

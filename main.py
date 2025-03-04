@@ -8,12 +8,12 @@ from typing import Optional
 
 import aiohttp
 import uvicorn
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Form
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ultralytics import YOLO
 
-from sound2 import play_sound
+from sound import play_sound
 from processing_trajectory import processing_trajectory
 from trajectory_gpt_overall_feedback import find_and_format_feedback_jsons, conclude
 
@@ -21,25 +21,31 @@ from trajectory_gpt_overall_feedback import find_and_format_feedback_jsons, conc
 # Calibration Matrices
 # ------------------------------
 P1 = np.array([
-    [1856.204034,     0.000000, 1842.334089,     0.000000],
-    [   0.000000, 1848.190924, 1072.463818,     0.000000],
-    [   0.000000,     0.000000,    1.000000,     0.000000],
+    [  917.153880,     0.000000,   994.529968,     0.000000],
+    [    0.000000,   920.803487,   531.057076,     0.000000],
+    [    0.000000,     0.000000,     1.000000,     0.000000],
 ])
 
 P2 = np.array([
-    [689.640601,   -3.080844, 2543.075304, -1723276.428567],
-    [-565.656293, 1800.162272,  830.494335,  689370.702720],
-    [  -0.508536,   -0.037628,    0.860218,    604.500373],
+    [  286.476533,    43.805594,  1301.943509, -765436.820164],
+    [ -309.560886,   957.641377,   401.534167, 365723.173062],
+    [   -0.553187,     0.008475,     0.833014,   660.964347],
 ])
 
 # ------------------------------
-# Global Variables
+# Global Variables & Queue
 # ------------------------------
 current_user_folder: Optional[Path] = None
 current_user_name: Optional[str] = None
 
 yolo_pose_model: Optional[YOLO] = None
 yolo_tennis_ball_model: Optional[YOLO] = None
+
+# 全域隊列，用來儲存軌跡處理任務
+trajectory_queue: asyncio.Queue = asyncio.Queue()
+active_task_count = 0
+finished_task_count = 0
+
 
 # ------------------------------
 # FastAPI App Initialization
@@ -88,6 +94,38 @@ def find_next_trajectory_number(base_folder: Path) -> int:
     except Exception as e:
         print(f"Error in find_next_trajectory_number: {str(e)}")
         return 1
+
+# ------------------------------
+# Task Worker for Sequential Processing
+# ------------------------------
+async def trajectory_worker():
+    """
+    持續監聽 trajectory_queue，逐一處理軌跡任務。
+    每次取出一個任務後，執行 processing_trajectory，
+    任務完成後更新 active_task_count 與 finished_task_count。
+    """
+    global active_task_count, finished_task_count
+    while True:
+        task_args = await trajectory_queue.get()
+        active_task_count += 1  # 任務開始執行
+        try:
+            # 解包任務參數
+            P1_, P2_, pose_model, ball_model, side_video, video_45, knn_dataset = task_args
+            print("開始處理軌跡任務...")
+            await asyncio.to_thread(
+                processing_trajectory,
+                P1_, P2_, pose_model, ball_model,
+                side_video, video_45, knn_dataset
+            )
+            print("軌跡處理完成，任務結束並釋放資源。")
+        except Exception as e:
+            print(f"處理軌跡任務時發生錯誤: {str(e)}")
+        finally:
+            active_task_count -= 1  # 任務結束執行
+            finished_task_count += 1  # 記錄完成任務數
+            trajectory_queue.task_done()
+            print("任務已結束，等待下一個任務...")
+
 
 async def post_gopro(session: aiohttp.ClientSession, url: str, data: Optional[dict] = None) -> dict:
     """
@@ -139,19 +177,32 @@ async def wait_for_file_ready(file_path: str, timeout: int = 120, check_interval
         last_size = current_size
         print(f"File {file_path} still being written, current size: {current_size} bytes")
 
-async def process_trajectory_async(P1, P2, pose_model, ball_model, side_video, video_45, knn_dataset: str):
+# ------------------------------
+# Task Worker for Sequential Processing
+# ------------------------------
+async def trajectory_worker():
     """
-    背景任務：在背景執行 processing_trajectory 避免阻塞主線程。
+    持續監聽 trajectory_queue，逐一處理軌跡任務。
+    每次取出一個任務後，執行 processing_trajectory，完成後自動結束該任務。
     """
-    try:
-        await asyncio.to_thread(
-            processing_trajectory,
-            P1, P2, pose_model, ball_model,
-            side_video, video_45, knn_dataset
-        )
-        print("軌跡處理完成！")
-    except Exception as e:
-        print(f"軌跡處理過程中發生錯誤: {str(e)}")
+    while True:
+        # 等待新的任務進入隊列
+        task_args = await trajectory_queue.get()
+        try:
+            # 解包任務參數
+            P1_, P2_, pose_model, ball_model, side_video, video_45, knn_dataset = task_args
+            print("開始處理軌跡任務...")
+            await asyncio.to_thread(
+                processing_trajectory,
+                P1_, P2_, pose_model, ball_model,
+                side_video, video_45, knn_dataset
+            )
+            print("軌跡處理完成，任務結束並釋放資源。")
+        except Exception as e:
+            print(f"處理軌跡任務時發生錯誤: {str(e)}")
+        finally:
+            trajectory_queue.task_done()
+            print("任務已結束，等待下一個任務...")
 
 # ------------------------------
 # Application Startup Event
@@ -159,7 +210,7 @@ async def process_trajectory_async(P1, P2, pose_model, ball_model, side_video, v
 @app.on_event("startup")
 async def startup_event():
     """
-    伺服器啟動時載入 YOLO 模型。
+    伺服器啟動時載入 YOLO 模型，並啟動軌跡處理工作者。
     """
     global yolo_pose_model, yolo_tennis_ball_model
     print("正在載入 YOLO 模型...")
@@ -170,6 +221,9 @@ async def startup_event():
     except Exception as e:
         print(f"模型載入失敗: {str(e)}")
         raise e
+
+    # 啟動軌跡處理工作者，確保任務依序處理
+    asyncio.create_task(trajectory_worker())
 
 # ------------------------------
 # API Endpoints
@@ -259,6 +313,11 @@ async def gpt_response():
             conclude,
             gpt_single_results
         )
+        print('------------------')
+        print(current_user_folder)
+        print(gpt_single_results)
+        print(final_conclusion)
+        print('------------------')
         return {
             "status": "success",
             "user_name": current_user_name,
@@ -322,7 +381,8 @@ async def stop_recording():
 @app.get("/stop_recording_and_download")
 async def stop_recording_and_download(background_tasks: BackgroundTasks):
     """
-    同時對兩台 GoPro 停止錄影並下載影片，建立軌跡資料夾，檢查檔案是否準備好後，啟動背景任務進行軌跡處理。
+    同時對兩台 GoPro 停止錄影並下載影片，建立軌跡資料夾，檢查檔案是否準備好後，
+    將軌跡處理任務加入隊列，由工作者依序處理，避免同時大量運算。
     """
     global current_user_folder, current_user_name
     if not current_user_folder or not current_user_name:
@@ -373,14 +433,10 @@ async def stop_recording_and_download(background_tasks: BackgroundTasks):
                         video_files_ready = True
                         print("Both videos confirmed ready")
                         play_sound()
-                        background_tasks.add_task(
-                            process_trajectory_async,
-                            P1, P2,
-                            yolo_pose_model,
-                            yolo_tennis_ball_model,
-                            side_video_path,
-                            video_45_path,
-                            'knn_dataset.json'
+                        # 將處理任務加入隊列，等待工作者依序處理
+                        await trajectory_queue.put(
+                            (P1, P2, yolo_pose_model, yolo_tennis_ball_model,
+                             side_video_path, video_45_path, 'knn_dataset.json')
                         )
                     else:
                         if not side_video_ready:
@@ -419,6 +475,23 @@ async def stop_recording_and_download(background_tasks: BackgroundTasks):
                     "trajectory_folder": str(trajectory_folder)
                 }
             )
+
+
+@app.get("/queue_status")
+async def queue_status():
+    """
+    Returns the current task queue status as a plain text summary.
+    """
+    pending_tasks = trajectory_queue.qsize()
+    # Assume active_task_count and finished_task_count are global variables representing
+    # the number of tasks currently in processing and completed tasks, respectively.
+    total_tasks = pending_tasks + active_task_count + finished_task_count
+
+    status_message = (
+        f"Pending tasks : {pending_tasks}"
+    )
+    return status_message
+
 
 # ------------------------------
 # Main Entry Point

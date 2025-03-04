@@ -94,12 +94,12 @@ def create_2d_plots(file_path):
     fig_wrist.show()
 
     # Combined Trajectory
-    # fig_combined = go.Figure()
-    # fig_combined.add_trace(create_trace(wrist_data, 'Viridis', 'blue', 'Wrist', 1.1))
-    # fig_combined.add_trace(create_trace(ball_data, 'Plasma', 'red', 'Tennis Ball', 1.2))
-    # fig_combined.update_layout(get_common_layout('Combined Wrist and Tennis Ball Trajectory'))
-    # fig_combined.write_html('2d_combined_trajectory.html')
-    # fig_combined.show()
+    fig_combined = go.Figure()
+    fig_combined.add_trace(create_trace(wrist_data, 'Viridis', 'blue', 'Wrist', 1.1))
+    fig_combined.add_trace(create_trace(ball_data, 'Plasma', 'red', 'Tennis Ball', 1.2))
+    fig_combined.update_layout(get_common_layout('Combined Wrist and Tennis Ball Trajectory'))
+    fig_combined.write_html('2d_combined_trajectory.html')
+    fig_combined.show()
 
 if __name__ == "__main__":
-    create_2d_plots("testing_0224__1_side(2D_trajectory_smoothed)_temp.json")
+    create_2d_plots("凱倫__3_side(2D_trajectory_smoothed).json")

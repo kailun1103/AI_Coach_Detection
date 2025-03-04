@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 import time
-import torch  # 添加torch導入
-
+import torch
+import gc
 
 # COCO 預設 17 個關節的名稱，可視需求調整/增加
 body_parts_list = [
@@ -29,20 +29,20 @@ def process_video(
     video_path,
     ball_model_path='model/tennisball_OD_v1.pt',
     pose_model_path='model/yolov8n-pose.pt',
-    # 輸出主畫面大小 (推論 & 顯示都用這尺寸)
     OUTPUT_WIDTH=1280,
     OUTPUT_HEIGHT=720,
-    # 每幾幀推論一次
-    skip_frames=3,
-    # YOLO 批次大小
-    yolo_batch_size=8,
-    # 球偵測信心值閾值
+    skip_frames=1,
+    yolo_batch_size=4,
     ball_conf_threshold=0.8
 ):
     device_str = 'cuda'  # 若無GPU，就改為 'cpu'
 
-    ball_model = YOLO(ball_model_path).to(device_str)
-    pose_model = YOLO(pose_model_path).to(device_str)
+    # 只在此處載入模型一次，並移至指定裝置
+    ball_model = YOLO(ball_model_path)
+    pose_model = YOLO(pose_model_path)
+    ball_model.model.to(device_str)
+    pose_model.model.to(device_str)
+
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"無法讀取影片: {video_path}")
@@ -70,22 +70,23 @@ def process_video(
 
     cap.release()
     total_frames = len(frames_for_output)
-
     if total_frames == 0:
         return
 
-    pose_results_batch = pose_model.predict(
-        frames_for_infer,
-        verbose=False,
-        device=device_str,
-        batch=yolo_batch_size
-    )
-    ball_results_batch = ball_model.predict(
-        frames_for_infer,
-        verbose=False,
-        device=device_str,
-        batch=yolo_batch_size
-    )
+    # 推論時加入 no_grad 以減少記憶體佔用
+    with torch.no_grad():
+        pose_results_batch = pose_model.predict(
+            frames_for_infer,
+            verbose=False,
+            device=device_str,
+            batch=yolo_batch_size
+        )
+        ball_results_batch = ball_model.predict(
+            frames_for_infer,
+            verbose=False,
+            device=device_str,
+            batch=yolo_batch_size
+        )
 
     ball_positions = [None] * total_frames
     ball_confidences = [None] * total_frames
@@ -104,7 +105,6 @@ def process_video(
         boxes = ball_result.boxes
         if boxes is not None and len(boxes) > 0:
             box = boxes[0]
-            # 加入信心值閾值判斷
             if float(box.conf[0]) >= ball_conf_threshold:
                 x1, y1, x2, y2 = box.xyxy[0]
                 cx = int((x1 + x2) / 2)
@@ -123,6 +123,7 @@ def process_video(
         ball_confidences[idx_in_list] = ball_conf
         keypoints_per_frame[idx_in_list] = kpts_xy
 
+    # 補全缺失資料：若當前幀資料缺失則使用前一幀補上
     last_ball = None
     last_conf = None
     last_kpts = None
@@ -140,10 +141,9 @@ def process_video(
             last_kpts = keypoints_per_frame[i]
 
     output_path = video_path.replace('.mp4', '_processed.mp4')
-
     info_panel_width = 400
-    output_width = OUTPUT_WIDTH + info_panel_width  # 1680
-    output_height = OUTPUT_HEIGHT                  # 720
+    output_width = OUTPUT_WIDTH + info_panel_width
+    output_height = OUTPUT_HEIGHT
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, fourcc, original_fps, (output_width, output_height))
@@ -154,13 +154,11 @@ def process_video(
 
     for i in range(total_frames):
         frame = frames_for_output[i].copy()
-
         ball_pos = ball_positions[i]
         ball_conf = ball_confidences[i]
         kpts = keypoints_per_frame[i]
 
         ball_trail.append(ball_pos)
-
         if kpts is not None:
             for kp_idx in TRACKED_KEYPOINTS:
                 if kp_idx < len(kpts):
@@ -178,9 +176,8 @@ def process_video(
             if p1 and p2:
                 progress = b / len(valid_ball_positions)
                 color = (0, int(255*(1 - progress)), int(255*progress))
-                cv2.line(frame, p1, p2, color, 4)  # 球軌跡稍微細一點
+                cv2.line(frame, p1, p2, color, 4)
 
-        # -- 繪製姿態軌跡 (keypoints=10)
         for kp_idx, trail in keypoint_trails.items():
             valid_trail = [p for p in trail if p is not None]
             for t in range(1, len(valid_trail)):
@@ -198,14 +195,12 @@ def process_video(
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
 
         info_panel = np.ones((output_height, info_panel_width, 3), dtype=np.uint8) * 40
-
         header_height = 50
         cv2.rectangle(info_panel, (0, 0), (info_panel_width, header_height), (0, 150, 0), -1)
         cv2.putText(info_panel, "Tennis Ball Detection", (10, 35),
                     cv2.FONT_HERSHEY_DUPLEX, 0.8, (255, 255, 255), 2)
 
         y_text = header_height + 30
-
         if ball_pos is not None:
             cv2.putText(info_panel, "Ball Status: Detected", (10, y_text),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
@@ -219,21 +214,18 @@ def process_video(
             cv2.putText(info_panel, f"Position: ({cx}, {cy})", (10, y_text),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1)
             y_text += 30
-
             if ball_conf is not None:
                 cv2.putText(info_panel, f"Confidence: {ball_conf:.2f}", (10, y_text),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1)
                 y_text += 30
 
-        # (2) 藍色區塊 (Pose Estimation Title)
         pose_header_height = 40
         pose_header_top = y_text
         pose_header_bottom = pose_header_top + pose_header_height
-
         cv2.rectangle(info_panel,
                       (0, pose_header_top),
                       (info_panel_width, pose_header_bottom),
-                      (255, 100, 0),  # BGR=(255,100,0) 約藍色
+                      (255, 100, 0),
                       -1)
         cv2.putText(info_panel, "Pose Estimation",
                     (10, pose_header_top + 28),
@@ -241,7 +233,6 @@ def process_video(
                     (255, 255, 255), 2)
 
         y_text = pose_header_bottom + 30
-
         if kpts is not None:
             for idx, part_name in enumerate(body_parts_list):
                 if idx < len(kpts):
@@ -261,19 +252,22 @@ def process_video(
             
         if frame.shape[0] != output_height:
             frame = cv2.resize(frame, (OUTPUT_WIDTH, output_height))
-
         combined_frame = np.hstack((frame, info_panel))
         out.write(combined_frame)
 
     out.release()
+
+    # 清理中間資料，避免累積
+    del frames_for_output, frames_for_infer, ball_positions, ball_confidences, keypoints_per_frame
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
     return output_path
 
 if __name__ == "__main__":
     total_start = time.time()
-    video_path = 'trajectory/lun__trajectory/trajectory__5/lun__5_45.mp4'
-    
-    # 你可以調整 ball_conf_threshold 的值（範圍 0-1）
+    video_path = '測試2__1_45_compressed.mp4'
     output_path = process_video(video_path)
-
     total_end = time.time()
     print(f"===== 程式總耗時: {total_end - total_start:.2f} 秒 =====")

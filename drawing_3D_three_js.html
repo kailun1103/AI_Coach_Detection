@@ -1,943 +1,1702 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Pose Visualization</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: #1a1a1a; }
-        #overallBox { margin-top: -1px; }
-        #controlPanel {
-            position: fixed; bottom: 20px; right: 20px;
-            z-index: 1000; transform: translateY(100%);
-            transition: transform 0.3s ease; padding-top: 30px;
-        }
-        #controlPanel.expanded { transform: translateX(0); }
-        #controlPanelToggle {
-            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 3px; background: rgba(76, 175, 80, 0.05);
-            border-radius: 10px; cursor: pointer; transition: all 0.3s ease;
-        }
-        #controlPanelToggle:hover {
-            background: rgba(76, 175, 80, 0.3);
-            box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
-        }
-        #controlPanelToggle::before { content: none; }
-        #controlPanel.expanded #controlPanelToggle::before { transform: rotate(180deg); }
-        .control-container {
-            background: rgba(30, 30, 30, 0.95); border-radius: 15px;
-            padding: 20px; width: 300px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-        .input-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .control-input {
-            padding: 8px; background: rgba(42, 42, 42, 0.7);
-            color: white; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px; outline: none;
-        }
-        .control-input[type="number"]::-webkit-inner-spin-button,
-        .control-input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none; margin: 0;
-        }
-        .input-row .control-input { width: calc(50% - 5px); }
-        select.control-input { width: 100%; margin-bottom: 10px; }
-        .control-button {
-            background: #4CAF50; color: white; padding: 10px 15px; border: none;
-            border-radius: 8px; width: 100%; cursor: pointer; margin-bottom: 10px;
-            font-weight: 500; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
-        }
-        .control-button:hover {
-            background: #45a049; transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        .notification {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            padding: 10px 20px; border-radius: 5px; color: white; z-index: 2000;
-            animation: slideIn 0.3s ease;
-        }
-        .notification.success { background-color: rgba(76, 175, 80, 0.9); }
-        .notification.error { background-color: rgba(244, 67, 54, 0.9); }
-        @keyframes slideIn {
-            from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-        #feedbackGroup {
-            position: fixed; top: 20px; right: 20px; z-index: 3000;
-            transform: translateY(-100%); transition: transform 0.3s ease;
-            padding-bottom: 30px;
-        }
-        #feedbackGroup.expanded { transform: translateX(0); }
-        #feedbackToggle {
-            position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 3px; background: rgba(76, 175, 80, 0.05);
-            border-radius: 10px; cursor: pointer; transition: all 0.3s ease;
-        }
-        #feedbackToggle:hover {
-            background: rgba(76,175,80,0.5); box-shadow: 0 0 8px rgba(76,175,80,0.3);
-        }
-        #feedbackToggle::before { content: none; }
-        #feedbackGroup.expanded #feedbackToggle::before { transform: rotate(180deg); }
-        .feedback-container {
-            background: rgba(30,30,30,0.95); border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); overflow: hidden;
-        }
-        #feedbackBox, #overallBox {
-            position: static; width: 300px; padding: 20px; background: none; box-shadow: none;
-        }
-        #overallBox { border-top: 1px solid rgba(255,255,255,0.1); }
-        #toggleControls {
-            z-index: 1001; position: fixed; top: 50%; transform: translateY(-50%); left: 20px;
-            width: 20px; height: 40px; background: rgba(76,175,80,0.05);
-            border-radius: 10px; cursor: pointer; transition: all 0.3s ease;
-        }
-        #toggleControls:hover {
-            background: rgba(76,175,80,0.3); box-shadow: 0 0 8px rgba(76,175,80,0.2);
-        }
-        #toggleControls::before { content: none; }
-        #toggleControls.expanded::before { transform: none; }
-        #controls {
-            transform: translateX(-400px); transition: transform 0.3s ease;
-            z-index: 2000; position: fixed; top: 20px; left: 20px;
-            background: rgba(30,30,30,0.95); padding: 20px; border-radius: 15px;
-            width: 320px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            max-height: 90vh; overflow-y: auto; scrollbar-width: thin;
-            scrollbar-color: #4CAF50 rgba(30,30,30,0.95);
-        }
-        #controls.expanded { transform: translateX(0); }
-        #controls::-webkit-scrollbar { width: 8px; }
-        #controls::-webkit-scrollbar-track {
-            background: rgba(30,30,30,0.95); border-radius: 4px;
-        }
-        #controls::-webkit-scrollbar-thumb {
-            background: #4CAF50; border-radius: 4px; transition: background 0.2s ease;
-        }
-        #controls::-webkit-scrollbar-thumb:hover { background: #45a049; }
-        .select-container { margin-top: 10px; width: 100%; }
-        .select-container select {
-            width: 100%; padding: 8px; background: rgba(42,42,42,0.7);
-            color: white; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px; outline: none;
-        }
-        .select-container select option { background: #1a1a1a; color: white; padding: 8px; }
-        .multiselect-container { margin-top: 10px; }
-        .multiselect-container select {
-            width: 100%; padding: 8px; background: rgba(42,42,42,0.7);
-            color: white; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px; outline: none; height: 100px;
-        }
-        .control-group {
-            margin: 15px 0; padding: 15px;
-            background: rgba(42,42,42,0.7);
-            border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-        }
-        .control-header {
-            font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #fff;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .control-header_error {
-            font-size: 14px; font-weight: bold; margin-bottom: 10px; color: rgb(255, 255, 255);
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .collapsible {
-            background: none; border: none; width: 100%; text-align: left; cursor: pointer;
-        }
-        .collapsible:after { content: '\25BC'; float: right; }
-        .collapsible.collapsed:after { content: '\25B6'; }
-        .checkbox-grid {
-            display: grid; grid-template-columns: repeat(1,1fr);
-            gap: 5px; overflow: hidden; max-height: 0; transition: max-height 0.3s ease-out;
-        }
-        .checkbox-grid.expanded { max-height: 500px; margin-top: 10px; }
-        button {
-            background: #4CAF50; color: white; padding: 10px 15px; border: none;
-            border-radius: 8px; width: 100%; cursor: pointer; margin-bottom: 10px;
-            font-weight: 500; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
-        }
-        button:hover {
-            background: #45a049; transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .api-form { margin-bottom: 10px; }
-        #apiUrl { font-family: monospace; }
-        .file-list {
-            max-height: 200px; overflow-y: auto; margin-top: 10px;
-            padding: 5px; border-radius: 8px; background: rgba(0,0,0,0.2);
-        }
-        .file-item {
-            display: flex; align-items: center; padding: 8px; margin: 4px 0;
-            background: rgba(255,255,255,0.05); border-radius: 6px; transition: background 0.2s ease;
-        }
-        .file-item:hover { background: rgba(255,255,255,0.1); }
-        .file-checkbox { margin-right: 10px; }
-        .file-label {
-            flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .feedback-box {
-            position: fixed; top: 20px; right: 20px; background: rgba(30,30,30,0.95);
-            padding: 20px; border-radius: 15px; width: 300px; color: white; z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .feedback-content {
-            margin-top: 10px; padding: 10px;
-            background: rgba(42,42,42,0.7); border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .trajectory-label {
-            background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px;
-            font-size: 14px; font-weight: bold;
-        }
-        .trajectory-dropdown { margin-top: 10px; position: relative; }
-        .trajectory-button {
-            width: 100%; padding: 8px; background: rgba(42,42,42,0.7);
-            color: white; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px; text-align: left; cursor: pointer;
-        }
-        .trajectory-dropdown-content {
-            display: none; position: absolute; width: 100%; max-height: 200px; overflow-y: auto;
-            background: rgba(30,30,30,0.95); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px; z-index: 1001;
-        }
-        .trajectory-dropdown-content.show { display: block; }
-        .trajectory-grid {
-            display: grid; grid-template-columns: 1fr; gap: 5px; overflow: hidden;
-            max-height: 0; transition: max-height 0.3s ease-out;
-        }
-        .trajectory-grid.expanded { max-height: 500px; margin-top: 10px; margin-bottom: 20px; }
-        .trajectory-item { padding: 8px; display: flex; align-items: center; gap: 8px; color: white; }
-        .trajectory-item:hover { background: rgba(255,255,255,0.1); }
-        .trajectory-checkbox { margin: 0; }
-        .slider { width: 100%; margin: 10px 0; }
-        .marker-label {
-            z-index: 9999 !important; background: rgba(0,0,0,0.7); color: white;
-            padding: 1px 2px; font-family: monospace; font-size: 8px; line-height: 1.1;
-            border-radius: 2px; white-space: pre-line; pointer-events: none; opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .trajectory-point {
-            z-index: 1999 !important; pointer-events: none; width: 6px; height: 6px;
-            border-radius: 50%; pointer-events: all; cursor: pointer;
-        }
-        .trajectory-point:hover + .marker-label { opacity: 1; }
-        .warning-box {
-            position: fixed; top: 100px; right: 20px; background: rgba(255,0,0,0.1);
-            border: 2px solid #f00; color: white; padding: 15px; border-radius: 5px;
-            max-width: 250px; font-size: 14px; z-index: 1000;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>3D Pose Visualization</title>
+  
+  <!-- 基本重置與佈局 -->
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #1a1a1a;
+    }
+    #overallBox {
+      margin-top: -1px;
+    }
+  </style>
+  
+  <!-- 控制面板 (右下) 樣式 -->
+  <style>
+    #controlPanel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 2000;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      padding-top: 20px;
+    }
+    #controlPanel.expanded {
+      transform: translateX(0);
+    }
+    #controlPanelToggle {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 3px;
+      background: rgba(76, 175, 80, 0.05);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    #controlPanelToggle:hover {
+      background: rgba(76, 175, 80, 0.5);
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
+    }
+    #controlPanelToggle::before {
+      content: none;
+    }
+    #controlPanel.expanded #controlPanelToggle::before {
+      transform: rotate(180deg);
+    }
+    .control-container {
+      z-index: 2000;
+      background: rgba(30, 30, 30, 0.95);
+      border-radius: 15px;
+      padding: 20px;
+      width: 900px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+  
+  <!-- 控制元件與表單樣式 -->
+  <style>
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .control-input {
+      padding: 8px;
+      font-size: 20px;
+      background: rgba(42, 42, 42, 0.7);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      outline: none;
+    }
+    .control-input[type="number"]::-webkit-inner-spin-button,
+    .control-input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .input-row .control-input {
+      width: calc(50% - 5px);
+    }
+    select.control-input {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .control-button {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-weight: 500;
+      font-size: 25px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .left-right-button {
+      background: #4CAF50;
+      color: white;
+      width: 100%;
+      height: 35px;
+      font-size: 50px;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+      display: flex;          /* 使用 flexbox 實現垂直居中 */
+      align-items: center;    /* 垂直居中 */
+      justify-content: center; /* 水平居中 */
+      line-height: 1;         /* 重設行高 */
+      padding: 0;             /* 移除內邊距 */
+      border: none;           /* 確保沒有邊框 */
+      border-radius: 8px;     /* 保持圓角 */
+      cursor: pointer;        /* 保持滑鼠指針樣式 */
+      margin-bottom: 10px;    /* 保持底部邊距 */
+      margin-top: -12px;
+    }
+    .control-button:hover {
+      background: #45a049;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .api-form {
+      margin-bottom: 10px;
+    }
+  </style>
+  
+  <!-- 通知訊息樣式 -->
+  <style>
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      border-radius: 5px;
+      color: white;
+      z-index: 9000;
+      animation: slideIn 0.3s ease;
+    }
+    .notification.success {
+      background-color: rgba(76, 175, 80, 0.9);
+    }
+    .notification.error {
+      background-color: rgba(244, 67, 54, 0.9);
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+  
+  <!-- Feedback 區塊樣式 -->
+  <style>
+    #feedbackGroup {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 3000;
+      transform: translateX(920px);
+      transition: transform 0.3s ease;
+      padding-bottom: 20px;
+    }
+    #feedbackGroup.expanded {
+      transform: translateX(0);
+    }
+    #feedbackToggle {
+      display: block;
+      width: 20px !important;
+      min-width: 0 !important;
+      height: 200px;             /* 設定固定高度 */
+      padding: 0 !important;
+      margin: 0 !important;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(76,175,80,0.05);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: absolute;
+      left: -30px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    #feedbackToggle:hover {
+      background: rgba(76,175,80,0.5);
+      box-shadow: 0 0 8px rgba(76,175,80,0.3);
+    }
+    #feedbackToggle::before {
+      content: none;
+    }
+    #feedbackGroup.expanded #feedbackToggle::before {
+      transform: rotate(180deg);
+    }
+    .feedback-container {
+      width: 900px;
+      background: rgba(30,30,30,0.95);
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    #feedbackBox,
+    #overallBox {
+      position: static;
+      width: 95%;
+      padding: 20px;
+      background: none;
+      box-shadow: none;
+    }
+    #overallBox {
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .feedback-content {
+      color: #fff;
+      font-size: 20px;
+    }
+  </style>
+  
+  <!-- Controls 面板 (左側) 樣式 -->
+  <style>
+    #toggleControls {
+      z-index: 1001;
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 0px;
+      width: 20px;
+      height: 200px;
+      background: rgba(76,175,80,0.05);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    #toggleControls:hover {
+      background: rgba(76,175,80,0.5);
+      box-shadow: 0 0 8px rgba(76,175,80,0.2);
+    }
+    #toggleControls::before {
+      content: none;
+    }
+    #toggleControls.expanded::before {
+      transform: none;
+    }
+    #controls {
+      transform: translateX(-600px); /* 調整進入的距離 */
+      transition: transform 0.3s ease;
+      z-index: 2000;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(30,30,30,0.95);
+      padding: 20px;
+      border-radius: 15px;
+      width: 420px;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+      max-height: 90vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #4CAF50 rgba(30,30,30,0.95);
+    }
+    #controls.expanded {
+      transform: translateX(0);
+    }
+    #controls::-webkit-scrollbar {
+      width: 8px;
+    }
+    #controls::-webkit-scrollbar-track {
+      background: rgba(30,30,30,0.95);
+      border-radius: 4px;
+    }
+    #controls::-webkit-scrollbar-thumb {
+      background: #4CAF50;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    #controls::-webkit-scrollbar-thumb:hover {
+      background: #45a049;
+    }
+    .select-container {
+      margin-top: 10px;
+      width: 100%;
+    }
+    .select-container select {
+      width: 100%;
+      padding: 8px;
+      background: rgba(42,42,42,0.7);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      outline: none;
+    }
+    .select-container select option {
+      background: #1a1a1a;
+      color: white;
+      padding: 8px;
+    }
+    .multiselect-container {
+      margin-top: 10px;
+    }
+    .multiselect-container select {
+      width: 100%;
+      padding: 8px;
+      background: rgba(42,42,42,0.7);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      outline: none;
+      height: 100px;
+    }
+    .control-group {
+      margin: 15px 0;
+      padding: 15px;
+      font-size: 20px;
+      background: rgba(42,42,42,0.7);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .control-header {
+      text-align: center;
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #4CAF50;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .control-header_error {
+      font-size: 25px;
+      font-weight: bold;
+      width: 90%;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #4CAF50;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .collapsible {
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+    .collapsible:after {
+      content: '\25BC';
+      float: right;
+    }
+    .collapsible.collapsed:after {
+      content: '\25B6';
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(1,1fr);
+      gap: 5px;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease-out;
+    }
+    .checkbox-grid.expanded {
+      max-height: 500px;
+      margin-top: 10px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      font-size: 20px;
+      letter-spacing: 1px;
+    }
+    button:hover {
+      background: #45a049;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+  </style>
+  
+  <!-- 其他樣式：檔案列表、軌跡、滑桿等 -->
+  <style>
+    .file-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 10px;
+      padding: 5px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.2);
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      margin: 4px 0;
+      background: rgba(255,255,255,0.05);
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+    .file-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .file-checkbox {
+      margin-right: 10px;
+    }
+    .file-label {
+      flex: 1;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .trajectory-label {
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .trajectory-dropdown {
+      margin-top: 10px;
+      position: relative;
+    }
+    .trajectory-button {
+      width: 100%;
+      padding: 8px;
+      background: rgba(42,42,42,0.7);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .trajectory-dropdown-content {
+      display: none;
+      position: absolute;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(30,30,30,0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      z-index: 1001;
+    }
+    .trajectory-dropdown-content.show {
+      display: block;
+    }
+    .trajectory-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease-out;
+    }
+    .trajectory-grid.expanded {
+      max-height: 500px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    .trajectory-item {
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+    }
+    .trajectory-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .trajectory-checkbox {
+      margin: 0;
+    }
+    .slider {
+      width: 100%;
+      margin: 10px 0;
+    }
+    .marker-label {
+      z-index: 9999 !important;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 1px 2px;
+      font-family: monospace;
+      font-size: 8px;
+      line-height: 1.1;
+      border-radius: 2px;
+      white-space: pre-line;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .trajectory-point {
+      z-index: 1999 !important;
+      pointer-events: none;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      pointer-events: all;
+      cursor: pointer;
+    }
+    .trajectory-point:hover + .marker-label {
+      opacity: 1;
+    }
+    .warning-box {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: rgba(255,0,0,0.1);
+      border: 2px solid #f00;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      max-width: 250px;
+      font-size: 14px;
+      z-index: 1000;
+    }
+  </style>
+  
+  <!-- 載入 Three.js 與相關套件 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/"
+    }
+  }
+  </script>
+  
 </head>
 <body>
-    <div id="toggleControls"></div>
-    <div id="controls" class="expanded">
+  <!-- 控制面板 (左側) -->
+  <div id="toggleControls"></div>
+  <div id="controls" class="expanded">
+    <div class="control-group">
+      <button id="playButton">play</button>
+      <button id="showFullTrajectoryButton">Show full trajectory</button>
+      <div id="frameInfo">frame: 0</div>
+      <input type="range" id="slider" class="slider" value="0">
+      <div>speed: <span id="speedValue">1x</span></div>
+      <input type="range" id="speedControl" class="slider" min="0.1" max="2" step="0.1" value="1">
+    </div>
+    <div id="jointControls" class="checkbox-grid"></div>
+  </div>
+  
+  <!-- Feedback 區塊 (右側) -->
+  <div id="feedbackGroup" class="expanded">
+    <button id="feedbackToggle"></button>
+    <div class="feedback-container">
+      <div id="feedbackBox" class="feedback-box">
+        <div class="control-header_error">Feedback</div>
+        <div id="feedbackContent" class="feedback-content"></div>
+      </div>
+      <div id="overallBox" class="feedback-box">
+        <div class="control-header">Overall Suggestion</div>
+        <div id="overallContent" class="feedback-content"></div>
+        <button id="trajectoryAnalysis" style="margin-top: 10px; font-size: 25px;">Trajectory Analysis</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 控制面板 (右下) -->
+  <div id="controlPanel">
+    <button id="controlPanelToggle"></button>
+    <div class="control-container">
+      <div class="control-content">
+        <!-- 顯示當前時間 -->
+        <div id="currentTime" style="position: fixed; bottom: 4px; left: 22px; color: #4CAF50; font-size: 15px; z-index: 2100;"></div>
         <div class="control-group">
-            <button id="playButton">play</button>
-            <button id="showFullTrajectoryButton">Show full trajectory</button>
-            <div id="frameInfo">frame: 0</div>
-            <input type="range" id="slider" class="slider" value="0">
-            <div>speed: <span id="speedValue">1x</span></div>
-            <input type="range" id="speedControl" class="slider" min="0.1" max="2" step="0.1" value="1">
-        </div>
-        <div id="jointControls" class="checkbox-grid"></div>
-    </div>
-
-    <div id="feedbackGroup" class="expanded">
-        <button id="feedbackToggle"></button>
-        <div class="feedback-container">
-            <div id="feedbackBox" class="feedback-box">
-                <div class="control-header_error">Feedback</div>
-                <div id="feedbackContent" class="feedback-content"></div>
+          <div class="control-header">Personal Info</div>
+          <form class="api-form" data-endpoint="/input_data">
+            <div class="input-row">
+              <input type="text" name="name" placeholder="Name" class="control-input" required>
+              <input type="number" name="height" placeholder="Height" class="control-input" required>
             </div>
-            <div id="overallBox" class="feedback-box">
-                <div class="control-header">Overall Suggestion</div>
-                <div id="overallContent" class="feedback-content"></div>
-                <button id="trajectoryAnalysis" style="margin-top: 10px;">Trajectory Analysis</button>
-            </div>
+            <select name="dominant_hand" class="control-input">
+              <option value="0">Right Hand</option>
+              <option value="1">Left Hand</option>
+            </select>
+            <button type="submit" class="control-button">Submit Info</button>
+          </form>
         </div>
-    </div>
-
-    <div id="controlPanel">
-        <button id="controlPanelToggle"></button>
-        <div class="control-container">
-            <div class="control-header">Control Panel</div>
-            <div class="control-content">
-                <div class="control-group">
-                    <div class="control-header">Personal Info</div>
-                    <form class="api-form" data-endpoint="/input_data">
-                        <div class="input-row">
-                            <input type="text" name="name" placeholder="Name" class="control-input" required>
-                            <input type="number" name="height" placeholder="Height" class="control-input" required>
-                        </div>
-                        <select name="dominant_hand" class="control-input">
-                            <option value="0">Right Hand</option>
-                            <option value="1">Left Hand</option>
-                        </select>
-                        <button type="submit" class="control-button">Submit Info</button>
-                    </form>
-                </div>
-                <div class="control-group">
-                    <div class="control-header">Recording Control</div>
-                    <form class="api-form" data-endpoint="/start_recording">
-                        <button id="startRecordingButton" type="submit" class="control-button">Start Recording</button>
-                    </form>
-                    <form class="api-form" data-endpoint="/stop_recording">
-                        <button id="stopRecordingButton" type="submit" class="control-button">Stop Recording</button>
-                    </form>
-                    <form class="api-form" data-endpoint="/stop_recording_and_download">
-                        <button type="submit" class="control-button">Processing Trajectory</button>
-                    </form>
-                </div> 
-            </div>
+        <div class="control-group">
+          <div class="control-header">Recording Control</div>
+          <!-- Auto 按鈕 -->
+          <form class="api-form" data-endpoint="">
+            <button id="auto" type="submit" class="control-button">auto</button>
+          </form>
+          <!-- Queue Status 按鈕 -->
+          <form class="api-form" data-endpoint="">
+            <button id="queueStatusButton" type="submit" class="control-button">Check Queue Status</button>
+          </form>
         </div>
+      </div>
     </div>
-
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/"
-        }
+  </div>
+  
+  <!-- JavaScript 區段 -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+    import { Line2 } from 'three/addons/lines/Line2.js';
+    import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+    import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+    
+    // 全域變數宣告
+    let scene, camera, renderer, labelRenderer, controls;
+    let trajectoryData = [], currentFrame = 0, isPlaying = false;
+    let playbackSpeed = 1, frameInterval, showingFullTrajectory = false;
+    let globalCenter = { x: 0, z: 0 }, globalMinY = 0;
+    
+    const SCALE_FACTOR = 0.002;
+    const skeletonConnections = [
+      ['nose','left_eye'], ['nose','right_eye'], ['left_eye','left_ear'],
+      ['right_eye','right_ear'], ['left_ear','left_shoulder'],
+      ['right_ear','right_shoulder'], ['left_shoulder','right_shoulder'],
+      ['left_shoulder','left_hip'], ['right_shoulder','right_hip'],
+      ['left_hip','right_hip'], ['left_shoulder','left_elbow'],
+      ['left_elbow','left_wrist'], ['right_shoulder','right_elbow'],
+      ['right_elbow','right_wrist'], ['left_hip','left_knee'],
+      ['left_knee','left_ankle'], ['right_hip','right_knee'],
+      ['right_knee','right_ankle']
+    ];
+    const joints = {
+      tennis_ball: { color: '#FF6B6B', size: 0.05 },
+      nose: { color: '#4ECDC4', size: 0.015 },
+      left_eye: { color: '#45B7D1', size: 0.012 },
+      right_eye: { color: '#45B7D1', size: 0.012 },
+      left_ear: { color: '#96CEB4', size: 0.012 },
+      right_ear: { color: '#96CEB4', size: 0.012 },
+      left_shoulder: { color: '#FF8C42', size: 0.02 },
+      right_shoulder: { color: '#FF8C42', size: 0.02 },
+      left_elbow: { color: '#FF8C42', size: 0.018 },
+      right_elbow: { color: '#FF8C42', size: 0.018 },
+      left_wrist: { color: '#FF8C42', size: 0.015 },
+      right_wrist: { color: '#FF8C42', size: 0.015 },
+      left_hip: { color: '#6C5B7B', size: 0.02 },
+      right_hip: { color: '#6C5B7B', size: 0.02 },
+      left_knee: { color: '#6C5B7B', size: 0.018 },
+      right_knee: { color: '#6C5B7B', size: 0.018 },
+      left_ankle: { color: '#6C5B7B', size: 0.015 },
+      right_ankle: { color: '#6C5B7B', size: 0.015 }
+    };
+    let joints3D = {}, lines = [], visibilityState = {};
+    
+    // 單檔案軌跡設定
+    const trajectorySystem = {
+      right_wrist: {
+        color: '#ffff00', points: [],
+        line: new THREE.Line(
+          new THREE.BufferGeometry(),
+          new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: 2, transparent: true, opacity: 0.5 })
+        )
+      },
+      tennis_ball: {
+        color: '#00ff00', points: [],
+        line: new THREE.Line(
+          new THREE.BufferGeometry(),
+          new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2, transparent: true, opacity: 0.5 })
+        )
+      }
+    };
+    
+    // 多檔案軌跡管理物件
+    const multiFileTrajectories = {
+      lines: new Map(),
+      labels: new Map(),
+      selectedFiles: [],
+      visible: false
+    };
+    
+    // 初始化函式：建立場景、相機、控制器、燈光等，並呼叫各種設定函式
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x1a1a1a);
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, 1000);
+      camera.position.set(4, 4, 8);
+      
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+      
+      labelRenderer = new CSS2DRenderer();
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.domElement.style.position = 'absolute';
+      labelRenderer.domElement.style.top = '0';
+      document.body.appendChild(labelRenderer.domElement);
+      
+      // 設定控制器與燈光
+      controls = new OrbitControls(camera, labelRenderer.domElement);
+      controls.enableDamping = true;
+      controls.target.set(0, 4, 0);
+      scene.add(new THREE.AmbientLight(0x404040, 2));
+      scene.add(new THREE.DirectionalLight(0xffffff, 1));
+      scene.add(new THREE.GridHelper(10, 20, 0x444444, 0x333333));
+      
+      // 建立關節模型與骨架線
+      Object.entries(joints).forEach(([name, props]) => {
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(props.size, 16, 16),
+          new THREE.MeshBasicMaterial({ color: props.color })
+        );
+        joints3D[name] = mesh;
+        scene.add(mesh);
+      });
+      skeletonConnections.forEach(() => {
+        const line = new THREE.Line(
+          new THREE.BufferGeometry(),
+          new THREE.LineBasicMaterial({ color: 0x00ff99, linewidth: 2, transparent: true, opacity: 0.8 })
+        );
+        lines.push(line);
+        scene.add(line);
+      });
+      
+      // 將軌跡線加入場景
+      Object.values(trajectorySystem).forEach(t => scene.add(t.line));
+      
+      // 呼叫各功能設定
+      createJointControls();
+      setupFileControls();
+      setupEventListeners();
+      setupFeedbackToggle();
+      setupControlPanelToggle();
+      setupToggleControls();
+      setupApiHandlers();
+      setupAutoButton();
+      updateCurrentTime();
+      
+      animate();
     }
-    </script>
+    
+    // 每秒更新當前時間顯示
+    function updateCurrentTime() {
+      const ct = document.getElementById("currentTime");
+      if (ct) {
+        ct.textContent = new Date().toLocaleString();
+      }
+    }
+    setInterval(updateCurrentTime, 1000);
+    
+    // 建立關節勾選控制項
+    function createJointControls() {
+      // 創建控制組容器
+      const jointControlGroup = document.createElement('div');
+      jointControlGroup.className = 'control-group';
+      
+      // 創建標題按鈕 (可收合)
+      const toggleBtn = document.createElement('button');
+      toggleBtn.textContent = 'Joint Controls';
+      toggleBtn.className = 'collapsible collapsed';
+      toggleBtn.style.marginBottom = '10px';
+      jointControlGroup.appendChild(toggleBtn);
+      
+      // 創建內容容器 (預設收合)
+      const container = document.createElement('div');
+      container.id = 'jointControls';
+      container.className = 'checkbox-grid';
+      jointControlGroup.appendChild(container);
+      
+      // 添加全選選項
+      const selectAllDiv = document.createElement('div');
+      const selectAllCheckbox = document.createElement('input');
+      selectAllCheckbox.type = 'checkbox';
+      selectAllCheckbox.id = 'selectAllJoints';
+      selectAllCheckbox.checked = true;
+      const selectAllLabel = document.createElement('label');
+      selectAllLabel.htmlFor = 'selectAllJoints';
+      selectAllLabel.textContent = 'Select All Joints';
+      selectAllDiv.appendChild(selectAllCheckbox);
+      selectAllDiv.appendChild(selectAllLabel);
+      container.appendChild(selectAllDiv);
+      
+      // 為所有關節添加勾選框
+      Object.keys(joints).forEach(name => {
+          const div = document.createElement('div');
+          const ck = document.createElement('input');
+          ck.type = 'checkbox';
+          ck.id = `show_${name}`;
+          ck.checked = true;
+          ck.addEventListener('change', () => {
+              visibilityState[name] = ck.checked;
+              updateFrame();
+              
+              // 檢查是否所有關節都選中
+              const allCk = container.querySelectorAll('input[type="checkbox"]:not(#selectAllJoints)');
+              selectAllCheckbox.checked = Array.from(allCk).every(c => c.checked);
+          });
+          div.appendChild(ck);
+          div.appendChild(document.createTextNode(name));
+          container.appendChild(div);
+          visibilityState[name] = true;
+      });
+      
+      // 全選/取消全選功能
+      selectAllCheckbox.addEventListener('change', () => {
+          const cks = container.querySelectorAll('input[type="checkbox"]:not(#selectAllJoints)');
+          cks.forEach(c => {
+              c.checked = selectAllCheckbox.checked;
+              visibilityState[c.id.replace('show_', '')] = selectAllCheckbox.checked;
+          });
+          updateFrame();
+      });
+      
+      // 收合功能
+      toggleBtn.addEventListener('click', () => {
+          container.classList.toggle('expanded');
+          toggleBtn.classList.toggle('collapsed');
+      });
+      
+      // 將控制組添加到 controls 面板中 - 放在 trajGroup 之後
+      const controls = document.getElementById('controls');
+      const trajGroup = Array.from(controls.querySelectorAll('.control-group')).find(
+          g => g.querySelector('button')?.textContent === 'Trajectory Selection'
+      );
+      
+      if (trajGroup) {
+          controls.insertBefore(jointControlGroup, trajGroup.nextSibling);
+      } else {
+          // 如果找不到 trajGroup，則添加到底部
+          controls.appendChild(jointControlGroup);
+      }
+  }
+    
+    // 檔案選取與載入 JSON 檔案
+    function setupFileControls() {
+      const fileControlGroup = document.createElement('div');
+      fileControlGroup.className = 'control-group';
+      document.getElementById('controls').prepend(fileControlGroup);
+      
+      const dirInput = document.createElement('input');
+      dirInput.type = 'file';
+      dirInput.id = 'dirInput';
+      dirInput.webkitdirectory = true;
+      dirInput.style.display = 'none';
+      
+      const dirButton = document.createElement('button');
+      dirButton.textContent = 'Select Directory';
+      dirButton.onclick = () => dirInput.click();
+      fileControlGroup.appendChild(dirButton);
+      
+      const selectContainer = document.createElement('div');
+      selectContainer.className = 'select-container';
+      const fileSelect = document.createElement('select');
+      fileSelect.id = 'fileSelect';
+      selectContainer.appendChild(fileSelect);
+      fileControlGroup.appendChild(selectContainer);
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-        import { Line2 } from 'three/addons/lines/Line2.js';
-        import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-        import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+      const navButtonsContainer = document.createElement('div');
+      navButtonsContainer.className = 'input-row';
+      navButtonsContainer.style.marginTop = '10px';
 
-        let scene, camera, renderer, labelRenderer, controls;
-        let trajectoryData = [], currentFrame = 0, isPlaying = false;
-        let playbackSpeed = 1, frameInterval, showingFullTrajectory = false;
-        let globalCenter = { x: 0, z: 0 }, globalMinY = 0;
-
-        const SCALE_FACTOR = 0.002;
-        const skeletonConnections = [
-            ['nose','left_eye'], ['nose','right_eye'], ['left_eye','left_ear'],
-            ['right_eye','right_ear'], ['left_ear','left_shoulder'],
-            ['right_ear','right_shoulder'], ['left_shoulder','right_shoulder'],
-            ['left_shoulder','left_hip'], ['right_shoulder','right_hip'],
-            ['left_hip','right_hip'], ['left_shoulder','left_elbow'],
-            ['left_elbow','left_wrist'], ['right_shoulder','right_elbow'],
-            ['right_elbow','right_wrist'], ['left_hip','left_knee'],
-            ['left_knee','left_ankle'], ['right_hip','right_knee'],
-            ['right_knee','right_ankle']
-        ];
-        const joints = {
-            tennis_ball: { color: '#FF6B6B', size: 0.05 },
-            nose: { color: '#4ECDC4', size: 0.015 },
-            left_eye: { color: '#45B7D1', size: 0.012 },
-            right_eye: { color: '#45B7D1', size: 0.012 },
-            left_ear: { color: '#96CEB4', size: 0.012 },
-            right_ear: { color: '#96CEB4', size: 0.012 },
-            left_shoulder: { color: '#FF8C42', size: 0.02 },
-            right_shoulder: { color: '#FF8C42', size: 0.02 },
-            left_elbow: { color: '#FF8C42', size: 0.018 },
-            right_elbow: { color: '#FF8C42', size: 0.018 },
-            left_wrist: { color: '#FF8C42', size: 0.015 },
-            right_wrist: { color: '#FF8C42', size: 0.015 },
-            left_hip: { color: '#6C5B7B', size: 0.02 },
-            right_hip: { color: '#6C5B7B', size: 0.02 },
-            left_knee: { color: '#6C5B7B', size: 0.018 },
-            right_knee: { color: '#6C5B7B', size: 0.018 },
-            left_ankle: { color: '#6C5B7B', size: 0.015 },
-            right_ankle: { color: '#6C5B7B', size: 0.015 }
-        };
-        let joints3D = {}, lines = [], visibilityState = {};
-
-        // 單檔案軌跡 (示例: right_wrist, tennis_ball)
-        const trajectorySystem = {
-            right_wrist: {
-                color: '#ffff00', points: [],
-                line: new THREE.Line(
-                    new THREE.BufferGeometry(),
-                    new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: 2, transparent: true, opacity: 0.5 })
-                )
-            },
-            tennis_ball: {
-                color: '#00ff00', points: [],
-                line: new THREE.Line(
-                    new THREE.BufferGeometry(),
-                    new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2, transparent: true, opacity: 0.5 })
-                )
-            }
-        };
-
-        // 多檔案軌跡管理
-        const multiFileTrajectories = {
-            lines: new Map(), labels: new Map(), selectedFiles: [], visible: false
-        };
-
-        function init() {
-            // 場景、相機、renderer
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a1a1a);
-
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.001, 1000);
-            camera.position.set(0,1.5,4);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            labelRenderer = new CSS2DRenderer();
-            labelRenderer.setSize(window.innerWidth, window.innerHeight);
-            labelRenderer.domElement.style.position = 'absolute';
-            labelRenderer.domElement.style.top = '0';
-            document.body.appendChild(labelRenderer.domElement);
-
-            // Controls & Lighting
-            controls = new OrbitControls(camera, labelRenderer.domElement);
-            controls.enableDamping = true; controls.target.set(0,1.5,0);
-            scene.add(new THREE.AmbientLight(0x404040,2));
-            scene.add(new THREE.DirectionalLight(0xffffff,1));
-            scene.add(new THREE.GridHelper(10,20,0x444444,0x333333));
-
-            // 關節 Mesh & 骨架線
-            Object.entries(joints).forEach(([name,props]) => {
-                const mesh = new THREE.Mesh(
-                    new THREE.SphereGeometry(props.size,16,16),
-                    new THREE.MeshBasicMaterial({ color: props.color })
-                );
-                joints3D[name] = mesh; scene.add(mesh);
-            });
-            skeletonConnections.forEach(() => {
-                const line = new THREE.Line(
-                    new THREE.BufferGeometry(),
-                    new THREE.LineBasicMaterial({ color: 0x00ff99, linewidth: 2, transparent: true, opacity: 0.8 })
-                );
-                lines.push(line); scene.add(line);
-            });
-
-            // 單檔案軌跡線加入場景
-            Object.values(trajectorySystem).forEach(t => scene.add(t.line));
-
-            createJointControls();
-            setupFileControls();
-            setupEventListeners();
-            setupFeedbackToggle();
-            setupControlPanelToggle();
-            setupToggleControls();
-            setupApiHandlers();
-
-            animate();
+      // 創建往前按鈕
+      const prevButton = document.createElement('button');
+      prevButton.textContent = '⬅';
+      prevButton.className = 'left-right-button';
+      prevButton.onclick = () => {
+        const select = document.getElementById('fileSelect');
+        if (select.selectedIndex > 0) {
+          select.selectedIndex -= 1;
+          // 觸發 change 事件以載入前一個檔案
+          const event = new Event('change');
+          select.dispatchEvent(event);
         }
+      };
 
-        function createJointControls() {
-            const container = document.getElementById('jointControls');
-            container.className = 'checkbox-grid';
-            Object.keys(joints).forEach(name => {
-                const div = document.createElement('div');
-                const ck = document.createElement('input');
-                ck.type = 'checkbox'; ck.id = `show_${name}`; ck.checked = true;
-                ck.addEventListener('change', () => { visibilityState[name] = ck.checked; updateFrame(); });
-                div.appendChild(ck);
-                div.appendChild(document.createTextNode(name));
-                container.appendChild(div);
-                visibilityState[name] = true;
-            });
+      // 創建往後按鈕
+      const nextButton = document.createElement('button');
+      nextButton.textContent = '⮕';
+      nextButton.className = 'left-right-button';
+      nextButton.onclick = () => {
+        const select = document.getElementById('fileSelect');
+        if (select.selectedIndex < select.options.length - 1) {
+          select.selectedIndex += 1;
+          // 觸發 change 事件以載入下一個檔案
+          const event = new Event('change');
+          select.dispatchEvent(event);
         }
+      };
 
-        function setupFileControls() {
-            const fileControlGroup = document.createElement('div');
-            fileControlGroup.className = 'control-group';
-            document.getElementById('controls').prepend(fileControlGroup);
+      // 將按鈕添加到容器中
+      navButtonsContainer.appendChild(prevButton);
+      navButtonsContainer.appendChild(nextButton);
 
-            const dirInput = document.createElement('input');
-            dirInput.type = 'file'; dirInput.id = 'dirInput';
-            dirInput.webkitdirectory = true; dirInput.style.display = 'none';
+      // 將導航按鈕插入到選擇容器之後
+      fileControlGroup.appendChild(navButtonsContainer);
 
-            const dirButton = document.createElement('button');
-            dirButton.textContent = 'Select Directory';
-            dirButton.onclick = () => dirInput.click();
-            fileControlGroup.appendChild(dirButton);
-
-            const selectContainer = document.createElement('div');
-            selectContainer.className = 'select-container';
-            const fileSelect = document.createElement('select');
-            fileSelect.id = 'fileSelect';
-            selectContainer.appendChild(fileSelect);
-            fileControlGroup.appendChild(selectContainer);
-
-            // 多檔案軌跡的控制 UI
-            const trajGroup = document.createElement('div');
-            trajGroup.className = 'control-group';
-            const toggleBtn = document.createElement('button');
-            toggleBtn.textContent = 'Trajectory Selection';
-            toggleBtn.className = 'collapsible collapsed';
-            toggleBtn.style.marginBottom = '10px';
-            trajGroup.appendChild(toggleBtn);
-
-            const dropdownContent = document.createElement('div');
-            dropdownContent.className = 'trajectory-grid';
-            trajGroup.appendChild(dropdownContent);
-
-            // 全選
-            const selectAllDiv = document.createElement('div');
-            const selectAllCheckbox = document.createElement('input');
-            selectAllCheckbox.type = 'checkbox'; selectAllCheckbox.id = 'selectAll';
-            const selectAllLabel = document.createElement('label');
-            selectAllLabel.htmlFor = 'selectAll'; selectAllLabel.textContent = 'Select All';
-            selectAllDiv.appendChild(selectAllCheckbox);
-            selectAllDiv.appendChild(selectAllLabel);
-            dropdownContent.appendChild(selectAllDiv);
-            selectAllCheckbox.addEventListener('change', () => {
-                const cks = dropdownContent.querySelectorAll('input[type="checkbox"]:not(#selectAll)');
-                cks.forEach(c => c.checked = selectAllCheckbox.checked);
-            });
-
-            // 摺疊
-            toggleBtn.addEventListener('click', () => {
-                dropdownContent.classList.toggle('expanded');
-                toggleBtn.classList.toggle('collapsed');
-            });
-
-            // 顯示/隱藏多檔案軌跡
-            const showMultiButton = document.createElement('button');
-            showMultiButton.textContent = 'Show Selected Trajectories';
-            showMultiButton.onclick = () => {
-                multiFileTrajectories.visible = !multiFileTrajectories.visible;
-                showMultiButton.textContent = multiFileTrajectories.visible ? 'Hide Trajectories' : 'Show Selected Trajectories';
-                showMultiButton.style.background = multiFileTrajectories.visible ? '#f44336' : '#4CAF50';
-                const checkedBoxes = dropdownContent.querySelectorAll('input[type="checkbox"]:checked:not(#selectAll)');
-                multiFileTrajectories.selectedFiles = Array.from(checkedBoxes).map(cb => cb.value);
-                updateMultiTrajectories();
-            };
-            trajGroup.appendChild(showMultiButton);
-
-            // 插入控制面板
-            document.getElementById('controls').insertBefore(trajGroup, fileControlGroup.nextSibling);
-
-            // 選目錄
-            dirInput.addEventListener('change', async e => {
-                const files = Array.from(e.target.files).filter(f => f.name.includes('(3D_trajectory_smoothed).json'))
-                    .sort((a,b) => {
-                        const na = parseInt(a.name.match(/\d+/)[0]);
-                        const nb = parseInt(b.name.match(/\d+/)[0]);
-                        return na - nb;
-                    });
-                if(!files.length) { alert('No matching JSON found'); return; }
-
-                fileSelect.innerHTML = '';
-                dropdownContent.innerHTML = '';
-                dropdownContent.appendChild(selectAllDiv);
-
-                files.forEach((file,idx) => {
-                    const opt = document.createElement('option');
-                    opt.value = file.name; opt.textContent = file.name; opt.selected = (idx===0);
-                    fileSelect.appendChild(opt);
-
-                    const div = document.createElement('div');
-                    const ck = document.createElement('input');
-                    ck.type = 'checkbox'; ck.className = 'trajectory-checkbox'; ck.value = file.name;
-                    ck.id = `traj_${file.name}`;
-                    ck.addEventListener('change', () => {
-                        const allCk = dropdownContent.querySelectorAll('input[type="checkbox"]:not(#selectAll)');
-                        selectAllCheckbox.checked = Array.from(allCk).every(c => c.checked);
-                    });
-                    const label = document.createElement('label');
-                    label.htmlFor = ck.id; label.textContent = file.name;
-                    div.appendChild(ck); div.appendChild(label);
-                    dropdownContent.appendChild(div);
-                });
-
-                fileSelect.addEventListener('change', async () => {
-                    const sel = files.find(f => f.name === fileSelect.value);
-                    if(sel) { resetAllStates(); await loadJSONFile(sel); }
-                });
-
-                await loadJSONFile(files[0]);
-            });
-            fileControlGroup.appendChild(dirInput);
+      selectContainer.appendChild(fileSelect);
+      fileControlGroup.appendChild(selectContainer);
+      
+      // 多檔案軌跡控制 UI
+      const trajGroup = document.createElement('div');
+      trajGroup.className = 'control-group';
+      const toggleBtn = document.createElement('button');
+      toggleBtn.textContent = 'Trajectory Selection';
+      toggleBtn.className = 'collapsible collapsed';
+      toggleBtn.style.marginBottom = '10px';
+      trajGroup.appendChild(toggleBtn);
+      
+      const dropdownContent = document.createElement('div');
+      dropdownContent.className = 'trajectory-grid';
+      trajGroup.appendChild(dropdownContent);
+      
+      // 全選選項
+      const selectAllDiv = document.createElement('div');
+      const selectAllCheckbox = document.createElement('input');
+      selectAllCheckbox.type = 'checkbox';
+      selectAllCheckbox.id = 'selectAll';
+      const selectAllLabel = document.createElement('label');
+      selectAllLabel.htmlFor = 'selectAll';
+      selectAllLabel.textContent = 'Select All';
+      selectAllDiv.appendChild(selectAllCheckbox);
+      selectAllDiv.appendChild(selectAllLabel);
+      dropdownContent.appendChild(selectAllDiv);
+      selectAllCheckbox.addEventListener('change', () => {
+        const cks = dropdownContent.querySelectorAll('input[type="checkbox"]:not(#selectAll)');
+        cks.forEach(c => c.checked = selectAllCheckbox.checked);
+      });
+      
+      // 摺疊按鈕功能
+      toggleBtn.addEventListener('click', () => {
+        dropdownContent.classList.toggle('expanded');
+        toggleBtn.classList.toggle('collapsed');
+      });
+      
+      // 顯示/隱藏多檔案軌跡
+      const showMultiButton = document.createElement('button');
+      showMultiButton.textContent = 'Show Selected Trajectories';
+      showMultiButton.onclick = () => {
+        multiFileTrajectories.visible = !multiFileTrajectories.visible;
+        showMultiButton.textContent = multiFileTrajectories.visible ? 'Hide Trajectories' : 'Show Selected Trajectories';
+        showMultiButton.style.background = multiFileTrajectories.visible ? '#f44336' : '#4CAF50';
+        const checkedBoxes = dropdownContent.querySelectorAll('input[type="checkbox"]:checked:not(#selectAll)');
+        multiFileTrajectories.selectedFiles = Array.from(checkedBoxes).map(cb => cb.value);
+        updateMultiTrajectories();
+      };
+      trajGroup.appendChild(showMultiButton);
+      
+      // 將軌跡控制面板插入 controls
+      document.getElementById('controls').insertBefore(trajGroup, fileControlGroup.nextSibling);
+      
+      // 檔案目錄選擇與載入 JSON
+      dirInput.addEventListener('change', async e => {
+        const files = Array.from(e.target.files).filter(f => f.name.includes('(3D_trajectory_smoothed).json'))
+          .sort((a, b) => {
+            const na = parseInt(a.name.match(/\d+/)[0]);
+            const nb = parseInt(b.name.match(/\d+/)[0]);
+            return na - nb;
+          });
+        if (!files.length) {
+          alert('No matching JSON found');
+          return;
         }
-
-        function loadJSONFile(file) {
-            return file.text().then(txt => {
-                resetAllStates();
-                trajectoryData = JSON.parse(txt.replace(/^\uFEFF/, '').trim());
-                if (!Array.isArray(trajectoryData)) trajectoryData = [trajectoryData];
-                computeGlobalCenterAndMinY();
-                document.getElementById('slider').max = trajectoryData.length - 1;
-                updateFrame();
-
-                // 預設顯示全軌跡：設定變數、修改按鈕文字與顏色，並計算軌跡
-                showingFullTrajectory = true;
-                const btn = document.getElementById('showFullTrajectoryButton');
-                btn.textContent = 'hide trajectory';
-                btn.style.background = '#f44336';
-                calculateFullTrajectory();
-
-                return loadFeedbackFile(file.name);
-
-            }).catch(e => { console.error(e); alert('Error: '+e.message); });
+        fileSelect.innerHTML = '';
+        dropdownContent.innerHTML = '';
+        dropdownContent.appendChild(selectAllDiv);
+        files.forEach((file, idx) => {
+          const opt = document.createElement('option');
+          opt.value = file.name;
+          opt.textContent = file.name;
+          opt.selected = (idx === 0);
+          fileSelect.appendChild(opt);
+          
+          const div = document.createElement('div');
+          const ck = document.createElement('input');
+          ck.type = 'checkbox';
+          ck.className = 'trajectory-checkbox';
+          ck.value = file.name;
+          ck.id = `traj_${file.name}`;
+          ck.addEventListener('change', () => {
+            const allCk = dropdownContent.querySelectorAll('input[type="checkbox"]:not(#selectAll)');
+            selectAllCheckbox.checked = Array.from(allCk).every(c => c.checked);
+          });
+          const label = document.createElement('label');
+          label.htmlFor = ck.id;
+          label.textContent = file.name;
+          div.appendChild(ck);
+          div.appendChild(label);
+          dropdownContent.appendChild(div);
+        });
+        fileSelect.addEventListener('change', async () => {
+          const sel = files.find(f => f.name === fileSelect.value);
+          if (sel) {
+            resetAllStates();
+            await loadJSONFile(sel);
+          }
+        });
+        await loadJSONFile(files[0]);
+      });
+      fileControlGroup.appendChild(dirInput);
+    }
+    
+    // 載入 JSON 檔案
+    function loadJSONFile(file) {
+      return file.text().then(txt => {
+          resetAllStates();
+          trajectoryData = JSON.parse(txt.replace(/^\uFEFF/, '').trim());
+          if (!Array.isArray(trajectoryData)) trajectoryData = [trajectoryData];
+          
+          // 尋找所有擊球的 frame
+          window.hitFrames = [];
+          trajectoryData.forEach((frame, index) => {
+              if (frame.tennis_ball_hit === true) {
+                  window.hitFrames.push(index);
+              }
+          });
+          
+          console.log("找到的擊球 frames:", window.hitFrames);
+          
+          computeGlobalCenterAndMinY();
+          document.getElementById('slider').max = trajectoryData.length - 1;
+          updateFrame();
+          
+          // 預設顯示全軌跡：更新變數、按鈕文字與顏色，並計算軌跡
+          showingFullTrajectory = true;
+          const btn = document.getElementById('showFullTrajectoryButton');
+          btn.textContent = 'hide trajectory';
+          btn.style.background = '#f44336';
+          calculateFullTrajectory();
+          
+          return loadFeedbackFile(file.name);
+      }).catch(e => {
+          console.error(e);
+          alert('Error: ' + e.message);
+      });
+  }
+    
+    // 載入 Feedback 檔案
+    function loadFeedbackFile(mainFileName) {
+      const feedbackFileName = mainFileName.replace('(3D_trajectory_smoothed)', '_gpt_feedback');
+      const fi = document.getElementById('dirInput');
+      if (!fi) return Promise.resolve();
+      
+      const fFile = Array.from(fi.files).find(f => f.name === feedbackFileName);
+      if (!fFile) {
+          document.getElementById('feedbackContent').textContent = 'No feedback file found';
+          document.getElementById('overallContent').textContent = 'No overall suggestion available';
+          window.problemFrameRange = null;
+          return Promise.resolve();
+      }
+      
+      return fFile.text().then(txt => {
+          console.log("读取的 feedback 文件为：" + fFile.name);
+          try {
+              const data = JSON.parse(txt);
+              document.getElementById('feedbackContent').textContent = data.suggestion;
+              document.getElementById('overallContent').textContent = data.overall_suggestion || 'No overall suggestion available';
+              
+              // 确保 problem_frame 被正确解析
+              if (data.problem_frame && typeof data.problem_frame === 'string') {
+                  const frameRangeStr = data.problem_frame;
+                  // 支持多种分隔符: '-', '~', 到, to
+                  const match = frameRangeStr.match(/(\d+)(?:[-~]|到|to)(\d+)/);
+                  if (match) {
+                      window.problemFrameRange = [parseInt(match[1]), parseInt(match[2])];
+                  } else {
+                      // 尝试直接解析单个数字
+                      const singleFrame = parseInt(frameRangeStr);
+                      if (!isNaN(singleFrame)) {
+                          window.problemFrameRange = [singleFrame, singleFrame];
+                      }
+                  }
+                  console.log("设置的 problemFrameRange:", window.problemFrameRange);
+                  
+                  // 如果正在显示轨迹，则重新计算以显示更新后的问题区域
+                  if (showingFullTrajectory) {
+                      calculateFullTrajectory();
+                  }
+              } else {
+                  window.problemFrameRange = null;
+              }
+          } catch (e) {
+              console.error("解析 feedback 文件时出错:", e);
+              window.problemFrameRange = null;
+          }
+      }).catch(err => {
+          console.error(err);
+          document.getElementById('feedbackContent').textContent = 'No feedback available';
+          document.getElementById('overallContent').textContent = 'No overall suggestion available';
+          window.problemFrameRange = null;
+      });
+  }
+    
+    // 計算全域中心與最小 Y 值
+    function computeGlobalCenterAndMinY() {
+      let footPositions = [];
+      trajectoryData.forEach(f => {
+        if (validPoint(f.left_ankle)) footPositions.push(f.left_ankle);
+        if (validPoint(f.right_ankle)) footPositions.push(f.right_ankle);
+      });
+      if (!footPositions.length) {
+        globalCenter = { x: 0, z: 0 };
+        globalMinY = 0;
+        return;
+      }
+      let sx = 0, sz = 0;
+      footPositions.forEach(p => { sx += p.x; sz += p.z; });
+      globalCenter.x = sx / footPositions.length;
+      globalCenter.z = sz / footPositions.length;
+      globalMinY = Math.min(...footPositions.map(p => p.y));
+    }
+    
+    // 簡單驗證點資料是否有效
+    function validPoint(p) {
+      return p && p.x != null && p.y != null && p.z != null && !isNaN(p.x + p.y + p.z);
+    }
+    
+    // 重置所有狀態
+    function resetAllStates() {
+      isPlaying = false;
+      clearInterval(frameInterval);
+      document.getElementById('playButton').textContent = 'play';
+      document.getElementById('playButton').style.background = '#4CAF50';
+      multiFileTrajectories.visible = false;
+      multiFileTrajectories.selectedFiles = [];
+      document.querySelectorAll('.trajectory-grid input[type="checkbox"]').forEach(c => c.checked = false);
+      const smt = [...document.getElementsByTagName('button')].find(b => b.textContent.includes('Show Selected Trajectories') || b.textContent.includes('Hide Trajectories'));
+      if (smt) {
+        smt.textContent = 'Show Selected Trajectories';
+        smt.style.background = '#4CAF50';
+      }
+      showingFullTrajectory = false;
+      const sftb = document.getElementById('showFullTrajectoryButton');
+      sftb.textContent = 'Show full trajectory';
+      sftb.style.background = '#4CAF50';
+      clearTrajectories();
+      multiFileTrajectories.lines.forEach(l => scene.remove(l));
+      multiFileTrajectories.lines.clear();
+      multiFileTrajectories.labels.forEach(lb => {
+        scene.remove(lb);
+        lb.element && lb.element.remove();
+      });
+      multiFileTrajectories.labels.clear();
+      playbackSpeed = 1;
+      document.getElementById('speedControl').value = 1;
+      document.getElementById('speedValue').textContent = '1x';
+      currentFrame = 0;
+      document.getElementById('slider').value = 0;
+      Object.keys(joints).forEach(n => {
+        const ck = document.getElementById(`show_${n}`);
+        if (ck) { ck.checked = true; visibilityState[n] = true; }
+      });
+      camera.position.set(4, 4, 8);
+      controls.target.set(0, 4, 0);
+      controls.update();
+    }
+    
+    // 清除軌跡
+    function clearTrajectories() {
+      Object.values(trajectorySystem).forEach(sys => {
+        sys.points.forEach(pt => {
+          pt.traverse(c => c.element && c.element.remove());
+          scene.remove(pt);
+        });
+        sys.points = [];
+        sys.line.geometry.setFromPoints([]);
+        sys.line.visible = false;
+        if (sys.lines) {
+          sys.lines.forEach(l => scene.remove(l));
+          sys.lines = [];
         }
-
-        function loadFeedbackFile(mainFileName) {
-            const feedbackFileName = mainFileName.replace('(3D_trajectory_smoothed)','_gpt_feedback');
-            const fi = document.getElementById('dirInput');
-            if(!fi) return;
-            const fFile = Array.from(fi.files).find(f => f.name === feedbackFileName);
-            if(!fFile) {
-                document.getElementById('feedbackContent').textContent = 'No feedback file found';
-                document.getElementById('overallContent').textContent = 'No overall suggestion available';
-                window.problemFrameRange = null; return;
-            }
-            fFile.text().then(txt => {
-                const data = JSON.parse(txt);
-                document.getElementById('feedbackContent').textContent = data.suggestion;
-                document.getElementById('overallContent').textContent = data.overall_suggestion || 'No overall suggestion available';
-                window.problemFrameRange = data.problem_frame ? data.problem_frame.split('-').map(Number) : null;
-            }).catch(err => {
-                console.error(err);
-                document.getElementById('feedbackContent').textContent = 'No feedback available';
-                document.getElementById('overallContent').textContent = 'No overall suggestion available';
-                window.problemFrameRange = null;
-            });
+      });
+    }
+    
+    // 創建軌跡標記 (含小點與文字標籤)
+    function createMarkerPoint(pos, text, color) {
+      const group = new THREE.Group();
+      const pointDiv = document.createElement('div');
+      pointDiv.className = 'trajectory-point';
+      pointDiv.style.background = color;
+      const point = new CSS2DObject(pointDiv);
+      point.position.copy(pos);
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'marker-label';
+      labelDiv.textContent = text;
+      const label = new CSS2DObject(labelDiv);
+      label.position.copy(pos);
+      group.add(point, label);
+      return group;
+    }
+    
+    // 計算並顯示全軌跡
+    function calculateFullTrajectory() {
+      console.log("目前 problemFrameRange:", window.problemFrameRange);
+      console.log("击球 frames:", window.hitFrames);
+      
+      clearTrajectories();
+      if (!showingFullTrajectory) return;
+      
+      ['right_wrist', 'tennis_ball'].forEach(name => {
+          const sys = trajectorySystem[name], arr = [];
+          let hitPointCount = 0; // 计算击球点的数量
+          
+          trajectoryData.forEach((f, i) => {
+              const p = f[name];
+              if (validPoint(p)) {
+                  const v = new THREE.Vector3((p.x - globalCenter.x) * SCALE_FACTOR, (p.y - globalMinY) * SCALE_FACTOR, -(p.z - globalCenter.z) * SCALE_FACTOR);
+                  arr.push(v);
+                  
+                  let c = sys.color;
+                  // 判断是否是问题范围内的 frame
+                  if (name === 'right_wrist' && window.problemFrameRange) {
+                      const [st, ed] = window.problemFrameRange;
+                      if (i >= st && i <= ed) {
+                          c = '#FF0000'; // 使用红色标记问题区域
+                          console.log(`标记为问题区域: Frame ${i}`); // 调试输出
+                      }
+                  }
+                  
+                  // 判断是否是击球的 frame
+                  if (name === 'right_wrist' && window.hitFrames && window.hitFrames.includes(i)) {
+                      c = '#00FFFF'; // 使用青色标记击球 frame
+                      hitPointCount++;
+                  }
+                  
+                  let frameInfo = `Frame: ${i}\nX:${p.x.toFixed(1)}\nY:${p.y.toFixed(1)}\nZ:${p.z.toFixed(1)}`;
+                  // 如果是击球 frame，添加标记
+                  if (window.hitFrames && window.hitFrames.includes(i)) {
+                      frameInfo += "\n[HIT]";
+                  }
+                  // 如果是问题区域，添加标记
+                  if (window.problemFrameRange) {
+                      const [st, ed] = window.problemFrameRange;
+                      if (i >= st && i <= ed) {
+                          frameInfo += "\n[PROBLEM]";
+                      }
+                  }
+                  
+                  const mk = createMarkerPoint(v, frameInfo, c);
+                  scene.add(mk);
+                  sys.points.push(mk);
+              }
+          });
+          
+          console.log(`${name} 轨迹总点数: ${arr.length}, 击球点数: ${hitPointCount}`);
+          
+          if (!arr.length) return;
+          
+          if (name === 'right_wrist') {
+              // 为右手腕轨迹建立彩色线段
+              const colors = [];
+              const positions = [];
+              
+              arr.forEach((v, i) => {
+                  positions.push(v.x, v.y, v.z);
+                  
+                  if (window.problemFrameRange) {
+                      const [st, ed] = window.problemFrameRange;
+                      if (i >= st && i <= ed) {
+                          colors.push(1, 0, 0); // 红色 - 问题区域
+                      } else if (window.hitFrames && window.hitFrames.includes(i)) {
+                          colors.push(0, 1, 1); // 青色 - 击球点
+                      } else {
+                          colors.push(1, 1, 0); // 黄色 - 正常轨迹
+                      }
+                  } else if (window.hitFrames && window.hitFrames.includes(i)) {
+                      colors.push(0, 1, 1); // 青色 - 击球点
+                  } else {
+                      colors.push(1, 1, 0); // 黄色 - 正常轨迹
+                  }
+              });
+              
+              const geo = new THREE.BufferGeometry();
+              geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+              geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+              
+              const mat = new THREE.LineBasicMaterial({ 
+                  vertexColors: true, 
+                  linewidth: 2, 
+                  transparent: true, 
+                  opacity: 0.8 
+              });
+              
+              const cLine = new THREE.Line(geo, mat);
+              scene.add(cLine);
+              sys.lines = sys.lines || [];
+              sys.lines.push(cLine);
+          } else {
+              sys.line.geometry.setFromPoints(arr);
+              sys.line.visible = true;
+          }
+      });
+  }
+    
+    // 更新指定影格下的關節與骨架連線位置
+    function updatePose(idx) {
+      if (!trajectoryData[idx]) return;
+      const frame = trajectoryData[idx];
+      Object.entries(joints3D).forEach(([n, m]) => {
+        const p = frame[n];
+        if (validPoint(p) && visibilityState[n]) {
+          m.position.set((p.x - globalCenter.x) * SCALE_FACTOR, (p.y - globalMinY) * SCALE_FACTOR, -(p.z - globalCenter.z) * SCALE_FACTOR);
+          m.visible = true;
+        } else {
+          m.visible = false;
         }
-
-        function computeGlobalCenterAndMinY() {
-            let footPositions = [];
-            trajectoryData.forEach(f => {
-                if(validPoint(f.left_ankle)) footPositions.push(f.left_ankle);
-                if(validPoint(f.right_ankle)) footPositions.push(f.right_ankle);
-            });
-            if(!footPositions.length) { globalCenter={x:0,z:0}; globalMinY=0; return; }
-            let sx=0, sz=0; footPositions.forEach(p => { sx+=p.x; sz+=p.z; });
-            globalCenter.x = sx/footPositions.length;
-            globalCenter.z = sz/footPositions.length;
-            globalMinY = Math.min(...footPositions.map(p=>p.y));
+      });
+      skeletonConnections.forEach((c, i) => {
+        const [s, e] = c, sp = frame[s], ep = frame[e];
+        if (validPoint(sp) && validPoint(ep) && visibilityState[s] && visibilityState[e]) {
+          lines[i].geometry.setFromPoints([
+            new THREE.Vector3((sp.x - globalCenter.x) * SCALE_FACTOR, (sp.y - globalMinY) * SCALE_FACTOR, -(sp.z - globalCenter.z) * SCALE_FACTOR),
+            new THREE.Vector3((ep.x - globalCenter.x) * SCALE_FACTOR, (ep.y - globalMinY) * SCALE_FACTOR, -(ep.z - globalCenter.z) * SCALE_FACTOR)
+          ]);
+          lines[i].visible = true;
+        } else {
+          lines[i].visible = false;
         }
-
-        function validPoint(p) {
-            return p && p.x!=null && p.y!=null && p.z!=null && !isNaN(p.x+p.y+p.z);
+      });
+    }
+    
+    // 更新目前影格數據與顯示資訊
+    function updateFrame() {
+      document.getElementById('slider').value = currentFrame;
+      
+      // 更新 frame info，如果是擊球 frame，添加 [HIT] 標記
+      let frameInfoText = `frame: ${currentFrame}`;
+      if (window.hitFrames && window.hitFrames.includes(currentFrame)) {
+          frameInfoText += " [HIT]";
+          document.getElementById('frameInfo').style.color = '#00FFFF'; // 使用青色標記
+      } else {
+          document.getElementById('frameInfo').style.color = 'white'; // 恢復正常顏色
+      }
+      document.getElementById('frameInfo').textContent = frameInfoText;
+      
+      updatePose(currentFrame);
+      const fb = document.getElementById('feedbackContent');
+      if (fb && fb.textContent.includes('Frame')) {
+          const rg = fb.textContent.match(/Frame (\d+)-(\d+)/);
+          if (rg) {
+              const [st, ed] = [parseInt(rg[1]), parseInt(rg[2])];
+              fb.style.background = (currentFrame >= st && currentFrame <= ed)
+                  ? 'rgba(255,0,0,0.3)' : 'rgba(42,42,42,0.7)';
+          }
+      }
+  }
+    
+    // 更新多檔案軌跡
+    function updateMultiTrajectories() {
+      multiFileTrajectories.lines.forEach(l => scene.remove(l));
+      multiFileTrajectories.lines.clear();
+      multiFileTrajectories.labels.forEach(lb => {
+        scene.remove(lb);
+        lb.element && lb.element.remove();
+      });
+      multiFileTrajectories.labels.clear();
+      if (!multiFileTrajectories.visible) return;
+      const fi = document.getElementById('dirInput');
+      if (!fi) return;
+      const all = Array.from(fi.files).filter(f => f.name.includes('(3D_trajectory_smoothed).json'))
+        .filter(f => !multiFileTrajectories.selectedFiles || multiFileTrajectories.selectedFiles.includes(f.name));
+      all.forEach(async (file, idx) => {
+        try {
+          const txt = await file.text();
+          const data = JSON.parse(txt.replace(/^\uFEFF/, '').trim());
+          const arr = (Array.isArray(data) ? data : [data]).map(fr => {
+            const p = fr.right_wrist;
+            if (!validPoint(p)) return null;
+            return new THREE.Vector3((p.x - globalCenter.x) * SCALE_FACTOR, (p.y - globalMinY) * SCALE_FACTOR, -(p.z - globalCenter.z) * SCALE_FACTOR);
+          }).filter(Boolean);
+          if (!arr.length) return;
+          const positions = [];
+          arr.forEach(v => positions.push(v.x, v.y, v.z));
+          const geo = new LineGeometry();
+          geo.setPositions(positions);
+          const mat = new LineMaterial({
+            color: generateColor(idx),
+            linewidth: 5,
+            transparent: true,
+            opacity: 1.0,
+            resolution: new THREE.Vector2(window.innerWidth, window.innerHeight)
+          });
+          const line = new Line2(geo, mat);
+          line.computeLineDistances();
+          scene.add(line);
+          multiFileTrajectories.lines.set(file.name, line);
+          const lastPoint = arr[arr.length - 1];
+          const div = document.createElement('div');
+          div.className = 'trajectory-label';
+          const num = file.name.match(/\d+/);
+          div.textContent = num ? num[0] : '';
+          div.style.color = generateColor(idx);
+          const lb = new CSS2DObject(div);
+          lb.position.copy(lastPoint);
+          scene.add(lb);
+          multiFileTrajectories.labels.set(file.name, lb);
+        } catch (e) {
+          console.error(e);
         }
-
-        function resetAllStates() {
-            isPlaying=false; clearInterval(frameInterval);
-            document.getElementById('playButton').textContent='play';
-            document.getElementById('playButton').style.background='#4CAF50';
-            multiFileTrajectories.visible = false; multiFileTrajectories.selectedFiles=[];
-            document.querySelectorAll('.trajectory-grid input[type="checkbox"]').forEach(c => c.checked=false);
-
-            const smt = [...document.getElementsByTagName('button')]
-                .find(b => b.textContent.includes('Show Selected Trajectories') || b.textContent.includes('Hide Trajectories'));
-            if(smt) { smt.textContent='Show Selected Trajectories'; smt.style.background='#4CAF50'; }
-
-            showingFullTrajectory=false;
-            const sftb = document.getElementById('showFullTrajectoryButton');
-            sftb.textContent='Show full trajectory';
-            sftb.style.background='#4CAF50';
-            clearTrajectories();
-
-            multiFileTrajectories.lines.forEach(l => scene.remove(l));
-            multiFileTrajectories.lines.clear();
-            multiFileTrajectories.labels.forEach(lb => {
-                scene.remove(lb); lb.element && lb.element.remove();
-            });
-            multiFileTrajectories.labels.clear();
-
-            playbackSpeed=1;
-            document.getElementById('speedControl').value=1;
-            document.getElementById('speedValue').textContent='1x';
-            currentFrame=0; document.getElementById('slider').value=0;
-
-            Object.keys(joints).forEach(n => {
-                const ck = document.getElementById(`show_${n}`);
-                if(ck) { ck.checked=true; visibilityState[n]=true; }
-            });
-            camera.position.set(0,1.5,4); controls.target.set(0,1.5,0); controls.update();
+      });
+    }
+    
+    // 隨機顏色產生器
+    function generateColor(i) {
+      const c = ['#39FF14', '#FF1493', '#00FFFF', '#FFD700', '#FF4500',
+        '#FF00FF', '#00FF00', '#FF69B4', '#1E90FF', '#32CD32',
+        '#FF6347', '#7B68EE'
+      ];
+      return c[i % c.length];
+    }
+    
+    // 事件監聽設定
+    function setupEventListeners() {
+      document.getElementById('slider').addEventListener('input', e => {
+        currentFrame = parseInt(e.target.value);
+        updateFrame();
+      });
+      document.getElementById('playButton').addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        const b = document.getElementById('playButton');
+        b.textContent = isPlaying ? 'stop' : 'play';
+        b.style.background = isPlaying ? '#f44336' : '#4CAF50';
+        if (isPlaying) {
+          clearInterval(frameInterval);
+          frameInterval = setInterval(() => {
+            currentFrame = (currentFrame + 1) % trajectoryData.length;
+            updateFrame();
+          }, 1000 / (30 * playbackSpeed));
+        } else {
+          clearInterval(frameInterval);
         }
-
-        function clearTrajectories() {
-            Object.values(trajectorySystem).forEach(sys => {
-                sys.points.forEach(pt => { pt.traverse(c=>c.element && c.element.remove()); scene.remove(pt); });
-                sys.points=[]; sys.line.geometry.setFromPoints([]); sys.line.visible=false;
-                if(sys.lines) { sys.lines.forEach(l => scene.remove(l)); sys.lines=[]; }
-            });
+      });
+      document.getElementById('showFullTrajectoryButton').addEventListener('click', () => {
+        showingFullTrajectory = !showingFullTrajectory;
+        const btn = document.getElementById('showFullTrajectoryButton');
+        btn.textContent = showingFullTrajectory ? 'hide trajectory' : 'Show full trajectory';
+        btn.style.background = showingFullTrajectory ? '#f44336' : '#4CAF50';
+        if (showingFullTrajectory) calculateFullTrajectory();
+        else clearTrajectories();
+        updateFrame();
+      });
+      document.getElementById('speedControl').addEventListener('input', e => {
+        playbackSpeed = parseFloat(e.target.value);
+        document.getElementById('speedValue').textContent = playbackSpeed.toFixed(1) + 'x';
+        if (isPlaying) {
+          clearInterval(frameInterval);
+          frameInterval = setInterval(() => {
+            currentFrame = (currentFrame + 1) % trajectoryData.length;
+            updateFrame();
+          }, 1000 / (30 * playbackSpeed));
         }
-
-        function createMarkerPoint(pos, text, color) {
-            const group = new THREE.Group();
-            const pointDiv = document.createElement('div');
-            pointDiv.className='trajectory-point'; pointDiv.style.background=color;
-            const point = new CSS2DObject(pointDiv); point.position.copy(pos);
-
-            const labelDiv = document.createElement('div');
-            labelDiv.className='marker-label'; labelDiv.textContent=text;
-            const label = new CSS2DObject(labelDiv); label.position.copy(pos);
-
-            group.add(point,label); return group;
-        }
-
-        function calculateFullTrajectory() {
-            clearTrajectories();
-            if(!showingFullTrajectory) return;
-            ['right_wrist','tennis_ball'].forEach(name => {
-                const sys = trajectorySystem[name], arr=[];
-                trajectoryData.forEach((f,i) => {
-                    const p=f[name];
-                    if(validPoint(p)) {
-                        const v=new THREE.Vector3((p.x-globalCenter.x)*SCALE_FACTOR, (p.y-globalMinY)*SCALE_FACTOR, -(p.z-globalCenter.z)*SCALE_FACTOR);
-                        arr.push(v);
-                        let c = sys.color;
-                        if(name==='right_wrist' && window.problemFrameRange) {
-                            const [st,ed]=window.problemFrameRange;
-                            if(i>=st && i<=ed) c='#FF0000';
-                        }
-                        const mk = createMarkerPoint(v, `Frame: ${i}\nX:${p.x.toFixed(1)}\nY:${p.y.toFixed(1)}\nZ:${p.z.toFixed(1)}`, c);
-                        scene.add(mk); sys.points.push(mk);
-                    }
-                });
-                if(!arr.length) return;
-                if(name==='right_wrist' && window.problemFrameRange) {
-                    const [st,ed]=window.problemFrameRange;
-                    const colors=[]; arr.forEach((_,i)=> {
-                        if(i>=st && i<=ed) colors.push(1,0,0); else colors.push(1,1,0);
-                    });
-                    const mat=new THREE.LineBasicMaterial({vertexColors:true,linewidth:2,transparent:true,opacity:0.5});
-                    const geo=new THREE.BufferGeometry().setFromPoints(arr);
-                    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors,3));
-                    const cLine=new THREE.Line(geo,mat);
-                    scene.add(cLine); sys.lines = sys.lines||[]; sys.lines.push(cLine);
-                } else {
-                    sys.line.geometry.setFromPoints(arr);
-                    sys.line.visible=true;
-                }
-            });
-        }
-
-        function updatePose(idx) {
-            if(!trajectoryData[idx]) return;
-            const frame = trajectoryData[idx];
-            Object.entries(joints3D).forEach(([n,m]) => {
-                const p=frame[n];
-                if(validPoint(p) && visibilityState[n]) {
-                    m.position.set((p.x-globalCenter.x)*SCALE_FACTOR,(p.y-globalMinY)*SCALE_FACTOR, -(p.z-globalCenter.z)*SCALE_FACTOR);
-                    m.visible=true;
-                } else m.visible=false;
-            });
-            skeletonConnections.forEach((c,i) => {
-                const [s,e] = c, sp=frame[s], ep=frame[e];
-                if(validPoint(sp) && validPoint(ep) && visibilityState[s] && visibilityState[e]) {
-                    lines[i].geometry.setFromPoints([
-                        new THREE.Vector3((sp.x-globalCenter.x)*SCALE_FACTOR,(sp.y-globalMinY)*SCALE_FACTOR, -(sp.z-globalCenter.z)*SCALE_FACTOR),
-                        new THREE.Vector3((ep.x-globalCenter.x)*SCALE_FACTOR,(ep.y-globalMinY)*SCALE_FACTOR, -(ep.z-globalCenter.z)*SCALE_FACTOR)
-                    ]);
-                    lines[i].visible=true;
-                } else lines[i].visible=false;
-            });
-        }
-
-        function updateFrame() {
-            document.getElementById('slider').value=currentFrame;
-            document.getElementById('frameInfo').textContent=`frame: ${currentFrame}`;
-            updatePose(currentFrame);
-            const fb = document.getElementById('feedbackContent');
-            if(fb && fb.textContent.includes('Frame')) {
-                const rg=fb.textContent.match(/Frame (\d+)-(\d+)/);
-                if(rg) {
-                    const [st,ed]=[parseInt(rg[1]),parseInt(rg[2])];
-                    fb.style.background = (currentFrame>=st && currentFrame<=ed)
-                        ? 'rgba(255,0,0,0.3)' : 'rgba(42,42,42,0.7)';
-                }
-            }
-        }
-
-        function updateMultiTrajectories() {
-            multiFileTrajectories.lines.forEach(l => scene.remove(l));
-            multiFileTrajectories.lines.clear();
-            multiFileTrajectories.labels.forEach(lb => { scene.remove(lb); lb.element && lb.element.remove(); });
-            multiFileTrajectories.labels.clear();
-
-            if(!multiFileTrajectories.visible) return;
-            const fi = document.getElementById('dirInput');
-            if(!fi) return;
-
-            const all = Array.from(fi.files).filter(f=>f.name.includes('(3D_trajectory_smoothed).json'))
-                .filter(f=>!multiFileTrajectories.selectedFiles || multiFileTrajectories.selectedFiles.includes(f.name));
-            all.forEach(async (file,idx)=>{
-                try {
-                    const txt = await file.text();
-                    const data = JSON.parse(txt.replace(/^\uFEFF/,'').trim());
-                    const arr = (Array.isArray(data)? data:[data]).map(fr=>{
-                        const p=fr.right_wrist;
-                        if(!validPoint(p)) return null;
-                        return new THREE.Vector3((p.x-globalCenter.x)*SCALE_FACTOR,(p.y-globalMinY)*SCALE_FACTOR, -(p.z-globalCenter.z)*SCALE_FACTOR);
-                    }).filter(Boolean);
-                    if(!arr.length) return;
-                    const positions = [];
-                    arr.forEach(v => positions.push(v.x,v.y,v.z));
-                    const geo = new LineGeometry();
-                    geo.setPositions(positions);
-                    const mat = new LineMaterial({
-                        color: generateColor(idx), linewidth: 5, transparent:true, opacity:1.0,
-                        resolution: new THREE.Vector2(window.innerWidth,window.innerHeight)
-                    });
-                    const line = new Line2(geo,mat);
-                    line.computeLineDistances();
-                    scene.add(line);
-                    multiFileTrajectories.lines.set(file.name,line);
-
-                    const lastPoint=arr[arr.length-1];
-                    const div=document.createElement('div');
-                    div.className='trajectory-label';
-                    const num = file.name.match(/\d+/);
-                    div.textContent=num? num[0]:'';
-                    div.style.color=generateColor(idx);
-                    const lb=new CSS2DObject(div);
-                    lb.position.copy(lastPoint);
-                    scene.add(lb);
-                    multiFileTrajectories.labels.set(file.name,lb);
-                } catch(e){console.error(e);}
-            });
-        }
-
-        function generateColor(i) {
-            const c=['#39FF14','#FF1493','#00FFFF','#FFD700','#FF4500',
-                     '#FF00FF','#00FF00','#FF69B4','#1E90FF','#32CD32',
-                     '#FF6347','#7B68EE'];
-            return c[i%c.length];
-        }
-
-        function setupEventListeners() {
-            document.getElementById('slider').addEventListener('input', e => {
-                currentFrame=parseInt(e.target.value); updateFrame();
-            });
-            document.getElementById('playButton').addEventListener('click', () => {
-                isPlaying=!isPlaying;
-                const b=document.getElementById('playButton');
-                b.textContent=isPlaying? 'stop':'play';
-                b.style.background=isPlaying? '#f44336':'#4CAF50';
-                if(isPlaying) {
-                    clearInterval(frameInterval);
-                    frameInterval = setInterval(()=>{
-                        currentFrame=(currentFrame+1)%trajectoryData.length; updateFrame();
-                    }, 1000/(30*playbackSpeed));
-                } else clearInterval(frameInterval);
-            });
-            document.getElementById('showFullTrajectoryButton').addEventListener('click', () => {
-                showingFullTrajectory=!showingFullTrajectory;
-                const btn=document.getElementById('showFullTrajectoryButton');
-                btn.textContent=showingFullTrajectory?'hide trajectory':'Show full trajectory';
-                btn.style.background=showingFullTrajectory? '#f44336':'#4CAF50';
-                if(showingFullTrajectory) calculateFullTrajectory(); else clearTrajectories();
-                updateFrame();
-            });
-            document.getElementById('speedControl').addEventListener('input', e => {
-                playbackSpeed=parseFloat(e.target.value);
-                document.getElementById('speedValue').textContent= playbackSpeed.toFixed(1)+'x';
-                if(isPlaying){
-                    clearInterval(frameInterval);
-                    frameInterval = setInterval(()=>{
-                        currentFrame=(currentFrame+1)%trajectoryData.length; updateFrame();
-                    }, 1000/(30*playbackSpeed));
-                }
-            });
-            window.addEventListener('resize', () => {
-                camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth,window.innerHeight);
-                labelRenderer.setSize(window.innerWidth,window.innerHeight);
-            });
-        }
-
-        function setupFeedbackToggle() {
-            const t=document.getElementById('feedbackToggle'), g=document.getElementById('feedbackGroup');
-            t.addEventListener('click', ()=> g.classList.toggle('expanded'));
-        }
-
-        function setupControlPanelToggle() {
-            const t=document.getElementById('controlPanelToggle'), p=document.getElementById('controlPanel');
-            t.addEventListener('click', ()=> p.classList.toggle('expanded'));
-        }
-
-        function setupToggleControls() {
-            const t=document.getElementById('toggleControls'), c=document.getElementById('controls');
-            t.addEventListener('click', ()=> { c.classList.toggle('expanded'); t.classList.toggle('expanded'); });
-        }
-
-        function setupApiHandlers() {
-            const base = 'http://192.168.0.149:8000';
-            document.querySelectorAll('.api-form').forEach(f => {
-                f.addEventListener('submit', async e => {
-                    e.preventDefault();
-                    const ep = f.dataset.endpoint;
-                    
-                    // 如果是 Start Recording 且已被 disable，則不送出請求
-                    if (ep === '/start_recording' && document.getElementById('startRecordingButton').disabled) {
-                        return;
-                    }
-                    
-                    const formData = new FormData(f);
-                    const params = new URLSearchParams();
-                    for (const [k, v] of formData.entries()) params.append(k, v);
-                    const url = `${base}${ep}?${params}`;
-                    
-                    // 如果是 Start Recording，送出後 disable 按鈕
-                    if (ep === '/start_recording') {
-                        document.getElementById('startRecordingButton').disabled = true;
-                    }
-                    
-                    try {
-                        const r = await fetch(url, {
-                            method: 'GET',
-                            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                            mode: 'cors'
-                        });
-                        const d = await r.json();
-                        if (r.status === 200) {
-                            showMsg('Success!', 'success');
-                            
-                            // 如果是 Stop Recording，則在成功後重新啟用 Start Recording 按鈕
-                            if (ep === '/stop_recording') {
-                                document.getElementById('startRecordingButton').disabled = false;
-                            }
-                        } else {
-                            throw new Error(d.detail || 'Request failed');
-                        }
-                    } catch (err) {
-                        showMsg(err.message, 'error');
-                    }
-                });
-            });
-        }
-
-        function showMsg(msg,type) {
-            const old=document.querySelector('.notification'); old && old.remove();
-            const div=document.createElement('div'); div.className=`notification ${type}`; div.textContent=msg;
-            document.body.appendChild(div);
-            setTimeout(()=>div.remove(),3000);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene,camera);
-            labelRenderer.render(scene,camera);
-        }
-        
-        document.getElementById("trajectoryAnalysis").addEventListener("click", async function() {
-            const button = document.getElementById("trajectoryAnalysis");
-            // 禁用按鈕並改變文字
-            button.disabled = true;
-            button.textContent = "處理中";
-
-            try {
-                const response = await fetch("http://192.168.0.149:8000/gpt_response");
-                const data = await response.json();
-                if (data.status === "success") {
-                // 將結論顯示在 overallContent 區塊中
-                document.getElementById("overallContent").textContent = data.conclusion;
-                } else {
-                document.getElementById("overallContent").textContent = "分析失敗，請稍後再試。";
-                }
-            } catch (error) {
-                document.getElementById("overallContent").textContent = "Error: " + error;
-            }
+      });
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+    
+    // Feedback 區塊 Toggle 設定
+    function setupFeedbackToggle() {
+      const t = document.getElementById('feedbackToggle'),
+            g = document.getElementById('feedbackGroup');
+      t.addEventListener('click', () => g.classList.toggle('expanded'));
+    }
+    
+    // Control Panel Toggle 設定
+    function setupControlPanelToggle() {
+      const t = document.getElementById('controlPanelToggle'),
+            p = document.getElementById('controlPanel');
+      t.addEventListener('click', () => p.classList.toggle('expanded'));
+    }
+    
+    // 左側 Controls 面板 Toggle 設定
+    function setupToggleControls() {
+      const t = document.getElementById('toggleControls'),
+            c = document.getElementById('controls');
+      t.addEventListener('click', () => {
+        c.classList.toggle('expanded');
+        t.classList.toggle('expanded');
+      });
+    }
+    
+    // API 呼叫事件設定 (所有 api-form 表單共用)
+    function setupApiHandlers() {
+      const base = 'http://192.168.0.149:8000';
+      document.querySelectorAll('.api-form').forEach(f => {
+        f.addEventListener('submit', async e => {
+            e.preventDefault();
+            // 清除該表單內的先前提示資訊
+            const form = e.target.closest('form');
+            form.querySelectorAll('.api-info').forEach(el => el.remove());
             
-            // 處理完成後，按鈕文字改回，但仍保持禁用狀態
-            button.textContent = "trajectoryAnalysis";
-            });
-
-
-
-        init();
-    </script>
+            const ep = f.dataset.endpoint;
+            const formData = new FormData(f);
+            const params = new URLSearchParams();
+            for (const [k, v] of formData.entries()) {
+              params.append(k, v);
+            }
+            const url = `${base}${ep}?${params}`;
+            
+            try {
+              const r = await fetch(url, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                mode: 'cors'
+              });
+              const d = await r.json();
+              if (r.status === 200) {
+                showMsg('Success!', 'success');
+              } else {
+                throw new Error(d.detail || 'Request failed');
+              }
+              // 新增提示文字
+              const info = document.createElement("div");
+              info.className = "api-info";
+              info.style.color = "white";
+              info.style.fontSize = "10px";
+              info.textContent = `Input: ${JSON.stringify(Object.fromEntries(formData))} | Code: ${r.status} | Time: ${new Date().toLocaleTimeString()}`;
+              form.appendChild(info);
+            } catch (err) {
+              showMsg(err.message, 'error');
+            }
+        });
+      });
+    }
+    
+    // Auto 按鈕事件設定：依序呼叫三個 API
+    function setupAutoButton() {
+      document.getElementById("auto").addEventListener("click", async function(e) {
+        e.preventDefault();
+        // 清除該表單內的提示資訊
+        const form = this.parentElement;
+        form.querySelectorAll(".api-info").forEach(el => el.remove());
+        
+        try {
+          // 呼叫 start_recording
+          let response = await fetch("http://192.168.0.149:8000/start_recording", {
+            method: "GET",
+            headers: { "Accept": "application/json", "Content-Type": "application/json" },
+            mode: "cors"
+          });
+          if (!response.ok) throw new Error("start_recording failed");
+          showMsg("start_recording success", "success");
+          let info = document.createElement("div");
+          info.className = "api-info";
+          info.style.fontSize = "10px";
+          info.style.color = "#4CAF50";
+          info.textContent = `Time: ${new Date().toLocaleTimeString()} | Code: ${response.status}`;
+          form.appendChild(info);
+          
+          // 等待 2秒
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // 呼叫 stop_recording
+          response = await fetch("http://192.168.0.149:8000/stop_recording", {
+            method: "GET",
+            headers: { "Accept": "application/json", "Content-Type": "application/json" },
+            mode: "cors"
+          });
+          if (!response.ok) throw new Error("stop_recording failed");
+          showMsg("stop_recording success", "success");
+          info = document.createElement("div");
+          info.className = "api-info";
+          info.style.color = "#4CAF50";
+          info.style.fontSize = "10px";
+          info.textContent = `Time: ${new Date().toLocaleTimeString()} | Code: ${response.status}`;
+          form.appendChild(info);
+          
+          // 等待 1秒
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // 呼叫 stop_recording_and_download
+          response = await fetch("http://192.168.0.149:8000/stop_recording_and_download", {
+            method: "GET",
+            headers: { "Accept": "application/json", "Content-Type": "application/json" },
+            mode: "cors"
+          });
+          if (!response.ok) throw new Error("stop_recording_and_download failed");
+          showMsg("stop_recording_and_download success", "success");
+          info = document.createElement("div");
+          info.className = "api-info";
+          info.style.color = "#4CAF50";
+          info.style.fontSize = "10px";
+          info.textContent = `Time: ${new Date().toLocaleTimeString()} | Code: ${response.status}`;
+          form.appendChild(info);
+          
+        } catch (err) {
+          showMsg(err.message, "error");
+        }
+      });
+    }
+    
+    // Trajectory Analysis 按鈕事件設定：出現 confirm 視窗，按下是後執行 API 呼叫並在按鈕下方顯示 status code
+    document.getElementById("trajectoryAnalysis").addEventListener("click", async function(e) {
+      // 清除按鈕所在容器內的舊提示
+      const container = this.parentElement;
+      container.querySelectorAll(".api-info").forEach(el => el.remove());
+      
+      // 顯示 confirm 視窗
+      const proceed = confirm("analyze all track contents?");
+      if (!proceed) return;
+      
+      // 禁用按鈕並更改文字
+      const button = this;
+      button.disabled = true;
+      const originalText = button.textContent;
+      button.textContent = "Processing...";
+      
+      try {
+        // 呼叫後端 API
+        const response = await fetch("http://192.168.0.149:8000/gpt_response");
+        const data = await response.json();
+        
+        // 在按鈕下方顯示 status code
+        const info = document.createElement("div");
+        info.className = "api-info";
+        info.style.fontSize = "10px";
+        info.style.color = "#4CAF50";
+        info.textContent = `Status code: ${response.status}`;
+        container.appendChild(info);
+        
+        // 顯示回傳結果
+        if (data.status === "success") {
+          document.getElementById("overallContent").textContent = data.conclusion;
+        } else {
+          document.getElementById("overallContent").textContent = "分析失敗，請稍後再試。";
+        }
+      } catch (error) {
+        document.getElementById("overallContent").textContent = "Error: " + error;
+      } finally {
+        // 恢復按鈕狀態
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    });
+    
+    // Queue Status 按鈕事件設定
+    document.getElementById("queueStatusButton").addEventListener("click", async function(e) {
+      e.preventDefault();
+      const form = e.target.closest('form');
+      form.querySelectorAll(".api-info").forEach(el => el.remove());
+      
+      try {
+        const response = await fetch("http://192.168.0.149:8000/queue_status", {
+          method: "GET",
+          headers: { "Accept": "application/json", "Content-Type": "application/json" },
+          mode: "cors"
+        });
+        const data = await response.json();
+        // 若 status 為 200，則使用 error 類別 (紅色)；否則使用 success (綠色)
+        const type = response.status === 200 ? "success" : "error";
+        showMsg("Queue Status:\n" + JSON.stringify(data, null, 2), type);
+        
+        const info = document.createElement("div");
+        info.className = "api-info";
+        info.style.color = "#4CAF50";
+        info.style.fontSize = "10px";
+        info.textContent = `Time: ${new Date().toLocaleTimeString()} | Code: ${response.status}`;
+        form.appendChild(info);
+      } catch (err) {
+        showMsg("Error: " + err.message, "error");
+      }
+    });
+    
+    // 通知訊息函式：顯示全局提示
+    function showMsg(msg, type) {
+      const old = document.querySelector('.notification');
+      old && old.remove();
+      const div = document.createElement('div');
+      div.className = `notification ${type}`;
+      div.textContent = msg;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 3000);
+    }
+    
+    // 動畫迴圈：持續更新渲染畫面
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+    
+    // 初始化：建立場景、控制器與各種設定
+    init();
+  </script>
 </body>
 </html>

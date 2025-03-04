@@ -3,7 +3,8 @@ import cv2
 import json
 import time
 import torch
-from torch.cuda.amp import autocast  # 若有需要也可以移除此行，但下面直接使用 torch.amp.autocast('cuda')
+import gc
+from torch.cuda.amp import autocast
 from ultralytics import YOLO
 import threading
 import queue
@@ -77,25 +78,34 @@ def process_video_batch(pose_model, ball_model, video_path, batch_size=16):
             batch_frames.append(frame)
             batch_indices.append(frame_index)
             if len(batch_frames) == batch_size:
-                with torch.amp.autocast('cuda'):
+                with torch.no_grad(), torch.amp.autocast('cuda'):
                     body_results = pose_model(batch_frames, verbose=False)
                     ball_results = ball_model(batch_frames, verbose=False)
                 for idx, (body_result, ball_result) in enumerate(zip(body_results, ball_results)):
                     frame_data = process_single_frame(body_result, ball_result, keypoint_names, batch_indices[idx])
                     frame_json.append(frame_data)
+                # 清除批次資料
+                del batch_frames, batch_indices, body_results, ball_results
                 batch_frames = []
                 batch_indices = []
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
         except queue.Empty:
             continue
 
     # 處理剩餘的 frame
     if batch_frames:
-        with torch.amp.autocast('cuda'):
+        with torch.no_grad(), torch.amp.autocast('cuda'):
             body_results = pose_model(batch_frames, verbose=False)
             ball_results = ball_model(batch_frames, verbose=False)
         for idx, (body_result, ball_result) in enumerate(zip(body_results, ball_results)):
             frame_data = process_single_frame(body_result, ball_result, keypoint_names, batch_indices[idx])
             frame_json.append(frame_data)
+        del batch_frames, batch_indices, body_results, ball_results
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
     # 若最後一幀關鍵點缺失，使用前一幀補上
     if frame_json and len(frame_json) > 1:
@@ -108,7 +118,7 @@ def process_video_batch(pose_model, ball_model, video_path, batch_size=16):
     reader_thread.join()
     return frame_json
 
-def analyze_trajectory(pose_model, ball_model, video_path, batch_size=8):
+def analyze_trajectory(pose_model, ball_model, video_path, batch_size=4):
     trajectory = process_video_batch(pose_model, ball_model, video_path, batch_size=batch_size)
     output_path = video_path.replace('.mp4', '(2D_trajectory).json')
     with open(output_path, 'w') as f:
@@ -133,10 +143,10 @@ if __name__ == "__main__":
     model_load_time = time.time() - model_load_start
     print(f"Model loading time: {model_load_time:.8f}s")
     
-    video_path = 'testing_0224__1_45.mp4'
+    video_path = '測試2__1_45_compressed.mp4'
     
     analysis_start = time.time()
-    output_path = analyze_trajectory(pose_model, ball_model, video_path, batch_size=8)
+    output_path = analyze_trajectory(pose_model, ball_model, video_path, batch_size=4)
     analysis_time = time.time() - analysis_start
     print(f"Trajectory analysis time: {analysis_time:.8f}s")
     
