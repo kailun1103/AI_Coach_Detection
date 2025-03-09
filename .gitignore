@@ -11,4 +11,4 @@ node_modules/
 __data__/
 filter-repo.py
 .command.sh
-.archive
+.archive/
