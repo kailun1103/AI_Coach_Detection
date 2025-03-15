@@ -45,8 +45,8 @@ def processing_trajectory(P1, P2, yolo_pose_model, yolo_tennis_ball_model, video
     # ------------------------------
     # print("\n步驟1：分析2D軌跡中...")
     start = time.perf_counter()
-    trajectory_side = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_side)
-    trajectory_45  = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_45)
+    trajectory_side = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_side, 16)
+    trajectory_45  = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_45, 16)
     timing_results['2D軌跡分析'] = time.perf_counter() - start
     # print(f"-- 分析2D軌跡完成，耗時：{timing_results['2D軌跡分析']:.4f} 秒")
 
@@ -168,17 +168,31 @@ def processing_trajectory(P1, P2, yolo_pose_model, yolo_tennis_ball_model, video
 
 if __name__ == "__main__":
 
+    # 碩士實驗室投影矩陣
     P1 = np.array([
-        [  917.153880,     0.000000,   994.529968,     0.000000],
-        [    0.000000,   920.803487,   531.057076,     0.000000],
+        [  877.037008,     0.000000,   956.954783,     0.000000],
+        [    0.000000,   879.565925,   564.021385,     0.000000],
         [    0.000000,     0.000000,     1.000000,     0.000000],
     ])
 
     P2 = np.array([
-        [  286.476533,    43.805594,  1301.943509, -765436.820164],
-        [ -309.560886,   957.641377,   401.534167, 365723.173062],
-        [   -0.553187,     0.008475,     0.833014,   660.964347],
+        [  408.666240,    -7.066100,  1265.246736, -264697.889698],
+        [ -232.265915,   870.289013,   512.645370, 42861.701021],
+        [   -0.400331,    -0.014736,     0.916252,    76.895470],
     ])
+
+    # outdoor_11_26投影矩陣
+    # P1 = np.array([
+    #     [ 4930.662905,     0.000000,  1779.941295,     0.000000],
+    #     [    0.000000,  3868.767102,  1001.404479,     0.000000],
+    #     [    0.000000,     0.000000,     1.000000,     0.000000],
+    # ])
+
+    # P2 = np.array([
+    #     [-1094.792294, -2221.390563,  5064.585259, -36565395.005422],
+    #     [-1538.153919,  4167.785827,  2858.175091, -22603156.999564],
+    #     [   -0.934159,    -0.007813,     0.356772,  2984.789713],
+    # ])
 
     knn_dataset = 'knn_dataset.json'
 
@@ -190,7 +204,7 @@ if __name__ == "__main__":
 
 
 
-    video_side = f'測試2__1_side_compressed.mp4'
-    video_45 = f'測試2__1_45_compressed.mp4'
+    video_side = f'testing_0315__10_side_compressed.mp4'
+    video_45 = f'testing_0315__10_45_compressed.mp4'
     process_status = processing_trajectory(P1, P2, yolo_pose_model, yolo_tennis_ball_model, video_side, video_45, knn_dataset)
     print(process_status)

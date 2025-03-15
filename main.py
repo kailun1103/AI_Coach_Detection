@@ -378,8 +378,8 @@ async def stop_recording():
         "gopro2": results[1]
     }
 
-@app.get("/stop_recording_and_download")
-async def stop_recording_and_download(background_tasks: BackgroundTasks):
+@app.get("/download")
+async def download(background_tasks: BackgroundTasks):
     """
     同時對兩台 GoPro 停止錄影並下載影片，建立軌跡資料夾，檢查檔案是否準備好後，
     將軌跡處理任務加入隊列，由工作者依序處理，避免同時大量運算。
@@ -410,8 +410,8 @@ async def stop_recording_and_download(background_tasks: BackgroundTasks):
     async with aiohttp.ClientSession() as session:
         try:
             results = await asyncio.gather(
-                post_gopro(session, "http://localhost:3253/stop_recording_and_download", form_data),
-                post_gopro(session, "http://localhost:9436/stop_recording_and_download", form_data)
+                post_gopro(session, "http://localhost:3253/download", form_data),
+                post_gopro(session, "http://localhost:9436/download", form_data)
             )
             gopro1_result, gopro2_result = results[0], results[1]
             print(f"GoPro 1 response: {gopro1_result}")
@@ -465,7 +465,7 @@ async def stop_recording_and_download(background_tasks: BackgroundTasks):
             
             return response_data
         except Exception as e:
-            print(f"Error in stop_recording_and_download: {str(e)}")
+            print(f"Error in download: {str(e)}")
             raise HTTPException(
                 status_code=500,
                 detail={

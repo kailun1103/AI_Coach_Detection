@@ -114,6 +114,6 @@ def play_videos(video1_path, video2_path, base_output_folder='screenshots'):
 
 if __name__ == "__main__":
     # 設定影片路徑
-    video1_path = "synchronized_videos/0227_45_sync.mp4"
-    video2_path = "synchronized_videos/0227_side_sync.mp4"
+    video1_path = "synchronized_videos/0315_45_sync.mp4"
+    video2_path = "synchronized_videos/0315_side_sync.mp4"
     play_videos(video1_path, video2_path)

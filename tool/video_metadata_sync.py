@@ -143,8 +143,8 @@ def save_synchronized_videos(video1_path, video2_path, start_frame1, end_frame1,
 
 if __name__ == "__main__":
     # Set video paths
-    video1_path = "0227_45.MP4"
-    video2_path = "0227_side.MP4"
+    video1_path = "0315_45.MP4"
+    video2_path = "0315_side.MP4"
     
     start_time = time.time()  # Start timer
     

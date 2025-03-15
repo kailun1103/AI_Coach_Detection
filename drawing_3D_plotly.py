@@ -313,7 +313,7 @@ def create_3d_plots(data_file):
         auto_play=False
     )
     
-    fig.show(config=config)
+    # fig.show(config=config)
 
 if __name__ == "__main__":
     create_3d_plots("凱倫__1(3D_trajectory_smoothed)_only_swing.json")

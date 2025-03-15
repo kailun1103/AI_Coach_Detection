@@ -57,7 +57,7 @@
       background: rgba(30, 30, 30, 0.95);
       border-radius: 15px;
       padding: 20px;
-      width: 900px;
+      width: 400px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
   </style>
@@ -172,7 +172,7 @@
       top: 20px;
       right: 20px;
       z-index: 3000;
-      transform: translateX(920px);
+      transform: translateX(620px);
       transition: transform 0.3s ease;
       padding-bottom: 20px;
     }
@@ -210,11 +210,35 @@
       transform: rotate(180deg);
     }
     .feedback-container {
-      width: 900px;
+      width: 550px;
       background: rgba(30,30,30,0.95);
       border-radius: 15px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      overflow: hidden;
+      max-height: 90vh;
+      overflow-y: auto;     /* 垂直（上下）滾動 */
+      overflow-x: hidden;   /* 禁用水平（左右）滾動 */
+      scrollbar-width: thin;
+      scrollbar-color: #4CAF50 rgba(30,30,30,0.95);
+    }
+
+    /* 新增 Webkit 瀏覽器的滾動條樣式 */
+    .feedback-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .feedback-container::-webkit-scrollbar-track {
+      background: rgba(30,30,30,0.95);
+      border-radius: 4px;
+    }
+
+    .feedback-container::-webkit-scrollbar-thumb {
+      background: #4CAF50;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+
+    .feedback-container::-webkit-scrollbar-thumb:hover {
+      background: #45a049;
     }
     #feedbackBox,
     #overallBox {
@@ -229,7 +253,7 @@
     }
     .feedback-content {
       color: #fff;
-      font-size: 20px;
+      font-size: 30px;
     }
   </style>
   
@@ -268,7 +292,7 @@
       background: rgba(30,30,30,0.95);
       padding: 20px;
       border-radius: 15px;
-      width: 420px;
+      width: 400px;
       color: white;
       box-shadow: 0 4px 6px rgba(0,0,0,0.5);
       max-height: 90vh;
@@ -541,12 +565,12 @@
   
   <!-- 載入 Three.js 與相關套件 -->
   <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/"
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/"
+      }
     }
-  }
   </script>
   
 </head>
@@ -865,8 +889,6 @@
       selectContainer.className = 'select-container';
       const fileSelect = document.createElement('select');
       fileSelect.id = 'fileSelect';
-      selectContainer.appendChild(fileSelect);
-      fileControlGroup.appendChild(selectContainer);
 
       const navButtonsContainer = document.createElement('div');
       navButtonsContainer.className = 'input-row';
@@ -1583,14 +1605,14 @@
           // 等待 1秒
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // 呼叫 stop_recording_and_download
-          response = await fetch("http://192.168.0.149:8000/stop_recording_and_download", {
+          // 呼叫 download
+          response = await fetch("http://192.168.0.149:8000/download", {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json" },
             mode: "cors"
           });
-          if (!response.ok) throw new Error("stop_recording_and_download failed");
-          showMsg("stop_recording_and_download success", "success");
+          if (!response.ok) throw new Error("download failed");
+          showMsg("download success", "success");
           info = document.createElement("div");
           info.className = "api-info";
           info.style.color = "#4CAF50";

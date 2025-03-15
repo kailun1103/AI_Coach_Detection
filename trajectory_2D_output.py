@@ -118,7 +118,7 @@ def process_video_batch(pose_model, ball_model, video_path, batch_size=16):
     reader_thread.join()
     return frame_json
 
-def analyze_trajectory(pose_model, ball_model, video_path, batch_size=4):
+def analyze_trajectory(pose_model, ball_model, video_path, batch_size):
     trajectory = process_video_batch(pose_model, ball_model, video_path, batch_size=batch_size)
     output_path = video_path.replace('.mp4', '(2D_trajectory).json')
     with open(output_path, 'w') as f:

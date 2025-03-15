@@ -245,8 +245,8 @@ async def stop_recording():
             }
         )
 
-@app.post("/stop_recording_and_download")
-async def stop_recording_and_download(
+@app.post("/download")
+async def download(
     user_name: str = Form(..., description="User name for the recording"),
     user_folder: str = Form(..., description="User folder path"),
     trajectory_folder: str = Form(..., description="Trajectory folder path"),
