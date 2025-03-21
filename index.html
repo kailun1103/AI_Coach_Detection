@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video and Trajectory Comparison</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class=body-container>
+        <!-- Left Panel: Video Player & AI Coach Feedback -->
+        <div class="left-panel">
+            <div class="videoplayer">
+                <h2>🎥 Video Player 🎥</h2>
+
+                <!-- Video Selection -->
+                <select id="folderSelect" class="file-input"></select>
+                <select id="videoSelect" class="video-input"></select>
+
+                <!-- Video Player -->
+                <video id="videoPlayer" controls loop></video>
+
+                <!-- Speed Control -->
+                <div class="speed-control">
+                    <label for="speedControl">Playback Speed:</label>
+                    <input type="range" id="speedControl" min="0.25" max="2" step="0.25" value="1">
+                    <span id="speedValue">1x</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Trajectory Comparison -->
+        <div class="right-panel">
+            <div class="trajectory-controls">
+                <h2>📈 Trajectory Files 📈</h2>
+            </div>
+
+            <!-- First Trajectory Chart -->
+            <div class="chart-box">
+                <div class="filename" id="filename1" style="color: rgb(108, 0, 158);">
+                    📂 Wait for File...
+                </div>
+                <canvas id="trajectoryChart1"></canvas>
+            </div>
+
+            <!-- Second Trajectory Chart -->
+            <div class="chart-box">
+                <div class="filename" id="filename2" style="color: rgb(108, 0, 158);">
+                    📂 Wait for File...
+                </div>
+                <canvas id="trajectoryChart2"></canvas>
+            </div>
+            <div class="ai-feedback">
+                AI-Feedback：
+            </div>
+        </div>
+
+        <!-- JavaScript -->
+        <script src="main.js"></script>
+    </div>
+</body>
+
+</html>

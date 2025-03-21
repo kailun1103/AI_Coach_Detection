@@ -172,7 +172,7 @@
       top: 20px;
       right: 20px;
       z-index: 3000;
-      transform: translateX(620px);
+      transform: translateX(565px);
       transition: transform 0.3s ease;
       padding-bottom: 20px;
     }
@@ -1518,7 +1518,7 @@
     
     // API 呼叫事件設定 (所有 api-form 表單共用)
     function setupApiHandlers() {
-      const base = 'http://192.168.0.149:8000';
+      const base = 'http://192.168.0.135:8000';
       document.querySelectorAll('.api-form').forEach(f => {
         f.addEventListener('submit', async e => {
             e.preventDefault();
@@ -1570,7 +1570,7 @@
         
         try {
           // 呼叫 start_recording
-          let response = await fetch("http://192.168.0.149:8000/start_recording", {
+          let response = await fetch("http://192.168.0.135:8000/start_recording", {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json" },
             mode: "cors"
@@ -1588,7 +1588,7 @@
           await new Promise(resolve => setTimeout(resolve, 2000));
           
           // 呼叫 stop_recording
-          response = await fetch("http://192.168.0.149:8000/stop_recording", {
+          response = await fetch("http://192.168.0.135:8000/stop_recording", {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json" },
             mode: "cors"
@@ -1606,7 +1606,7 @@
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // 呼叫 download
-          response = await fetch("http://192.168.0.149:8000/download", {
+          response = await fetch("http://192.168.0.135:8000/download", {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json" },
             mode: "cors"
@@ -1644,7 +1644,7 @@
       
       try {
         // 呼叫後端 API
-        const response = await fetch("http://192.168.0.149:8000/gpt_response");
+        const response = await fetch("http://192.168.0.135:8000/gpt_response");
         const data = await response.json();
         
         // 在按鈕下方顯示 status code
@@ -1677,7 +1677,7 @@
       form.querySelectorAll(".api-info").forEach(el => el.remove());
       
       try {
-        const response = await fetch("http://192.168.0.149:8000/queue_status", {
+        const response = await fetch("http://192.168.0.135:8000/queue_status", {
           method: "GET",
           headers: { "Accept": "application/json", "Content-Type": "application/json" },
           mode: "cors"

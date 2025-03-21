@@ -45,8 +45,8 @@ def processing_trajectory(P1, P2, yolo_pose_model, yolo_tennis_ball_model, video
     # ------------------------------
     # print("\n步驟1：分析2D軌跡中...")
     start = time.perf_counter()
-    trajectory_side = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_side, 16)
-    trajectory_45  = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_45, 16)
+    trajectory_side = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_side, 28)
+    trajectory_45  = analyze_trajectory(yolo_pose_model, yolo_tennis_ball_model, video_45, 28)
     timing_results['2D軌跡分析'] = time.perf_counter() - start
     # print(f"-- 分析2D軌跡完成，耗時：{timing_results['2D軌跡分析']:.4f} 秒")
 
@@ -91,7 +91,7 @@ def processing_trajectory(P1, P2, yolo_pose_model, yolo_tennis_ball_model, video
     # ------------------------------
     # print("\n步驟5：合併影片中...")
     start = time.perf_counter()
-    combine_videos_ffmpeg(video_45_processed, video_side_processed)
+    combine_videos_ffmpeg(video_side_processed, video_45_processed)
     timing_results['影片合併'] = time.perf_counter() - start
     # print(f"-- 影片合併完成，耗時：{timing_results['影片合併']:.4f} 秒")
 
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
 
 
-    video_side = f'testing_0315__10_side_compressed.mp4'
-    video_45 = f'testing_0315__10_45_compressed.mp4'
+    video_side = f'E:/git_repos/AI_Coach_Detection/0306_3__1_side.mp4'
+    video_45 = f'E:/git_repos/AI_Coach_Detection/0306_3__1_45.mp4'
     process_status = processing_trajectory(P1, P2, yolo_pose_model, yolo_tennis_ball_model, video_side, video_45, knn_dataset)
     print(process_status)

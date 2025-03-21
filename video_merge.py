@@ -2,7 +2,7 @@ import os
 import time
 
 def combine_videos_ffmpeg(top_video, bottom_video):
-    output_video = top_video.replace('_45_processed.mp4','_full_video.mp4')
+    output_video = top_video.replace('_side_processed.mp4','_full_video.mp4')
     cmd = (
         f'ffmpeg -hwaccel cuda -i "{top_video}" -i "{bottom_video}" '
         f'-filter_complex "[0:v][1:v]vstack=inputs=2[v]" -map "[v]" '
