@@ -30,17 +30,32 @@
     #controlPanel.expanded {
       transform: translateX(0);
     }
+      .toggle-language-btn {
+      font-size: 16px;
+      width: 30px; /* 建議設定一個可見寬度，取代 width: 0% */
+      height: 30px;
+      background: transparent; /* 預設透明 */
+      border: none; /* 若不需要邊框 */
+      color: white; /* 文字顏色，根據你的背景調整 */
+      cursor: pointer; /* 滑鼠指針 */
+      transition: background 0.3s ease; /* 平滑過渡效果 */
+    }
+
+    .toggle-language-btn:hover {
+      background: #4CAF50; /* 滑鼠懸停時藍色 */
+    }
     #controlPanelToggle {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      position: fixed;    /* 固定在螢幕上 */
+      bottom: -10px;       /* 距離底部 20px，可根據需要調整 */
+      right: 420px;       /* 距離右側 420px（依你 controlPanel 的寬度調整） */
+      transform: translateX(140%);
       width: 200px;
       height: 3px;
       background: rgba(76, 175, 80, 0.05);
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.3s ease;
+      z-index: 2100;      /* 確保在上層顯示 */
     }
     #controlPanelToggle:hover {
       background: rgba(76, 175, 80, 0.5);
@@ -180,23 +195,20 @@
       transform: translateX(0);
     }
     #feedbackToggle {
-      display: block;
+      position: fixed;      /* 改成固定定位 */
+      top: 14%;             /* 垂直置中 */
+      right: 0;             /* 固定在右邊 */
+      transform: translateY(-50%);
       width: 20px !important;
-      min-width: 0 !important;
-      height: 200px;             /* 設定固定高度 */
       padding: 0 !important;
-      margin: 0 !important;
-      outline: none;
-      -webkit-appearance: none;
-      appearance: none;
+      border: none !important;
+      min-width: 0 !important;
+      height: 200px;
       background: rgba(76,175,80,0.05);
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.3s ease;
-      position: absolute;
-      left: -30px;
-      top: 50%;
-      transform: translateY(-50%);
+      z-index: 3001;        /* 確保顯示在最上層 */
     }
 
     #feedbackToggle:hover {
@@ -590,24 +602,30 @@
   </div>
   
   <!-- Feedback 區塊 (右側) -->
+  <button id="feedbackToggle"></button>
   <div id="feedbackGroup" class="expanded">
-    <button id="feedbackToggle"></button>
     <div class="feedback-container">
       <div id="feedbackBox" class="feedback-box">
-        <div class="control-header_error">Feedback</div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div class="control-header_error">Feedback</div>
+          <button id="toggleLanguage" class="toggle-language-btn"></button>
+        </div>
         <div id="feedbackContent" class="feedback-content"></div>
-      </div>
+      </div>      
       <div id="overallBox" class="feedback-box">
         <div class="control-header">Overall Suggestion</div>
         <div id="overallContent" class="feedback-content"></div>
-        <button id="trajectoryAnalysis" style="margin-top: 10px; font-size: 25px;">Trajectory Analysis</button>
-      </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button id="trajectoryAnalysis" style="flex: 9.5; font-size: 25px;">Trajectory Analysis</button>
+          <button id="resetOverallContent" style="flex: 0.5; font-size: 25px;">↺</button>
+        </div>
+      </div>      
     </div>
   </div>
   
   <!-- 控制面板 (右下) -->
+  <button id="controlPanelToggle"></button>
   <div id="controlPanel">
-    <button id="controlPanelToggle"></button>
     <div class="control-container">
       <div class="control-content">
         <!-- 顯示當前時間 -->
@@ -643,6 +661,7 @@
   
   <!-- JavaScript 區段 -->
   <script type="module">
+    const BASE_API = `http://${window.location.hostname}:8000`; // 配置IP位置
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
@@ -655,6 +674,9 @@
     let trajectoryData = [], currentFrame = 0, isPlaying = false;
     let playbackSpeed = 1, frameInterval, showingFullTrajectory = false;
     let globalCenter = { x: 0, z: 0 }, globalMinY = 0;
+    let originalFeedbackContent = '';
+    let originalOverallContent = ''; 
+    let isTranslated = false;
     
     const SCALE_FACTOR = 0.002;
     const skeletonConnections = [
@@ -761,6 +783,16 @@
       
       // 將軌跡線加入場景
       Object.values(trajectorySystem).forEach(t => scene.add(t.line));
+
+      document.getElementById('resetOverallContent').addEventListener('click', () => {
+        const overallContent = document.getElementById('overallContent');
+        overallContent.textContent = '';
+        originalOverallContent = '';
+        if (isTranslated) {
+            isTranslated = false;
+            document.getElementById('toggleLanguage').textContent = 'ENG';
+        }
+    });
       
       // 呼叫各功能設定
       createJointControls();
@@ -1025,10 +1057,18 @@
         fileSelect.addEventListener('change', async () => {
           const sel = files.find(f => f.name === fileSelect.value);
           if (sel) {
-            resetAllStates();
-            await loadJSONFile(sel);
+              resetAllStates();
+              await loadJSONFile(sel);
+              const feedbackContent = document.getElementById('feedbackContent');
+              const overallContent = document.getElementById('overallContent');
+              feedbackContent.textContent = originalFeedbackContent;
+              if (isTranslated) {
+                  overallContent.textContent = originalOverallContent;
+              }
+              isTranslated = false;
+              document.getElementById('toggleLanguage').textContent = 'ENG';
           }
-        });
+      });
         await loadJSONFile(files[0]);
       });
       fileControlGroup.appendChild(dirInput);
@@ -1040,29 +1080,36 @@
           resetAllStates();
           trajectoryData = JSON.parse(txt.replace(/^\uFEFF/, '').trim());
           if (!Array.isArray(trajectoryData)) trajectoryData = [trajectoryData];
-          
-          // 尋找所有擊球的 frame
+
           window.hitFrames = [];
           trajectoryData.forEach((frame, index) => {
               if (frame.tennis_ball_hit === true) {
                   window.hitFrames.push(index);
               }
           });
-          
           console.log("找到的擊球 frames:", window.hitFrames);
-          
+
           computeGlobalCenterAndMinY();
           document.getElementById('slider').max = trajectoryData.length - 1;
           updateFrame();
-          
-          // 預設顯示全軌跡：更新變數、按鈕文字與顏色，並計算軌跡
+
           showingFullTrajectory = true;
           const btn = document.getElementById('showFullTrajectoryButton');
           btn.textContent = 'hide trajectory';
           btn.style.background = '#f44336';
           calculateFullTrajectory();
-          
-          return loadFeedbackFile(file.name);
+
+          // 載入並更新 feedback，但不動 overallContent
+          return loadFeedbackFile(file.name).then(() => {
+              const feedbackContent = document.getElementById('feedbackContent');
+              const overallContent = document.getElementById('overallContent');
+              feedbackContent.textContent = originalFeedbackContent;
+              if (isTranslated) {
+                  overallContent.textContent = originalOverallContent;
+              }
+              isTranslated = false;
+              document.getElementById('toggleLanguage').textContent = 'ENG';
+          });
       }).catch(e => {
           console.error(e);
           alert('Error: ' + e.message);
@@ -1074,39 +1121,58 @@
       const feedbackFileName = mainFileName.replace('(3D_trajectory_smoothed)', '_gpt_feedback');
       const fi = document.getElementById('dirInput');
       if (!fi) return Promise.resolve();
-      
+
       const fFile = Array.from(fi.files).find(f => f.name === feedbackFileName);
+      const feedbackContent = document.getElementById('feedbackContent');
+      // 不動 overallContent，除非明確重置
+      const overallContent = document.getElementById('overallContent');
+
       if (!fFile) {
-          document.getElementById('feedbackContent').textContent = 'No feedback file found';
-          document.getElementById('overallContent').textContent = 'No overall suggestion available';
+          feedbackContent.textContent = 'No feedback file found';
+          originalFeedbackContent = 'No feedback file found';
+          // 不更新 originalOverallContent，除非是首次載入或重置
+          if (!originalOverallContent) {
+              originalOverallContent = 'No overall suggestion available';
+          }
+          isTranslated = false;
+          document.getElementById('toggleLanguage').textContent = 'ENG';
           window.problemFrameRange = null;
           return Promise.resolve();
       }
-      
+
       return fFile.text().then(txt => {
           console.log("读取的 feedback 文件为：" + fFile.name);
           try {
               const data = JSON.parse(txt);
-              document.getElementById('feedbackContent').textContent = data.suggestion;
-              document.getElementById('overallContent').textContent = data.overall_suggestion || 'No overall suggestion available';
-              
-              // 确保 problem_frame 被正确解析
+              // 只更新 feedbackContent 和 originalFeedbackContent
+              originalFeedbackContent = data.suggestion || 'No feedback available';
+              feedbackContent.textContent = originalFeedbackContent;
+              // 僅在首次載入或 overallContent 為空時更新 originalOverallContent
+              if (!originalOverallContent) {
+                  originalOverallContent = data.overall_suggestion || 'No overall suggestion available';
+                  overallContent.textContent = originalOverallContent;
+              }
+              // 如果之前已翻譯，恢復為原始中文
+              if (isTranslated) {
+                  overallContent.textContent = originalOverallContent;
+                  feedbackContent.textContent = originalFeedbackContent;
+              }
+              isTranslated = false;
+              document.getElementById('toggleLanguage').textContent = 'ENG';
+
+              // 確保 problem_frame 被正確解析
               if (data.problem_frame && typeof data.problem_frame === 'string') {
                   const frameRangeStr = data.problem_frame;
-                  // 支持多种分隔符: '-', '~', 到, to
                   const match = frameRangeStr.match(/(\d+)(?:[-~]|到|to)(\d+)/);
                   if (match) {
                       window.problemFrameRange = [parseInt(match[1]), parseInt(match[2])];
                   } else {
-                      // 尝试直接解析单个数字
                       const singleFrame = parseInt(frameRangeStr);
                       if (!isNaN(singleFrame)) {
                           window.problemFrameRange = [singleFrame, singleFrame];
                       }
                   }
                   console.log("设置的 problemFrameRange:", window.problemFrameRange);
-                  
-                  // 如果正在显示轨迹，则重新计算以显示更新后的问题区域
                   if (showingFullTrajectory) {
                       calculateFullTrajectory();
                   }
@@ -1115,12 +1181,34 @@
               }
           } catch (e) {
               console.error("解析 feedback 文件时出错:", e);
+              feedbackContent.textContent = 'No feedback available';
+              originalFeedbackContent = 'No feedback available';
+              if (!originalOverallContent) {
+                  originalOverallContent = 'No overall suggestion available';
+                  overallContent.textContent = originalOverallContent;
+              }
+              if (isTranslated) {
+                  overallContent.textContent = originalOverallContent;
+                  feedbackContent.textContent = originalFeedbackContent;
+              }
+              isTranslated = false;
+              document.getElementById('toggleLanguage').textContent = 'ENG';
               window.problemFrameRange = null;
           }
       }).catch(err => {
           console.error(err);
-          document.getElementById('feedbackContent').textContent = 'No feedback available';
-          document.getElementById('overallContent').textContent = 'No overall suggestion available';
+          feedbackContent.textContent = 'No feedback available';
+          originalFeedbackContent = 'No feedback available';
+          if (!originalOverallContent) {
+              originalOverallContent = 'No overall suggestion available';
+              overallContent.textContent = originalOverallContent;
+          }
+          if (isTranslated) {
+              overallContent.textContent = originalOverallContent;
+              feedbackContent.textContent = originalFeedbackContent;
+          }
+          isTranslated = false;
+          document.getElementById('toggleLanguage').textContent = 'ENG';
           window.problemFrameRange = null;
       });
   }
@@ -1356,17 +1444,16 @@
     // 更新目前影格數據與顯示資訊
     function updateFrame() {
       document.getElementById('slider').value = currentFrame;
-      
-      // 更新 frame info，如果是擊球 frame，添加 [HIT] 標記
+
       let frameInfoText = `frame: ${currentFrame}`;
       if (window.hitFrames && window.hitFrames.includes(currentFrame)) {
           frameInfoText += " [HIT]";
-          document.getElementById('frameInfo').style.color = '#00FFFF'; // 使用青色標記
+          document.getElementById('frameInfo').style.color = '#00FFFF';
       } else {
-          document.getElementById('frameInfo').style.color = 'white'; // 恢復正常顏色
+          document.getElementById('frameInfo').style.color = 'white';
       }
       document.getElementById('frameInfo').textContent = frameInfoText;
-      
+
       updatePose(currentFrame);
       const fb = document.getElementById('feedbackContent');
       if (fb && fb.textContent.includes('Frame')) {
@@ -1464,6 +1551,58 @@
           clearInterval(frameInterval);
         }
       });
+
+        document.getElementById('toggleLanguage').addEventListener('click', async () => {
+          const feedbackContent = document.getElementById('feedbackContent');
+          const overallContent = document.getElementById('overallContent');
+          const toggleButton = document.getElementById('toggleLanguage');
+
+          if (!originalFeedbackContent || !originalOverallContent) {
+              // 第一次點擊時儲存兩個元素的原始內容
+              originalFeedbackContent = feedbackContent.textContent.trim();
+              originalOverallContent = overallContent.textContent.trim();
+          }
+
+          if (isTranslated) {
+              // 如果已翻譯，恢復原始內容
+              feedbackContent.textContent = originalFeedbackContent;
+              overallContent.textContent = originalOverallContent;
+              toggleButton.textContent = 'ENG'; // 按鈕顯示 "ENG"
+              isTranslated = false;
+          } else {
+              // 如果未翻譯，呼叫 API 進行翻譯
+              try {
+                  // 分別發送兩個內容的翻譯請求
+                  const [feedbackResponse, overallResponse] = await Promise.all([
+                      fetch(`${BASE_API}/translate?text=${encodeURIComponent(originalFeedbackContent)}`, {
+                          method: 'GET',
+                          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                          mode: 'cors'
+                      }),
+                      fetch(`${BASE_API}/translate?text=${encodeURIComponent(originalOverallContent)}`, {
+                          method: 'GET',
+                          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                          mode: 'cors'
+                      })
+                  ]);
+
+                  const feedbackData = await feedbackResponse.json();
+                  const overallData = await overallResponse.json();
+
+                  if (feedbackResponse.ok && feedbackData.status === 'success' &&
+                      overallResponse.ok && overallData.status === 'success') {
+                      feedbackContent.textContent = feedbackData.translated_text;
+                      overallContent.textContent = overallData.translated_text;
+                      toggleButton.textContent = ''; // 按鈕顯示 "原" 表示可恢復原狀
+                      isTranslated = true;
+                  } else {
+                      throw new Error('翻譯失敗');
+                  }
+              } catch (err) {
+                  showMsg('翻譯請求錯誤: ' + err.message, 'error');
+              }
+          }
+      });
       document.getElementById('showFullTrajectoryButton').addEventListener('click', () => {
         showingFullTrajectory = !showingFullTrajectory;
         const btn = document.getElementById('showFullTrajectoryButton');
@@ -1518,7 +1657,7 @@
     
     // API 呼叫事件設定 (所有 api-form 表單共用)
     function setupApiHandlers() {
-      const base = 'http://192.168.0.135:8000';
+      const base = BASE_API;
       document.querySelectorAll('.api-form').forEach(f => {
         f.addEventListener('submit', async e => {
             e.preventDefault();
@@ -1570,7 +1709,7 @@
         
         try {
           // 呼叫 start_recording
-          let response = await fetch("http://192.168.0.135:8000/start_recording", {
+          let response = await fetch(`${BASE_API}/start_recording`, {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json" },
             mode: "cors"
@@ -1588,7 +1727,7 @@
           await new Promise(resolve => setTimeout(resolve, 2000));
           
           // 呼叫 stop_recording
-          response = await fetch("http://192.168.0.135:8000/stop_recording", {
+          response = await fetch(`${BASE_API}/stop_recording`, {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json" },
             mode: "cors"
@@ -1606,7 +1745,7 @@
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // 呼叫 download
-          response = await fetch("http://192.168.0.135:8000/download", {
+          response = await await fetch(`${BASE_API}/download`, {
             method: "GET",
             headers: { "Accept": "application/json", "Content-Type": "application/json" },
             mode: "cors"
@@ -1628,46 +1767,44 @@
     
     // Trajectory Analysis 按鈕事件設定：出現 confirm 視窗，按下是後執行 API 呼叫並在按鈕下方顯示 status code
     document.getElementById("trajectoryAnalysis").addEventListener("click", async function(e) {
-      // 清除按鈕所在容器內的舊提示
-      const container = this.parentElement;
-      container.querySelectorAll(".api-info").forEach(el => el.remove());
-      
-      // 顯示 confirm 視窗
-      const proceed = confirm("analyze all track contents?");
-      if (!proceed) return;
-      
-      // 禁用按鈕並更改文字
-      const button = this;
-      button.disabled = true;
-      const originalText = button.textContent;
-      button.textContent = "Processing...";
-      
-      try {
-        // 呼叫後端 API
-        const response = await fetch("http://192.168.0.135:8000/gpt_response");
-        const data = await response.json();
-        
-        // 在按鈕下方顯示 status code
-        const info = document.createElement("div");
-        info.className = "api-info";
-        info.style.fontSize = "10px";
-        info.style.color = "#4CAF50";
-        info.textContent = `Status code: ${response.status}`;
-        container.appendChild(info);
-        
-        // 顯示回傳結果
-        if (data.status === "success") {
-          document.getElementById("overallContent").textContent = data.conclusion;
-        } else {
-          document.getElementById("overallContent").textContent = "分析失敗，請稍後再試。";
+        const container = this.parentElement;
+        container.querySelectorAll(".api-info").forEach(el => el.remove());
+
+        const proceed = confirm("analyze all track contents?");
+        if (!proceed) return;
+
+        const button = this;
+        button.disabled = true;
+        const originalText = button.textContent;
+        button.textContent = "Processing...";
+
+        try {
+            const response = await fetch(`${BASE_API}/gpt_response`);
+            const data = await response.json();
+
+            const info = document.createElement("div");
+            info.className = "api-info";
+            info.style.fontSize = "10px";
+            info.style.color = "#4CAF50";
+            info.textContent = `Status code: ${response.status}`;
+            container.appendChild(info);
+
+            if (data.status === "success") {
+                overallContent.textContent = data.conclusion;
+                originalOverallContent = data.conclusion; // 更新原始內容
+                if (isTranslated) {
+                    isTranslated = false;
+                    document.getElementById('toggleLanguage').textContent = 'ENG';
+                }
+            } else {
+                overallContent.textContent = "分析失敗，請稍後再試。";
+            }
+        } catch (error) {
+            document.getElementById("overallContent").textContent = "Error: " + error;
+        } finally {
+            button.disabled = false;
+            button.textContent = originalText;
         }
-      } catch (error) {
-        document.getElementById("overallContent").textContent = "Error: " + error;
-      } finally {
-        // 恢復按鈕狀態
-        button.disabled = false;
-        button.textContent = originalText;
-      }
     });
     
     // Queue Status 按鈕事件設定
@@ -1677,7 +1814,7 @@
       form.querySelectorAll(".api-info").forEach(el => el.remove());
       
       try {
-        const response = await fetch("http://192.168.0.135:8000/queue_status", {
+        const response = await fetch(`${BASE_API}/queue_status`, {
           method: "GET",
           headers: { "Accept": "application/json", "Content-Type": "application/json" },
           mode: "cors"

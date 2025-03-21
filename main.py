@@ -4,17 +4,19 @@ import asyncio
 from pathlib import Path
 from enum import Enum
 import numpy as np
-from typing import Optional
-
+from typing import Optional  
+import pygame
+import os
+import sys
+from googletrans import Translator
 import aiohttp
 import uvicorn
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ultralytics import YOLO
 
-from sound import play_sound
-from processing_trajectory import processing_trajectory
+from trajector_processing import processing_trajectory
 from trajectory_gpt_overall_feedback import find_and_format_feedback_jsons, conclude
 
 # ------------------------------
@@ -94,6 +96,41 @@ def find_next_trajectory_number(base_folder: Path) -> int:
     except Exception as e:
         print(f"Error in find_next_trajectory_number: {str(e)}")
         return 1
+
+def play_sound():
+    # 初始化pygame混音器
+    pygame.mixer.init()
+    
+    # 設定預設音效文件
+    # 你可以替換這個路徑為你自己的音效文件
+    sound_file = "tool/sound.mp3"  # 預設音效檔案名稱
+    
+    # 檢查是否有通過命令列提供音效檔案路徑
+    if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
+        sound_file = sys.argv[1]
+    
+    # 檢查檔案是否存在
+    if not os.path.exists(sound_file):
+        print(f"找不到音效文件: {sound_file}")
+        print("請確保音效文件存在，或者通過命令列參數提供正確的路徑")
+        print("用法: python script.py [音效文件路徑]")
+        time.sleep(3)  # 讓用戶有時間閱讀錯誤信息
+        return
+    
+    try:
+        # 載入並播放音效
+        sound = pygame.mixer.Sound(sound_file)
+        sound.play()
+        
+        # 等待音效播放完畢
+        duration = sound.get_length()
+        time.sleep(duration)
+        
+        print(f"已播放音效: {sound_file}")
+        
+    except Exception as e:
+        print(f"播放音效時發生錯誤: {e}")
+        time.sleep(3)  # 讓用戶有時間閱讀錯誤信息
 
 # ------------------------------
 # Task Worker for Sequential Processing
@@ -350,6 +387,7 @@ async def take_photo():
 
 @app.get("/start_recording")
 async def start_recording():
+    asyncio.get_event_loop().run_in_executor(None, play_sound)
     """
     同時向兩台 GoPro 發送開始錄影請求。
     """
@@ -432,7 +470,6 @@ async def download(background_tasks: BackgroundTasks):
                     if side_video_ready and video_45_ready:
                         video_files_ready = True
                         print("Both videos confirmed ready")
-                        play_sound()
                         # 將處理任務加入隊列，等待工作者依序處理
                         await trajectory_queue.put(
                             (P1, P2, yolo_pose_model, yolo_tennis_ball_model,
@@ -476,23 +513,27 @@ async def download(background_tasks: BackgroundTasks):
                 }
             )
 
-
-@app.get("/queue_status")
-async def queue_status():
+@app.get("/translate")
+async def translate(text: str = Query(..., description="要翻譯的文字")):
     """
-    Returns the current task queue status as a plain text summary.
+    接收文字並將其翻譯成英文。
     """
-    pending_tasks = trajectory_queue.qsize()
-    # Assume active_task_count and finished_task_count are global variables representing
-    # the number of tasks currently in processing and completed tasks, respectively.
-    total_tasks = pending_tasks + active_task_count + finished_task_count
-
-    status_message = (
-        f"Pending tasks : {pending_tasks}"
-    )
-    return status_message
-
-
+    try:
+        translator = Translator()
+        result = await translator.translate(text, dest="en")
+        return {
+            "status": "success",
+            "original_text": text,
+            "translated_text": result.text
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": f"翻譯失敗: {str(e)}",
+                "original_text": text
+            }
+        )
 # ------------------------------
 # Main Entry Point
 # ------------------------------

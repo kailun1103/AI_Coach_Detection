@@ -12,7 +12,7 @@ app.listen(port, () => {
 });
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'drawing_2D_chart_js.html'));
 });
 
 app.get('/getFolders', (req, res) => {

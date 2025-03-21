@@ -4,6 +4,7 @@ junior_forehand
 knn_dataset.json
 open_ai_key.py
 ffprobe.exe
+ffplay.exe
 ffmpeg.exe
 trajectory
 __pycache__/
