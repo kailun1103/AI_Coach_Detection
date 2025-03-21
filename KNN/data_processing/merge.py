@@ -7,8 +7,8 @@ def load_json(file_path):
 
 # 檔案路徑
 junior_file = "E:/git_repos/AI_Coach_Detection/KNN/junior_labeled.json"
-pro_file = "E:/git_repos/AI_Coach_Detection/KNN/pro_labeled.json"
-output_file = "E:/git_repos/AI_Coach_Detection/KNN/merged_dataset.json"
+pro_file = "E:/git_repos/AI_Coach_Detection/KNN/junior_v2_labeled.json"
+output_file = "E:/git_repos/AI_Coach_Detection/KNN/merged_dataset_v2.json"
 
 # 讀取資料
 junior_data = load_json(junior_file)

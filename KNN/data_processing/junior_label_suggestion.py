@@ -13,10 +13,10 @@ def insert_suggestion_after_level(obj, filename):
         for key, value in obj.items():
             new_obj[key] = value
             if key == "level" and value == "junior" and not inserted:
-                new_obj["suggestion"] = "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無"
+                new_obj["suggestion"] = "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無"
                 inserted = True
         if not inserted:
-            new_obj["suggestion"] = "頭:O、肩膀:O、手碗:O、手肘:O、膝蓋:O、是否擊球:O、其他:無"  # 如果沒有 "level": "pro"，則放最後
+            new_obj["suggestion"] = "頭:沒問題!、肩膀:沒問題!、手碗:沒問題!、手肘:沒問題!、膝蓋:沒問題!、是否擊球:是、其他:無"  # 如果沒有 "level": "pro"，則放最後
         return new_obj
     return obj
 
@@ -55,6 +55,6 @@ def merge_json_files(input_folder, output_file):
     print(f"合併完成！輸出檔案：{output_file}")
 
 # 使用方式
-input_folder = "E:/git_repos/AI_Coach_Detection/KNN/Junior_Labeled_Dataset"  # 設定你的 JSON 資料夾路徑
-output_file = "E:/git_repos/AI_Coach_Detection/KNN/junior_labeled.json"  # 輸出的 JSON 檔案名稱
+input_folder = "E:/git_repos/AI_Coach_Detection/KNN/Junior_Labeled_v2_Dataset"  # 設定你的 JSON 資料夾路徑
+output_file = "E:/git_repos/AI_Coach_Detection/KNN/junior_v2_labeled.json"  # 輸出的 JSON 檔案名稱
 merge_json_files(input_folder, output_file)

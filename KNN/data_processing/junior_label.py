@@ -2,8 +2,8 @@ import os
 import json
 
 # 定義要處理的檔案資料夾路徑
-input_folder = 'E:/git_repos/AI_Coach_Detection/KNN/Junior_dataset'  # 請替換成您的輸入檔案資料夾路徑
-output_folder = 'E:/git_repos/AI_Coach_Detection/KNN/Junior_Labeled_Dataset'  # 請替換成您想存放輸出檔案的資料夾路徑
+input_folder = 'E:/git_repos/AI_Coach_Detection/KNN/Junior_v2_dataset'  # 請替換成您的輸入檔案資料夾路徑
+output_folder = 'E:/git_repos/AI_Coach_Detection/KNN/Junior_Labeled_v2_Dataset'  # 請替換成您想存放輸出檔案的資料夾路徑
 
 # 確保輸出資料夾存在
 os.makedirs(output_folder, exist_ok=True)
@@ -18,7 +18,7 @@ for file_name in os.listdir(input_folder):
         with open(input_file_path, 'r') as input_file:
             data = json.load(input_file)
         
-        # 添加 "level": "pro" 在外層
+        # 添加 "level": "junior" 在外層
         output_data = {
             "level": "junior",
             "data": data
