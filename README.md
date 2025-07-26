@@ -1,63 +1,141 @@
-# Tennis Swing Analysis System
+# AI Coach Detection
 
-## Overview
-
-This project is a comprehensive tennis swing analysis system that uses computer vision, 3D trajectory reconstruction, and machine learning to provide feedback on tennis swings. The system captures video from two camera angles, processes the footage to track body keypoints and the tennis ball, reconstructs the 3D trajectory, and then provides automated feedback on the player's technique.
-
-## Key Components
-
-### 1. Camera Calibration & 3D Reconstruction
-
-- Uses dual-camera setup (side view and 45° angle view)
-- Implements binocular correction to calibrate cameras
-- Reconstructs 3D trajectories from 2D keypoints using triangulation
-
-### 2. Motion Tracking
-
-- Utilizes YOLOv8 pose detection to track 17 key body points
-- Employs custom tennis ball detection model
-- Provides real-time visualization of trajectories
-
-### 3. Data Processing Pipeline
-
-- 2D trajectory extraction and smoothing
-- Video synchronization for multi-angle analysis
-- 3D trajectory calculation and filtering
-- Automated swing range detection
-
-### 4. Feedback System
-
-- K-Nearest Neighbors (KNN) analysis to compare with reference swings
-- AI-powered feedback using language models
-- Provides specific frame ranges where issues appear
-- Generates comprehensive improvement suggestions
-
-### 5. Web Visualization
-
-- Interactive 3D viewer for swing trajectories
-- Control panel for playback and analysis options
-- Color-coded feedback visualization
-- Comparison tools for multiple swings
-
-## Technical Implementation
-
-- Backend: Python, FastAPI
-- Computer Vision: OpenCV, YOLOv8, NumPy
-- 3D Visualization: Three.js
-- Machine Learning: scikit-learn, GPT models
-- Video Processing: FFmpeg
-
-## Usage
-
-The system captures videos of a tennis player from two angles, processes them through the analysis pipeline, and generates feedback that can be viewed in the web interface. Players can record multiple swings, compare them, and track improvement over time.
-
-## Future Directions
-
-- Integration with mobile devices
-- Real-time analysis capabilities
-- Expanded database of reference swings
-- Support for additional shot types and techniques
+A real-time tennis motion analysis and feedback system that performs 3D pose estimation using linear triangulation and visualizes results in a web-based interface.
 
 ---
 
-This system aims to democratize access to professional-level tennis coaching by providing detailed technical analysis and actionable feedback to players of all levels.
+## ✨ Features
+
+- **3D Pose Estimation**  
+  Implements linear triangulation to reconstruct 3D joint positions from multi-view or calibrated camera setups.  
+- **Real-Time Feedback**  
+  Provides instant motion feedback on swing technique, posture, and trajectory deviations.  
+- **Web Visualization**  
+  Renders 3D skeleton and motion trails in a browser using Three.js.  
+- **Performance Optimization**  
+  Parallelized Python backend and GPU-accelerated CUDA modules for reducing computation time from 30s per frame to ~8s.  
+- **Customizable Parameters**  
+  Configure camera calibration, skeleton model, and feedback thresholds via JSON settings.
+
+---
+
+## 🛠 Tech Stack
+
+- **Backend:** Python 3.8+, OpenCV, NumPy  
+- **Pose Computation:** Custom linear triangulation module (CUDA-enabled)  
+- **Visualization:** Three.js, HTML5, JavaScript  
+- **Server:** Flask (or FastAPI) for streaming pose data  
+- **GPU Acceleration:** CUDA Toolkit  
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Python 3.8+**  
+- **Node.js & npm**  
+- **CUDA Toolkit** (for GPU support)  
+- **Calibrated Cameras** or dataset with known intrinsics/extrinsics  
+
+### Installation
+
+1. **Clone the repo**  
+   ```bash
+   git clone https://github.com/kailun1103/AI_Coach_Detection.git
+   cd AI_Coach_Detection
+   ```
+
+2. **Backend Setup**  
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+3. **Frontend Setup**  
+   ```bash
+   cd ../frontend
+   npm install
+   npm run build
+   ```
+
+4. **Configure Settings**  
+   - Copy `config_template.json` to `config.json` in both `backend` and `frontend` folders.  
+   - Edit camera parameters, model paths, and feedback thresholds.
+
+5. **Run the Application**  
+   - Start backend server:
+     ```bash
+     cd backend
+     python server.py
+     ```
+   - Serve frontend:
+     ```bash
+     cd frontend
+     npm run start
+     ```
+   - Open `http://localhost:3000` in your browser.
+
+---
+
+## 📂 Project Structure
+
+```
+AI_Coach_Detection/
+├── backend/
+│   ├── server.py
+│   ├── pose_triangulation.py
+│   ├── cuda_module/
+│   ├── requirements.txt
+│   └── config_template.json
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── config_template.json
+├── assets/
+│   └── demo.gif
+└── README.md
+```
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository  
+2. Create a feature branch (`git checkout -b feature/YourFeature`)  
+3. Commit your changes (`git commit -m 'Add feature'`)  
+4. Push to the branch (`git push origin feature/YourFeature`)  
+5. Open a Pull Request  
+
+Please adhere to the existing code style and include meaningful commit messages.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License:
+
+```
+MIT License
+
+Copyright (c) 2025 Kellen Chang
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
