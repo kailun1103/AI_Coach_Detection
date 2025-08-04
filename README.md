@@ -2,6 +2,14 @@
 
 A real-time tennis motion analysis and feedback system that performs 3D pose estimation using linear triangulation and visualizes results in a web-based interface.
 
+
+## 🎥 Demo
+
+Watch the demo walkthrough on YouTube:
+
+[![VIDEO](https://img.youtube.com/vi/VvKFSDbbvzY/0.jpg)](https://www.youtube.com/watch?v=VvKFSDbbvzY)
+
+
 ---
 
 ## ✨ Features
