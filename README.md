@@ -7,6 +7,7 @@ A real-time tennis motion analysis and feedback system that performs 3D pose est
 
 Watch the demo walkthrough on YouTube:
 https://youtu.be/STiMlMEpwLY
+
 [![VIDEO](https://img.youtube.com/vi/STiMlMEpwLY/0.jpg)](https://www.youtube.com/watch?v=STiMlMEpwLY)
 
 
